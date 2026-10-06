@@ -1,0 +1,2583 @@
+<!DOCTYPE html>
+<html lang="ps" dir="rtl" id="html-root">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>University Notes - د پوهنتون نوټونه</title>
+
+    <style>
+    /* ==========================================================================
+       BASE RESET / APP SHELL
+       ========================================================================== */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+        width: 100%;
+        height: 100%;
+        overflow-x: hidden;
+        background-color: #0d1117;
+    }
+
+    .main-container {
+        width: 100vw;
+        min-height: 100vh;
+        padding-bottom: 70px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .bottom-nav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        z-index: 1000;
+    }
+
+    /* ==========================================================================
+       THEME TOKENS (unchanged)
+       ========================================================================== */
+    :root {
+        --bg-color: #f4f5f9;
+        --card-bg: #ffffff;
+        --text-main: #1f2937;
+        --text-sub: #6b7280;
+        --primary: #6366f1;
+        --primary-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        --border-color: #e5e7eb;
+        --shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        --danger: #ef4444;
+        --success: #10b981;
+    }
+
+    [data-theme="dark"] {
+        --bg-color: #0f172a;
+        --card-bg: #1e293b;
+        --text-main: #f8fafc;
+        --text-sub: #94a3b8;
+        --border-color: #334155;
+        --shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        transition: background-color 0.2s, color 0.2s;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+        background-color: var(--bg-color);
+        color: var(--text-main);
+        padding-bottom: 75px;
+        max-width: 520px;
+        margin: 0 auto;
+        min-height: 100vh;
+        border-left: 1px solid var(--border-color);
+        border-right: 1px solid var(--border-color);
+        position: relative;
+        user-select: none;
+    }
+
+    /* ==========================================================================
+       HEADER
+       ========================================================================== */
+    header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 16px;
+        background: var(--card-bg);
+        border-bottom: 1px solid var(--border-color);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+    }
+
+    .header-left, .header-right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .user-brand {
+        font-size: 0.9rem;
+        font-weight: 800;
+        color: var(--text-main);
+        background: rgba(99, 102, 241, 0.1);
+        padding: 4px 8px;
+        border-radius: 8px;
+    }
+
+    .live-clock {
+        background: rgba(99, 102, 241, 0.1);
+        color: var(--primary);
+        padding: 4px 8px;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        direction: ltr;
+    }
+
+    .btn-icon {
+        background: var(--bg-color);
+        border: none;
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: var(--text-main);
+    }
+
+    .btn-icon svg {
+        width: 18px;
+        height: 18px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .lang-btn {
+        background: var(--primary);
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    /* ==========================================================================
+       HOME
+       ========================================================================== */
+    .welcome-card {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 20px;
+        border-radius: 18px;
+        margin: 15px 16px;
+        box-shadow: 0 8px 20px rgba(99, 102, 241, 0.25);
+    }
+
+    .welcome-card h2 {
+        font-size: 1.2rem;
+        margin-bottom: 8px;
+    }
+
+    .welcome-card p {
+        font-size: 0.85rem;
+        opacity: 0.92;
+        line-height: 1.5;
+    }
+
+    .overall-grade-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 16px;
+        margin-bottom: 15px;
+        box-shadow: var(--shadow);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .overall-badge {
+        background: var(--primary-gradient);
+        color: white;
+        font-size: 1.2rem;
+        font-weight: bold;
+        padding: 8px 14px;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3);
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        padding: 0 16px;
+        margin-bottom: 20px;
+    }
+
+    .stat-card {
+        background: var(--card-bg);
+        padding: 14px;
+        border-radius: 16px;
+        box-shadow: var(--shadow);
+        border: 1px solid var(--border-color);
+        position: relative;
+        cursor: pointer;
+    }
+
+    .stat-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        background: rgba(99, 102, 241, 0.12);
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        top: 12px;
+        left: 12px;
+    }
+
+    html[dir="ltr"] .stat-icon {
+        left: auto;
+        right: 12px;
+    }
+
+    .stat-icon svg {
+        width: 18px;
+        height: 18px;
+        stroke: currentColor;
+        stroke-width: 2;
+        fill: none;
+    }
+
+    .stat-number {
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin-top: 8px;
+    }
+
+    .stat-label {
+        font-size: 0.8rem;
+        color: var(--text-sub);
+        margin-top: 2px;
+    }
+
+    /* ==========================================================================
+       SECTION HEADERS / LISTS
+       ========================================================================== */
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 16px;
+        margin-bottom: 8px;
+    }
+
+    .section-title {
+        font-size: 1.05rem;
+        font-weight: bold;
+    }
+
+    .add-btn {
+        background: var(--primary);
+        color: white;
+        border: none;
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 1.3rem;
+        box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3);
+    }
+
+    .btn-pdf {
+        background: #22c55e;
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 0.78rem;
+        font-weight: bold;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .list-container {
+        padding: 0 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .empty-box {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 18px;
+        padding: 35px 20px;
+        text-align: center;
+        color: var(--text-sub);
+        margin: 10px 0;
+        box-shadow: var(--shadow);
+    }
+
+    .empty-box svg {
+        width: 45px;
+        height: 45px;
+        stroke: var(--text-sub);
+        stroke-width: 1.5;
+        fill: none;
+        margin-bottom: 12px;
+        opacity: 0.7;
+    }
+
+    .card-item {
+        background: var(--card-bg);
+        padding: 14px 16px;
+        border-radius: 14px;
+        border: 1px solid var(--border-color);
+        box-shadow: var(--shadow);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .card-info h4 {
+        font-size: 0.95rem;
+        margin-bottom: 4px;
+        word-break: break-word;
+    }
+
+    .card-info p {
+        font-size: 0.82rem;
+        color: var(--text-sub);
+        word-break: break-word;
+    }
+
+    .card-date {
+        font-size: 0.72rem;
+        color: var(--primary);
+        margin-top: 4px;
+        direction: ltr;
+        display: inline-block;
+    }
+
+    .card-actions {
+        display: flex;
+        gap: 6px;
+        flex-shrink: 0;
+    }
+
+    /* ==========================================================================
+       ATTENDANCE TABLE
+       ========================================================================== */
+    .att-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: var(--card-bg);
+        border-radius: 14px;
+        overflow: hidden;
+        border: 1px solid var(--border-color);
+        box-shadow: var(--shadow);
+        font-size: 0.8rem;
+    }
+
+    .att-table th, .att-table td {
+        padding: 8px 4px;
+        text-align: center;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .att-table th {
+        background: rgba(99, 102, 241, 0.1);
+        color: var(--primary);
+    }
+
+    .score-input {
+        width: 42px;
+        padding: 4px;
+        text-align: center;
+        border-radius: 6px;
+        border: 1px solid var(--border-color);
+        background: var(--bg-color);
+        color: var(--text-main);
+        font-size: 0.8rem;
+    }
+
+    /* ==========================================================================
+       PAGES
+       ========================================================================== */
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* ==========================================================================
+       SCHEDULE
+       ========================================================================== */
+    .schedule-meta-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+
+    .schedule-table-wrapper {
+        margin: 10px 0;
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .schedule-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.75rem;
+        text-align: center;
+        table-layout: fixed;
+    }
+
+    .schedule-table th, .schedule-table td {
+        border: 1px solid var(--border-color);
+        padding: 4px 2px;
+    }
+
+    .schedule-table th {
+        background: rgba(99, 102, 241, 0.12);
+        color: var(--primary);
+        font-weight: bold;
+    }
+
+    .schedule-input {
+        width: 100%;
+        padding: 4px 2px;
+        border: 1px solid transparent;
+        background: transparent;
+        color: var(--text-main);
+        text-align: center;
+        font-size: 0.72rem;
+        border-radius: 4px;
+    }
+
+    .schedule-input:focus {
+        background: rgba(99, 102, 241, 0.1);
+        border-color: var(--primary);
+        outline: none;
+    }
+
+    /* ==========================================================================
+       CALCULATOR
+       ========================================================================== */
+    .calc-screen {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        color: var(--text-main);
+        font-size: 2.2rem;
+        padding: 18px;
+        text-align: right;
+        border-radius: 16px;
+        margin-bottom: 15px;
+        word-wrap: break-word;
+        min-height: 80px;
+        direction: ltr;
+        box-shadow: var(--shadow);
+    }
+
+    .calc-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 8px;
+    }
+
+    .calc-btn {
+        padding: 12px 0;
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        background: var(--card-bg);
+        color: var(--text-main);
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: var(--shadow);
+    }
+
+    .calc-btn.op {
+        background: rgba(99, 102, 241, 0.1);
+        color: var(--primary);
+        border-color: rgba(99, 102, 241, 0.2);
+    }
+
+    .calc-btn.equal {
+        background: var(--primary);
+        color: white;
+    }
+
+    .calc-btn.danger {
+        background: rgba(239, 68, 68, 0.1);
+        color: var(--danger);
+    }
+
+    .calc-history {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 14px;
+        padding: 12px;
+        margin-top: 10px;
+        max-height: 120px;
+        overflow-y: auto;
+        font-size: 0.85rem;
+        direction: ltr;
+    }
+
+    /* ==========================================================================
+       ABOUT
+       ========================================================================== */
+    .about-container {
+        background: var(--card-bg);
+        border-radius: 18px;
+        padding: 20px;
+        border: 1px solid var(--border-color);
+        box-shadow: var(--shadow);
+        line-height: 1.7;
+        font-size: 0.9rem;
+    }
+
+    .tag-line {
+        text-align: center;
+        color: var(--primary);
+        font-weight: bold;
+        margin: 15px 0;
+        letter-spacing: 1px;
+    }
+
+    .contact-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 12px;
+        border-radius: 12px;
+        text-decoration: none;
+        color: white;
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-top: 10px;
+        width: 100%;
+    }
+
+    .btn-whatsapp { background: #25D366; }
+    .btn-facebook { background: #1877F2; }
+
+    /* ==========================================================================
+       FORM ELEMENTS / MODALS
+       ========================================================================== */
+    input, select, textarea {
+        width: 100%;
+        padding: 12px;
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        background: var(--bg-color);
+        color: var(--text-main);
+        margin-bottom: 12px;
+        outline: none;
+        font-size: 0.9rem;
+        user-select: text;
+    }
+
+    .modal {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.5);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        padding: 16px;
+    }
+
+    .modal.active { display: flex; }
+
+    .modal-content {
+        background: var(--card-bg);
+        width: 100%;
+        max-width: 480px;
+        padding: 20px;
+        border-radius: 18px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        /* Responsive bug-fix only: prevents the tall Schedule modal from
+           being clipped on short screens. Does not affect visual style. */
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    /* ==========================================================================
+       BOTTOM NAVIGATION
+       ========================================================================== */
+    nav {
+        position: fixed;
+        bottom: 0; left: 0; right: 0;
+        max-width: 520px;
+        margin: 0 auto;
+        background: var(--card-bg);
+        border-top: 1px solid var(--border-color);
+        display: flex;
+        justify-content: space-around;
+        padding: 8px 0;
+        z-index: 100;
+    }
+
+    .nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        font-size: 0.72rem;
+        color: var(--text-sub);
+        cursor: pointer;
+        border: none;
+        background: transparent;
+        width: 20%;
+    }
+
+    .nav-item svg {
+        width: 22px;
+        height: 22px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        margin-bottom: 2px;
+    }
+
+    .nav-item.active { color: var(--primary); }
+    .nav-item.active svg { stroke: var(--primary); }
+
+    /* ==========================================================================
+       RESPONSIVE BUG-FIX for very small phones:
+       shrinks header padding/icon sizes only when the row would otherwise
+       overflow. Colours, layout and shapes stay identical.
+       ========================================================================== */
+    @media (max-width: 380px) {
+        header { padding: 10px; }
+        .header-left, .header-right { gap: 5px; }
+        .btn-icon { width: 30px; height: 30px; border-radius: 9px; }
+        .btn-icon svg { width: 16px; height: 16px; }
+        .live-clock { font-size: 0.68rem; padding: 3px 5px; }
+        .user-brand { font-size: 0.78rem; padding: 3px 6px; }
+        .lang-btn { padding: 4px 7px; font-size: 0.68rem; }
+    }
+    </style>
+</head>
+<body>
+
+    <!-- ======================================================================
+         HEADER
+         ====================================================================== -->
+    <header>
+        <div class="header-left">
+            <button class="btn-icon" onclick="switchPage('search')" title="Search">
+                <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            </button>
+            <button class="btn-icon" onclick="toggleTheme()" title="Theme">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+            </button>
+            <button class="btn-icon" onclick="openScheduleModal()" title="د پوهنتون مهالوېش">
+                <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01"/></svg>
+            </button>
+            <button class="lang-btn" onclick="toggleLanguage()" id="lang-btn">PS</button>
+        </div>
+
+        <div class="header-right">
+            <div class="live-clock" id="clock">00:00:00 AM</div>
+            <div class="user-brand" id="current-day-display">ورځ</div>
+        </div>
+    </header>
+
+    <!-- ======================================================================
+         PAGE 1: HOME
+         ====================================================================== -->
+    <div id="page-home" class="page active">
+        <div class="welcome-card">
+            <h2 id="txt-welcome-title">ښه راغلاست 👋</h2>
+            <p id="txt-welcome-desc">خپل د پوهنتون درسونه، خلاصې او مهم معلومات په منظم ډول ولیکئ، وساتئ او هر وخت یې پیدا کړئ.</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card" onclick="switchPage('notes')">
+                <div class="stat-icon">
+                    <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                </div>
+                <div class="stat-number" id="stat-total-notes">0</div>
+                <div class="stat-label" id="txt-stat-notes">ټول نوټونه</div>
+            </div>
+            <div class="stat-card" onclick="switchPage('subjects')">
+                <div class="stat-icon">
+                    <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+                </div>
+                <div class="stat-number" id="stat-total-subjects">0</div>
+                <div class="stat-label" id="txt-stat-subs">مضمونونه</div>
+            </div>
+            <div class="stat-card" onclick="switchPage('notes')">
+                <div class="stat-icon">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                </div>
+                <div class="stat-number" id="stat-recent-notes">0</div>
+                <div class="stat-label" id="txt-stat-recent">وروستي نوټونه</div>
+            </div>
+            <div class="stat-card" onclick="switchPage('trash')">
+                <div class="stat-icon">
+                    <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                </div>
+                <div class="stat-number" id="stat-trash-notes">0</div>
+                <div class="stat-label" id="txt-stat-trash">په ترش کې</div>
+            </div>
+        </div>
+
+        <div class="section-header">
+            <div class="section-title" id="txt-title-subjects">مضمونونه</div>
+            <button class="add-btn" onclick="openSubjectModal()">+</button>
+        </div>
+        <div style="padding: 0 16px; font-size: 0.8rem; color: var(--text-sub); margin-bottom: 8px;" id="txt-sub-desc">هر مضمون خپل جلا نوټونه لري.</div>
+        <div class="list-container" id="home-subjects-list"></div>
+
+        <div class="section-header" style="margin-top: 20px;">
+            <div class="section-title" id="txt-title-recent">وروستي نوټونه</div>
+        </div>
+        <div class="list-container" id="home-recent-notes-list"></div>
+    </div>
+
+    <!-- ======================================================================
+         PAGE 2: SUBJECTS
+         ====================================================================== -->
+    <div id="page-subjects" class="page">
+        <div class="section-header" style="margin-top: 15px;">
+            <div class="section-title" id="txt-all-subjects">ټول مضمونونه</div>
+            <button class="add-btn" onclick="openSubjectModal()">+</button>
+        </div>
+        <div class="list-container" id="subjects-list"></div>
+    </div>
+
+    <!-- ======================================================================
+         PAGE 3: ATTENDANCE & GRADES
+         ====================================================================== -->
+    <div id="page-attendance" class="page" style="padding: 0 16px;">
+        <div class="section-header" style="margin: 15px 0 10px 0; padding: 0;">
+            <div class="section-title" id="txt-gpa-title">د نمرو فیصدي (GPA) او حاضري</div>
+        </div>
+
+        <div class="overall-grade-card">
+            <div class="overall-grade-info">
+                <h3 id="txt-gpa-label">د سمسټر عمومي فیصدي:</h3>
+                <p id="total-credits-info">مجموعي کرېډیټونه: ۰</p>
+            </div>
+            <div class="overall-badge" id="overall-percentage-badge">0%</div>
+        </div>
+
+        <p style="font-size:0.78rem; color: var(--text-sub); margin-bottom: 12px;" id="txt-gpa-desc">نمرې له ۱۰۰ او کرېډیټ وليکئ؛ عمومي فیصدي په اتومات ډول حسابېږي:</p>
+        <div id="attendance-list-container"></div>
+    </div>
+
+    <!-- ======================================================================
+         PAGE 4: NOTES
+         ====================================================================== -->
+    <div id="page-notes" class="page">
+        <div class="section-header" style="margin-top: 15px;">
+            <div class="section-title" id="notes-page-subtitle">ټول نوټونه</div>
+            <div style="display: flex; gap: 6px;">
+                <button class="btn-pdf" id="pdf-export-btn" style="display:none;" onclick="exportSubjectToPDF()">📥 دانلود PDF</button>
+                <button class="add-btn" onclick="openNoteModal()">+</button>
+            </div>
+        </div>
+        <div class="list-container" id="notes-list"></div>
+    </div>
+
+    <!-- ======================================================================
+         PAGE 5: SEARCH
+         ====================================================================== -->
+    <div id="page-search" class="page" style="padding: 15px 16px;">
+        <input type="text" id="search-input" placeholder="د نوټ یا مضمون نوم په سرچ کې داخل کړئ..." oninput="handleSearch()">
+        <div class="list-container" id="search-results" style="padding: 0;"></div>
+    </div>
+
+    <!-- ======================================================================
+         PAGE 6: CALCULATOR
+         ====================================================================== -->
+    <div id="page-calc" class="page" style="padding: 16px;">
+        <div class="section-title" style="margin-bottom: 12px;" id="txt-calc-title">پرمختللی ماشین حساب</div>
+        <div class="calc-screen" id="calc-display">0</div>
+        <div class="calc-grid">
+            <button class="calc-btn danger" onclick="calcClear()">AC</button>
+            <button class="calc-btn danger" onclick="calcDel()">DEL</button>
+            <button class="calc-btn op" onclick="calcOp('(')">(</button>
+            <button class="calc-btn op" onclick="calcOp(')')">)</button>
+            <button class="calc-btn op" onclick="calcOp('/')">÷</button>
+
+            <button class="calc-btn op" onclick="calcOp('sin(')">sin</button>
+            <button class="calc-btn op" onclick="calcOp('cos(')">cos</button>
+            <button class="calc-btn op" onclick="calcOp('tan(')">tan</button>
+            <button class="calc-btn op" onclick="calcOp('log(')">log</button>
+            <button class="calc-btn op" onclick="calcOp('*')">×</button>
+
+            <button class="calc-btn op" onclick="calcOp('sqrt(')">√</button>
+            <button class="calc-btn" onclick="calcNum('7')">7</button>
+            <button class="calc-btn" onclick="calcNum('8')">8</button>
+            <button class="calc-btn" onclick="calcNum('9')">9</button>
+            <button class="calc-btn op" onclick="calcOp('-')">-</button>
+
+            <button class="calc-btn op" onclick="calcOp('**2')">x²</button>
+            <button class="calc-btn" onclick="calcNum('4')">4</button>
+            <button class="calc-btn" onclick="calcNum('5')">5</button>
+            <button class="calc-btn" onclick="calcNum('6')">6</button>
+            <button class="calc-btn op" onclick="calcOp('+')">+</button>
+
+            <button class="calc-btn op" onclick="calcOp('%')">%</button>
+            <button class="calc-btn" onclick="calcNum('1')">1</button>
+            <button class="calc-btn" onclick="calcNum('2')">2</button>
+            <button class="calc-btn" onclick="calcNum('3')">3</button>
+            <button class="calc-btn equal" onclick="calcEqual()">=</button>
+
+            <button class="calc-btn op" onclick="calcOp('Math.PI')">π</button>
+            <button class="calc-btn op" onclick="calcOp('Math.E')">e</button>
+            <button class="calc-btn" onclick="calcNum('0')">0</button>
+            <button class="calc-btn" onclick="calcNum('.')">.</button>
+        </div>
+
+        <div style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-weight: bold; font-size: 0.9rem;" id="txt-calc-hist">د محاسبې تاریخچه</span>
+            <button onclick="clearCalcHistory()" style="background:transparent; border:none; color:var(--danger); font-size:0.8rem; cursor:pointer;" id="txt-calc-clear-btn">Clear</button>
+        </div>
+        <div class="calc-history" id="calc-history-list">
+            <div style="color:var(--text-sub); text-align:center;" id="txt-calc-empty">تر اوسه محاسبه نشته</div>
+        </div>
+    </div>
+
+    <!-- ======================================================================
+         PAGE 7: TRASH
+         ====================================================================== -->
+    <div id="page-trash" class="page">
+        <div class="section-header" style="margin-top: 15px;">
+            <div class="section-title" id="txt-trash-title">سطل کثافات (Trash)</div>
+            <button class="btn-icon" style="color:var(--danger);" onclick="emptyTrash()" title="کامل پاکول">
+                <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+            </button>
+        </div>
+        <div class="list-container" id="trash-list"></div>
+    </div>
+
+    <!-- ======================================================================
+         PAGE 8: ABOUT
+         ====================================================================== -->
+    <div id="page-about" class="page" style="padding: 16px;">
+        <div class="about-container">
+            <div class="about-text" id="about-text-content"></div>
+
+            <div class="tag-line">Learn • Build • Improve</div>
+
+            <a href="https://wa.me/93704287401" target="_blank" rel="noopener noreferrer" class="contact-btn btn-whatsapp" id="txt-contact-wa">
+                ارتباط په واټساپ کې (0704287401)
+            </a>
+            <a href="https://www.facebook.com/share/19suowiLHi/" target="_blank" rel="noopener noreferrer" class="contact-btn btn-facebook" id="txt-contact-fb">
+                د فېسبوک پروفایل
+            </a>
+        </div>
+    </div>
+
+    <!-- ======================================================================
+         MODAL: ADD SUBJECT
+         ====================================================================== -->
+    <div class="modal" id="subject-modal">
+        <div class="modal-content">
+            <h3 style="margin-bottom: 12px;" id="txt-modal-sub-title">نوی مضمون زیات کړئ</h3>
+            <input type="text" id="subject-title-input" placeholder="د مضمون نوم وليکئ">
+            <input type="number" id="subject-credit-input" placeholder="د مضمون کرېډیټ (مثلاً: 3 یا 2)" min="1" max="10">
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button onclick="closeModals()" style="background:transparent; border:none; color:var(--text-sub); cursor:pointer;" id="txt-cancel-1">بندول</button>
+                <button onclick="saveSubject()" style="background:var(--primary); color:white; border:none; padding:8px 16px; border-radius:8px; cursor:pointer;" id="txt-save-1">خوندي کول</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================================================================
+         MODAL: ADD / EDIT NOTE
+         ====================================================================== -->
+    <div class="modal" id="note-modal">
+        <div class="modal-content">
+            <h3 id="note-modal-title" style="margin-bottom: 12px;">نوی نوټ زیات کړئ</h3>
+            <input type="hidden" id="edit-note-id" value="">
+            <input type="text" id="note-title-input" placeholder="عنوان داخل کړئ">
+            <select id="note-subject-select"></select>
+            <textarea id="note-content-input" rows="5" placeholder="د خلاصې او پښتو درس توضیحات دلته داخل کړئ..."></textarea>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button onclick="closeModals()" style="background:transparent; border:none; color:var(--text-sub); cursor:pointer;" id="txt-cancel-2">بندول</button>
+                <button onclick="saveNote()" style="background:var(--primary); color:white; border:none; padding:8px 16px; border-radius:8px; cursor:pointer;" id="txt-save-2">خوندي کول</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================================================================
+         MODAL: SCHEDULE
+         ====================================================================== -->
+    <div class="modal" id="schedule-modal">
+        <div class="modal-content">
+            <h3 style="margin-bottom: 6px;" id="txt-sched-title">د پوهنتون تقسیم اوقات (مهالوېش)</h3>
+            <p style="font-size: 0.78rem; color: var(--text-sub); margin-bottom: 10px;" id="txt-sched-desc">د پوهنځي او سمسټر په ټاکلو سره مهالوېش تنظیم کړئ:</p>
+
+            <div class="schedule-meta-grid">
+                <input type="text" id="sched-faculty" placeholder="پوهنځی (مثلاً: کمپیوټر ساینس)">
+                <input type="text" id="sched-semester" placeholder="سمسټر (مثلاً: څلورم)">
+            </div>
+
+            <div class="schedule-table-wrapper">
+                <table class="schedule-table">
+                    <thead>
+                        <tr>
+                            <th id="txt-th-day">ورځ</th>
+                            <th id="txt-th-s1">ساعت ۱</th>
+                            <th id="txt-th-s2">ساعت ۲</th>
+                            <th id="txt-th-s3">ساعت ۳</th>
+                            <th id="txt-th-s4">ساعت ۴</th>
+                        </tr>
+                    </thead>
+                    <tbody id="schedule-tbody"></tbody>
+                </table>
+            </div>
+
+            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 10px;">
+                <button onclick="closeModals()" style="background:transparent; border:none; color:var(--text-sub); cursor:pointer;" id="txt-cancel-3">بندول</button>
+                <button onclick="saveSchedule()" style="background:var(--primary); color:white; border:none; padding:8px 16px; border-radius:8px; cursor:pointer;" id="txt-save-3">ذخیره کول</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================================================================
+         BOTTOM NAVIGATION
+         ====================================================================== -->
+    <nav>
+        <button class="nav-item active" onclick="switchPage('home')">
+            <svg viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+            <span id="txt-nav-home">کور</span>
+        </button>
+        <button class="nav-item" onclick="switchPage('subjects')">
+            <svg viewBox="0 0 24 24"><path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+            <span id="txt-nav-subs">مضمونونه</span>
+        </button>
+        <button class="nav-item" onclick="switchPage('attendance')">
+            <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+            <span id="txt-nav-att">حاضري</span>
+        </button>
+        <button class="nav-item" onclick="switchPage('calc')">
+            <svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="16" y1="14" x2="16" y2="18"/><path d="M16 10h.01M12 10h.01M8 10h.01M12 14h.01M8 14h.01M12 18h.01M8 18h.01"/></svg>
+            <span id="txt-nav-calc">حساب</span>
+        </button>
+        <button class="nav-item" onclick="switchPage('about')">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            <span id="txt-nav-about">About</span>
+        </button>
+    </nav>
+
+<script>
+/* ============================================================================
+   UNIVERSITY NOTES — APPLICATION SCRIPT
+   ----------------------------------------------------------------------------
+   Sections:
+     1.  Utilities (escaping, ids, safe storage)
+     2.  Translations & language
+     3.  Application state + data sanitising / loading
+     4.  Rendering
+     5.  Navigation & history (modal-aware)
+     6.  Modals
+     7.  Subjects (CRUD + confirmation)
+     8.  Notes (CRUD)
+     9.  Trash (confirmation on destructive actions)
+     10. Search
+     11. Attendance & grades
+     12. Schedule
+     13. Calculator (safe recursive-descent parser — no Function/eval)
+     14. PDF export
+     15. Theme (persisted), clock, bootstrap
+   ============================================================================ */
+
+
+/* ============================================================================
+   1. UTILITIES
+   ============================================================================ */
+
+/**
+ * Escapes a value so it can be safely placed inside HTML markup.
+ * Prevents stored XSS from user-entered note titles / content / subject names.
+ */
+function escapeHtml(value) {
+    return String(value == null ? '' : value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+/** Monotonic unique id generator (avoids Date.now() collisions in one ms). */
+let idCounter = 0;
+function generateId() {
+    idCounter += 1;
+    return Date.now() * 1000 + (idCounter % 1000);
+}
+
+/**
+ * Reads a localStorage key and parses it as JSON.
+ * Never throws — returns the fallback when the data is missing or corrupted.
+ */
+function loadJSON(key, fallback) {
+    try {
+        const raw = localStorage.getItem(key);
+        if (raw === null || raw === undefined || raw === '') return fallback;
+        const parsed = JSON.parse(raw);
+        return parsed === null || parsed === undefined ? fallback : parsed;
+    } catch (err) {
+        console.warn('Corrupted localStorage entry for "' + key + '", using fallback.');
+        return fallback;
+    }
+}
+
+/** Writes a value to localStorage, ignoring quota / privacy-mode errors. */
+function saveJSON(key, value) {
+    try {
+        localStorage.setItem(key, JSON.stringify(value));
+        return true;
+    } catch (err) {
+        console.warn('Unable to persist "' + key + '".', err);
+        return false;
+    }
+}
+
+/** Shortens long text for card previews and adds an ellipsis only if needed. */
+function previewText(text, maxLength) {
+    const str = String(text == null ? '' : text);
+    return str.length > maxLength ? str.substring(0, maxLength) + '...' : str;
+}
+
+
+/* ============================================================================
+   2. TRANSLATIONS & LANGUAGE
+   ============================================================================ */
+
+let currentLang = 'ps';
+try {
+    const storedLang = localStorage.getItem('un_lang_v5');
+    if (storedLang === 'ps' || storedLang === 'dr' || storedLang === 'en') currentLang = storedLang;
+} catch (err) { /* storage unavailable → keep default */ }
+
+const daysOfWeek = {
+    ps: ["یک‌شنبه", "دو‌شنبه", "سې‌شنبه", "چهارشنبه", "پنج‌شنبه", "جمعه", "شنبه"],
+    dr: ["یکشنبه", "دوشنبه", "سه‌شنبه", "چهارشنبه", "پنجشنبه", "جمعه", "شنبه"],
+    en: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+};
+
+/* Days used by the schedule grid (Saturday → Thursday). */
+const defaultDays = {
+    ps: ["شنبه", "یک‌شنبه", "دو‌شنبه", "سې‌شنبه", "چهارشنبه", "پنج‌شنبه"],
+    dr: ["شنبه", "یک‌شنبه", "دوشنبه", "سه‌شنبه", "چهارشنبه", "پنج‌شنبه"],
+    en: ["Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"]
+};
+
+const translations = {
+    ps: {
+        btnLabel: "PS",
+        welcomeTitle: "ښه راغلاست ",
+        welcomeDesc: "خپل د پوهنتون درسونه، خلاصې او مهم معلومات په منظم ډول ولیکئ، وساتئ او هر وخت یې پیدا کړئ.",
+        statNotes: "ټول نوټونه",
+        statSubs: "مضمونونه",
+        statRecent: "وروستي نوټونه",
+        statTrash: "په ترش کې",
+        titleSubs: "مضمونونه",
+        subDesc: "هر مضمون خپل جلا نوټونه لري.",
+        titleRecent: "وروستي نوټونه",
+        allSubs: "ټول مضمونونه",
+        gpaTitle: "د نمرو فیصدي (GPA) او حاضري",
+        gpaLabel: "د سمسټر عمومي فیصدي:",
+        gpaDesc: "نمرې له ۱۰۰ او کرېډیټ وليکئ؛ عمومي فیصدي په اتومات ډول حسابېږي:",
+        allNotes: "ټول نوټونه",
+        searchPlaceholder: "د نوټ یا مضمون نوم په سرچ کې داخل کړئ...",
+        calcTitle: "پرمختللی ماشین حساب",
+        calcHist: "د محاسبې تاریخچه",
+        calcClear: "پاکول",
+        calcEmpty: "تر اوسه محاسبه نشته",
+        trashTitle: "سطل کثافات (Trash)",
+        navHome: "کور",
+        navSubs: "مضمونونه",
+        navAtt: "حاضري",
+        navCalc: "حساب",
+        navAbout: "د موږ په اړه",
+        modSubTitle: "نوی مضمون زیات کړئ",
+        modSubInput: "د مضمون نوم وليکئ",
+        modCreditInput: "د مضمون کرېډیټ (مثلاً: 3 یا 2)",
+        modNoteTitle: "نوی نوټ زیات کړئ",
+        modNoteEditTitle: "نوټ ویرایش کړئ",
+        modTitleInput: "عنوان داخل کړئ",
+        modContentInput: "د خلاصې او پښتو درس توضیحات دلته داخل کړئ...",
+        cancel: "بندول",
+        save: "خوندي کول",
+        schedTitle: "د پوهنتون تقسیم اوقات (مهالوېش)",
+        schedDesc: "د پوهنځي او سمسټر په ټاکلو سره مهالوېش تنظیم کړئ:",
+        schedFacultyPlaceholder: "پوهنځی (مثلاً: کمپیوټر ساینس)",
+        schedSemesterPlaceholder: "سمسټر (مثلاً: څلورم)",
+        thDay: "ورځ",
+        thS1: "ساعت ۱",
+        thS2: "ساعت ۲",
+        thS3: "ساعت ۳",
+        thS4: "ساعت ۴",
+        contactWa: "ارتباط په واټساپ کې (0704287401)",
+        contactFb: "د فېسبوک پروفایل",
+        /* Messages */
+        msgSubjectRequired: "مهرباني وکړئ د مضمون نوم ولیکئ.",
+        msgNoteRequired: "مهرباني وکړئ عنوان او منځپانګه دواړه ولیکئ.",
+        msgNoSubject: "مهرباني وکړئ لومړی لږ تر لږه یو مضمون جوړ کړئ!",
+        msgNoNotesForPdf: "په دې مضمون کې تر اوسه هیڅ نوټ نشته!",
+        confirmDeleteSubject: "دا مضمون او ټول نوټونه یې د تل لپاره پاک شي؟",
+        confirmDeleteNote: "دا نوټ د تل لپاره پاک شي؟",
+        confirmEmptyTrash: "ټول نوټونه په سطل کثافاتو کې د تل لپاره پاک شي؟",
+        aboutText: `<p>زه <b>Wakil Ahmad Noori</b> يم، په بست پوهنتون کی د BCS يعنی د کمپیوټر ساینس پوهنځی زده‌کوونکی يم او د پروګرام جوړونې، ویب ډیزاین او نوي تکنالوژۍ له زده‌کړې سره ځانګړې علاقه لرم.</p><p>ما دا اپلیکیشن د دې لپاره جوړ کړی چې د پوهنتون درسونه، مهم تعریفونه، خلاصې او یادښتونه په منظم ډول ولیکئ او هر وخت یې په اسانۍ پیدا کړئ.</p><p>د دې اپلیکیشن یوه مهمه موخه د نوټونو لپاره ښه او اسانه چاپیریال برابرول دي، ځکه زده‌کوونکي باید وکولای شي خپل درسونه په خپله خوښه، په پښتو، دري، انګلیسی یا ګډه ژبه ولیکي.</p><p>زما هدف دا دی چې د کمپیوټر ساینس په برخه کې خپل مهارتونه ورځ تر بلې پیاوړي کړم او داسې ګټورې پروژې جوړې کړم چې په زده‌کړه او عملي ژوند کې ترې استفاده وشي.</p><p style="margin-top:16px;"><b>محرمیت:</b> دا اپلیکیشن ستاسو نوټونه، مضمونونه، حاضري، نمرې، مهالوېش او د ماشین حساب تاریخچه د همدې وسیلې په Local Storage کې ساتي. شخصي معلومات په قصدي ډول کوم آنلاین سرور ته نه لېږل کېږي. د اپلیکیشن پاکول یا د براوزر/اپلیکیشن معلومات پاکول ممکن ستاسو ځايي معلومات له منځه یوسي.</p>`
+    },
+    dr: {
+        btnLabel: "DR",
+        welcomeTitle: "خوش آمدید ",
+        welcomeDesc: "درس‌ها، خلاصه‌ها و معلومات مهم پوهنتون خود را به شکل منظم بنویسید، نگهداری کنید و هر زمان پیدا نمایید.",
+        statNotes: "تمام یادداشت‌ها",
+        statSubs: "مضمون‌ها",
+        statRecent: "یادداشت‌های اخیر",
+        statTrash: "در زباله‌دانی",
+        titleSubs: "مضمون‌ها",
+        subDesc: "هر مضمون یادداشت‌های جداگانه خود را دارد.",
+        titleRecent: "یادداشت‌های اخیر",
+        allSubs: "همه مضمون‌ها",
+        gpaTitle: "فیصدی نمرات (GPA) و حاضری",
+        gpaLabel: "فیصدی عمومی سمستر:",
+        gpaDesc: "نمرات را از ۱۰۰ و کریدیت بنویسید؛ فیصدی عمومی به طور خودکار محاسبه می‌شود:",
+        allNotes: "همه یادداشت‌ها",
+        searchPlaceholder: "نام یادداشت یا مضمون را جستجو کنید...",
+        calcTitle: "ماشین حساب پیشرفته",
+        calcHist: "تاریخچه محاسبات",
+        calcClear: "پاک کردن",
+        calcEmpty: "تا هنوز محاسبه‌ای انجام نشده",
+        trashTitle: "سطل زباله (Trash)",
+        navHome: "خانه",
+        navSubs: "مضمون‌ها",
+        navAtt: "حاضری",
+        navCalc: "حساب",
+        navAbout: "درباره ما",
+        modSubTitle: "افزودن مضمون جدید",
+        modSubInput: "نام مضمون را بنویسید",
+        modCreditInput: "کریدیت مضمون (مثلاً: 3 یا 2)",
+        modNoteTitle: "افزودن یادداشت جدید",
+        modNoteEditTitle: "ویرایش یادداشت",
+        modTitleInput: "عنوان را وارد کنید",
+        modContentInput: "جزئیات درس و خلاصه را اینجا وارد کنید...",
+        cancel: "بستن",
+        save: "ذخیره کردن",
+        schedTitle: "تقسیم اوقات پوهنتون",
+        schedDesc: "با تعیین پوهنځی و سمستر تقسیم اوقات خود را تنظیم کنید:",
+        schedFacultyPlaceholder: "پوهنځی (مثلاً: کمپیوتر ساینس)",
+        schedSemesterPlaceholder: "سمستر (مثلاً: چهارم)",
+        thDay: "روز",
+        thS1: "ساعت ۱",
+        thS2: "ساعت ۲",
+        thS3: "ساعت ۳",
+        thS4: "ساعت ۴",
+        contactWa: "ارتباط در واتساپ (0704287401)",
+        contactFb: "پروفایل فیسبوک",
+        msgSubjectRequired: "لطفاً نام مضمون را بنویسید.",
+        msgNoteRequired: "لطفاً عنوان و محتوا را وارد کنید.",
+        msgNoSubject: "لطفاً ابتدا حداقل یک مضمون ایجاد کنید!",
+        msgNoNotesForPdf: "در این مضمون تا هنوز یادداشتی وجود ندارد!",
+        confirmDeleteSubject: "این مضمون و تمام یادداشت‌های آن برای همیشه حذف شوند؟",
+        confirmDeleteNote: "این یادداشت برای همیشه حذف شود؟",
+        confirmEmptyTrash: "تمام یادداشت‌های سطل زباله برای همیشه حذف شوند؟",
+        aboutText: `<p>من <b>Wakil Ahmad Noori</b> هستم، محصل پوهنځی کمپیوتر ساینس (BCS) در پوهنتون بست. علاقه خاصی به برنامه‌نویسی، دیزاین ویب و تکنالوژی‌های جدید دارم.</p><p>من این اپلیکیشن را ساختم تا محصلین بتوانند درس‌ها، خلاصه‌ها و یادداشت‌های پوهنتون خود را به شکل منظم ثبت نموده و به راحتی دسترسی داشته باشند.</p><p>هدف اصلی ارائه فضای منظم برای یادداشت‌ها به زبان‌های پشتو، دری و انگلیسی می‌باشد.</p><p style="margin-top:16px;"><b>حریم خصوصی:</b> این اپلیکیشن یادداشت‌ها، مضمون‌ها، حاضری، نمرات، تقسیم اوقات و تاریخچه ماشین حساب را در Local Storage همین دستگاه نگهداری می‌کند. معلومات شخصی به صورت عمدی به سرور آنلاین ارسال نمی‌شود. حذف برنامه یا پاک کردن معلومات مرورگر/اپلیکیشن ممکن است معلومات محلی شما را حذف کند.</p>`
+    },
+    en: {
+        btnLabel: "EN",
+        welcomeTitle: "Welcome ",
+        welcomeDesc: "Write, organize, and access your university notes, summaries, and key information anytime.",
+        statNotes: "Total Notes",
+        statSubs: "Subjects",
+        statRecent: "Recent Notes",
+        statTrash: "In Trash",
+        titleSubs: "Subjects",
+        subDesc: "Each subject has its own separate notes.",
+        titleRecent: "Recent Notes",
+        allSubs: "All Subjects",
+        gpaTitle: "Grade Percentage (GPA) & Attendance",
+        gpaLabel: "Semester Overall GPA:",
+        gpaDesc: "Enter scores (out of 100) and credits; overall percentage calculates automatically:",
+        allNotes: "All Notes",
+        searchPlaceholder: "Search by note or subject name...",
+        calcTitle: "Advanced Calculator",
+        calcHist: "Calculation History",
+        calcClear: "Clear",
+        calcEmpty: "No calculations yet",
+        trashTitle: "Trash",
+        navHome: "Home",
+        navSubs: "Subjects",
+        navAtt: "Attendance",
+        navCalc: "Calc",
+        navAbout: "About",
+        modSubTitle: "Add New Subject",
+        modSubInput: "Enter subject name",
+        modCreditInput: "Subject Credit (e.g. 3 or 2)",
+        modNoteTitle: "Add New Note",
+        modNoteEditTitle: "Edit Note",
+        modTitleInput: "Enter title",
+        modContentInput: "Enter details and summary here...",
+        cancel: "Cancel",
+        save: "Save",
+        schedTitle: "University Schedule",
+        schedDesc: "Set up your schedule with faculty and semester options:",
+        schedFacultyPlaceholder: "Faculty (e.g. Computer Science)",
+        schedSemesterPlaceholder: "Semester (e.g. 4th)",
+        thDay: "Day",
+        thS1: "Slot 1",
+        thS2: "Slot 2",
+        thS3: "Slot 3",
+        thS4: "Slot 4",
+        contactWa: "Contact via WhatsApp (0704287401)",
+        contactFb: "Facebook Profile",
+        msgSubjectRequired: "Please enter a subject name.",
+        msgNoteRequired: "Please enter both a title and content.",
+        msgNoSubject: "Please add at least one subject first!",
+        msgNoNotesForPdf: "No notes available for this subject!",
+        confirmDeleteSubject: "Delete this subject and all of its notes permanently?",
+        confirmDeleteNote: "Delete this note permanently?",
+        confirmEmptyTrash: "Permanently delete all notes in the trash?",
+        aboutText: `<p>I am <b>Wakil Ahmad Noori</b>, a Computer Science (BCS) student at Bost University. I am passionate about programming, web design, and technology.</p><p>I built this application to help university students write, save, and easily locate their lecture notes and summaries anytime.</p><p>A core objective of this app is to provide a clean and seamless interface for notes in Pashto, Dari, English, or mixed languages.</p><p style="margin-top:16px;"><b>Privacy:</b> This app stores your notes, subjects, attendance, grades, schedule, and calculator history in Local Storage on this device. Personal information is not intentionally sent to an online server. Uninstalling the app or clearing its browser/app data may remove your locally stored information.</p>`
+    }
+};
+
+/** Returns the translation table for the active language. */
+function t() {
+    return translations[currentLang] || translations.ps;
+}
+
+/** Rebuilds the whole UI in the currently selected language. */
+function applyLanguage() {
+    const lang = t();
+    const html = document.getElementById('html-root');
+
+    if (currentLang === 'en') {
+        html.setAttribute('dir', 'ltr');
+        html.setAttribute('lang', 'en');
+    } else {
+        html.setAttribute('dir', 'rtl');
+        html.setAttribute('lang', currentLang);
+    }
+
+    document.getElementById('lang-btn').innerText = lang.btnLabel;
+    document.getElementById('txt-welcome-title').innerText = lang.welcomeTitle;
+    document.getElementById('txt-welcome-desc').innerText = lang.welcomeDesc;
+    document.getElementById('txt-stat-notes').innerText = lang.statNotes;
+    document.getElementById('txt-stat-subs').innerText = lang.statSubs;
+    document.getElementById('txt-stat-recent').innerText = lang.statRecent;
+    document.getElementById('txt-stat-trash').innerText = lang.statTrash;
+    document.getElementById('txt-title-subjects').innerText = lang.titleSubs;
+    document.getElementById('txt-sub-desc').innerText = lang.subDesc;
+    document.getElementById('txt-title-recent').innerText = lang.titleRecent;
+    document.getElementById('txt-all-subjects').innerText = lang.allSubs;
+    document.getElementById('txt-gpa-title').innerText = lang.gpaTitle;
+    document.getElementById('txt-gpa-label').innerText = lang.gpaLabel;
+    document.getElementById('txt-gpa-desc').innerText = lang.gpaDesc;
+    document.getElementById('search-input').placeholder = lang.searchPlaceholder;
+    document.getElementById('txt-calc-title').innerText = lang.calcTitle;
+    document.getElementById('txt-calc-hist').innerText = lang.calcHist;
+    document.getElementById('txt-calc-clear-btn').innerText = lang.calcClear;
+    document.getElementById('txt-trash-title').innerText = lang.trashTitle;
+
+    document.getElementById('txt-nav-home').innerText = lang.navHome;
+    document.getElementById('txt-nav-subs').innerText = lang.navSubs;
+    document.getElementById('txt-nav-att').innerText = lang.navAtt;
+    document.getElementById('txt-nav-calc').innerText = lang.navCalc;
+    document.getElementById('txt-nav-about').innerText = lang.navAbout;
+
+    document.getElementById('txt-modal-sub-title').innerText = lang.modSubTitle;
+    document.getElementById('subject-title-input').placeholder = lang.modSubInput;
+    document.getElementById('subject-credit-input').placeholder = lang.modCreditInput;
+
+    document.getElementById('note-title-input').placeholder = lang.modTitleInput;
+    document.getElementById('note-content-input').placeholder = lang.modContentInput;
+
+    document.getElementById('txt-cancel-1').innerText = lang.cancel;
+    document.getElementById('txt-save-1').innerText = lang.save;
+    document.getElementById('txt-cancel-2').innerText = lang.cancel;
+    document.getElementById('txt-save-2').innerText = lang.save;
+    document.getElementById('txt-cancel-3').innerText = lang.cancel;
+    document.getElementById('txt-save-3').innerText = lang.save;
+
+    document.getElementById('txt-sched-title').innerText = lang.schedTitle;
+    document.getElementById('txt-sched-desc').innerText = lang.schedDesc;
+    document.getElementById('sched-faculty').placeholder = lang.schedFacultyPlaceholder;
+    document.getElementById('sched-semester').placeholder = lang.schedSemesterPlaceholder;
+    document.getElementById('txt-th-day').innerText = lang.thDay;
+    document.getElementById('txt-th-s1').innerText = lang.thS1;
+    document.getElementById('txt-th-s2').innerText = lang.thS2;
+    document.getElementById('txt-th-s3').innerText = lang.thS3;
+    document.getElementById('txt-th-s4').innerText = lang.thS4;
+
+    document.getElementById('txt-contact-wa').innerText = lang.contactWa;
+    document.getElementById('txt-contact-fb').innerText = lang.contactFb;
+    document.getElementById('about-text-content').innerHTML = lang.aboutText;
+
+    /* The Notes-page subtitle follows the current filter/language. */
+    const sub = selectedSubjectFilter ? subjects.find(function (s) { return s.id === selectedSubjectFilter; }) : null;
+    document.getElementById('notes-page-subtitle').innerText = sub ? sub.title : lang.allNotes;
+
+    updateCurrentDay();
+    renderAll();
+}
+
+/** Cycles PS → DR → EN → PS. */
+function toggleLanguage() {
+    if (currentLang === 'ps') currentLang = 'dr';
+    else if (currentLang === 'dr') currentLang = 'en';
+    else currentLang = 'ps';
+
+    try { localStorage.setItem('un_lang_v5', currentLang); } catch (err) { /* ignore */ }
+    applyLanguage();
+}
+
+
+/* ============================================================================
+   3. APPLICATION STATE + DATA LOADING
+   ============================================================================ */
+
+const STORAGE_KEYS = {
+    subjects: 'un_subjects_v5',
+    notes: 'un_notes_v5',
+    calc: 'un_calc_history_v5',
+    schedule: 'un_schedule_v5',
+    theme: 'un_theme_v5'
+};
+
+/** Validates / repairs the subjects array loaded from storage. */
+function sanitizeSubjects(raw) {
+    if (!Array.isArray(raw)) return [];
+    const seen = new Set();
+    const out = [];
+    raw.forEach(function (s) {
+        if (!s || typeof s !== 'object') return;
+        let id = Number(s.id);
+        if (!isFinite(id) || seen.has(id)) id = generateId();
+        seen.add(id);
+        out.push({
+            id: id,
+            title: String(s.title == null ? '' : s.title),
+            credit: Math.max(1, Math.min(10, parseInt(s.credit, 10) || 1)),
+            score: Math.max(0, Math.min(100, parseFloat(s.score) || 0)),
+            present: Math.max(0, parseInt(s.present, 10) || 0),
+            absent: Math.max(0, parseInt(s.absent, 10) || 0)
+        });
+    });
+    return out;
+}
+
+/** Validates / repairs the notes array loaded from storage. */
+function sanitizeNotes(raw) {
+    if (!Array.isArray(raw)) return [];
+    const seen = new Set();
+    const out = [];
+    raw.forEach(function (n) {
+        if (!n || typeof n !== 'object') return;
+        let id = Number(n.id);
+        if (!isFinite(id) || seen.has(id)) id = generateId();
+        seen.add(id);
+        out.push({
+            id: id,
+            subjectId: Number(n.subjectId),
+            title: String(n.title == null ? '' : n.title),
+            content: String(n.content == null ? '' : n.content),
+            isTrash: !!n.isTrash,
+            date: String(n.date == null ? '' : n.date)
+        });
+    });
+    return out;
+}
+
+/** Validates the schedule object loaded from storage. */
+function sanitizeSchedule(raw) {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {};
+    const out = {};
+    Object.keys(raw).forEach(function (k) {
+        const v = raw[k];
+        if (typeof v === 'string' || typeof v === 'number') out[k] = String(v);
+    });
+    return out;
+}
+
+/** Validates the calculator history loaded from storage. */
+function sanitizeCalcHistory(raw) {
+    if (!Array.isArray(raw)) return [];
+    return raw.filter(function (h) { return typeof h === 'string'; }).slice(-10);
+}
+
+let subjects = sanitizeSubjects(loadJSON(STORAGE_KEYS.subjects, []));
+let notes = sanitizeNotes(loadJSON(STORAGE_KEYS.notes, []));
+let calcHistory = sanitizeCalcHistory(loadJSON(STORAGE_KEYS.calc, []));
+let scheduleData = sanitizeSchedule(loadJSON(STORAGE_KEYS.schedule, {}));
+
+/** Persists all application data and refreshes the UI. */
+function saveData() {
+    saveJSON(STORAGE_KEYS.subjects, subjects);
+    saveJSON(STORAGE_KEYS.notes, notes);
+    saveJSON(STORAGE_KEYS.calc, calcHistory);
+    saveJSON(STORAGE_KEYS.schedule, scheduleData);
+    renderAll();
+}
+
+
+/* ============================================================================
+   4. RENDERING
+   ============================================================================ */
+
+let selectedSubjectFilter = null;
+
+/** Renders every dynamic part of the application. */
+function renderAll() {
+    const activeNotes = notes.filter(function (n) { return !n.isTrash; });
+    const trashNotes = notes.filter(function (n) { return n.isTrash; });
+
+    /* Drop a stale subject filter (e.g. the subject was deleted). */
+    if (selectedSubjectFilter && !subjects.some(function (s) { return s.id === selectedSubjectFilter; })) {
+        selectedSubjectFilter = null;
+        document.getElementById('pdf-export-btn').style.display = 'none';
+        document.getElementById('notes-page-subtitle').innerText = t().allNotes;
+    }
+
+    /* --- Home statistics ------------------------------------------------- */
+    document.getElementById('stat-total-notes').innerText = activeNotes.length;
+    document.getElementById('stat-total-subjects').innerText = subjects.length;
+    document.getElementById('stat-recent-notes').innerText = Math.min(3, activeNotes.length);
+    document.getElementById('stat-trash-notes').innerText = trashNotes.length;
+
+    renderSubjectLists(activeNotes);
+    renderRecentNotes(activeNotes);
+    renderAttendance();
+    renderNotesPage(activeNotes);
+    renderTrash(trashNotes);
+    renderCalcHistory();
+}
+
+/** Renders the subject cards on both the Home and Subjects pages. */
+function renderSubjectLists(activeNotes) {
+    const homeSubList = document.getElementById('home-subjects-list');
+    const subList = document.getElementById('subjects-list');
+    homeSubList.innerHTML = '';
+    subList.innerHTML = '';
+
+    if (subjects.length === 0) {
+        const title = currentLang === 'en' ? 'No subjects yet'
+            : (currentLang === 'dr' ? 'تا هنوز مضمونی نیست' : 'تر اوسه مضمون نشته');
+        const desc = currentLang === 'en' ? 'Create your first subject.'
+            : (currentLang === 'dr' ? 'اولین مضمون خود را بسازید.' : 'خپل لومړی مضمون جوړ کړئ.');
+
+        const emptyHTML = `
+            <div class="empty-box">
+                <svg viewBox="0 0 24 24"><path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                <h4>${escapeHtml(title)}</h4>
+                <p style="font-size:0.8rem; color:var(--text-sub);">${escapeHtml(desc)}</p>
+            </div>
+        `;
+        homeSubList.innerHTML = emptyHTML;
+        subList.innerHTML = emptyHTML;
+        return;
+    }
+
+    const creditLabel = currentLang === 'en' ? 'Credits' : 'کرېډیټ';
+    const notesLabel = currentLang === 'en' ? 'Notes' : 'نوټونه';
+    const scoreLabel = currentLang === 'en' ? 'Score' : 'نمره';
+
+    let html = '';
+    subjects.forEach(function (sub) {
+        const count = activeNotes.filter(function (n) { return n.subjectId === sub.id; }).length;
+        html += `
+            <div class="card-item" onclick="filterNotesBySubject(${sub.id})">
+                <div class="card-info">
+                    <h4>${escapeHtml(sub.title)} <span style="font-size:0.75rem; color:var(--primary);">(${sub.credit} ${creditLabel})</span></h4>
+                    <p>${count} ${notesLabel} | ${scoreLabel}: ${sub.score}</p>
+                </div>
+                <div class="card-actions">
+                    <button class="btn-icon" onclick="event.stopPropagation(); deleteSubject(${sub.id})" style="color:var(--danger)">
+                        <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+    homeSubList.innerHTML = html;
+    subList.innerHTML = html;
+}
+
+/** Renders the "Recent notes" block on the Home page. */
+function renderRecentNotes(activeNotes) {
+    const recentContainer = document.getElementById('home-recent-notes-list');
+    recentContainer.innerHTML = '';
+    const recentNotes = activeNotes.slice(-3).reverse();
+
+    if (recentNotes.length === 0) {
+        recentContainer.innerHTML = `<div style="color:var(--text-sub); font-size:0.85rem; text-align:center; padding:10px;">${
+            escapeHtml(currentLang === 'en' ? 'No recent notes.' : 'هیڅ نوی نوټ نشته.')
+        }</div>`;
+        return;
+    }
+
+    let html = '';
+    recentNotes.forEach(function (n) {
+        html += `
+            <div class="card-item">
+                <div class="card-info">
+                    <h4>${escapeHtml(n.title)}</h4>
+                    <p>${escapeHtml(previewText(n.content, 45))}</p>
+                    <span class="card-date">${escapeHtml(n.date)}</span>
+                </div>
+                <div class="card-actions">
+                    <button class="btn-icon" onclick="openNoteModal(${n.id})" style="color:var(--primary)" title="edit">
+                        <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+    recentContainer.innerHTML = html;
+}
+
+/** Renders the attendance / grade table and the overall percentage badge. */
+function renderAttendance() {
+    const attContainer = document.getElementById('attendance-list-container');
+    attContainer.innerHTML = '';
+
+    let totalWeightedScore = 0;
+    let totalCredits = 0;
+
+    if (subjects.length === 0) {
+        const title = currentLang === 'en' ? 'No subjects' : 'مضمونونه خالي دي';
+        const desc = currentLang === 'en' ? 'Add a subject first.' : 'لومړی مضمون اضافه کړئ.';
+        attContainer.innerHTML = `
+            <div class="empty-box">
+                <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+                <h4>${escapeHtml(title)}</h4>
+                <p style="font-size:0.8rem; color:var(--text-sub);">${escapeHtml(desc)}</p>
+            </div>
+        `;
+        document.getElementById('overall-percentage-badge').innerText = '0%';
+        document.getElementById('total-credits-info').innerText =
+            currentLang === 'en' ? 'Total Credits: 0' : 'مجموعي کرېډیټونه: ۰';
+        return;
+    }
+
+    const creditLabel = currentLang === 'en' ? 'Credits' : 'کرېډیټ';
+
+    let tableHtml = `
+        <table class="att-table">
+            <thead>
+                <tr>
+                    <th>${escapeHtml(currentLang === 'en' ? 'Subject (Credit)' : 'مضمون (کرېډیټ)')}</th>
+                    <th>${escapeHtml(currentLang === 'en' ? 'Score (100)' : 'نمره (100)')}</th>
+                    <th>${escapeHtml(currentLang === 'en' ? 'Present' : 'حاضر')}</th>
+                    <th>${escapeHtml(currentLang === 'en' ? 'Absent' : 'غیرحاضر')}</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+
+    subjects.forEach(function (sub) {
+        totalWeightedScore += sub.score * sub.credit;
+        totalCredits += sub.credit;
+
+        tableHtml += `
+            <tr>
+                <td style="font-weight:bold; text-align:right; padding-right:8px;">
+                    ${escapeHtml(sub.title)}<br>
+                    <span style="font-size:0.7rem; color:var(--text-sub); font-weight:normal;">${sub.credit} ${creditLabel}</span>
+                </td>
+                <td>
+                    <input type="number" class="score-input" value="${sub.score}" min="0" max="100"
+                           onchange="updateSubjectScore(${sub.id}, this.value)">
+                </td>
+                <td>
+                    <button onclick="updateAttendance(${sub.id}, 'present', 1)" style="border:none; background:none; color:var(--success); font-weight:bold; cursor:pointer; font-size:0.9rem;">+</button>
+                    ${sub.present}
+                    <button onclick="updateAttendance(${sub.id}, 'present', -1)" style="border:none; background:none; color:var(--text-sub); cursor:pointer;">-</button>
+                </td>
+                <td>
+                    <button onclick="updateAttendance(${sub.id}, 'absent', 1)" style="border:none; background:none; color:var(--danger); font-weight:bold; cursor:pointer; font-size:0.9rem;">+</button>
+                    ${sub.absent}
+                    <button onclick="updateAttendance(${sub.id}, 'absent', -1)" style="border:none; background:none; color:var(--text-sub); cursor:pointer;">-</button>
+                </td>
+            </tr>
+        `;
+    });
+
+    tableHtml += '</tbody></table>';
+    attContainer.innerHTML = tableHtml;
+
+    const finalPercentage = totalCredits > 0 ? (totalWeightedScore / totalCredits).toFixed(2) : '0.00';
+    document.getElementById('overall-percentage-badge').innerText = finalPercentage + '%';
+    document.getElementById('total-credits-info').innerText =
+        (currentLang === 'en' ? 'Total Credits' : 'مجموعي کرېډیټونه') + ': ' + totalCredits;
+}
+
+/** Renders the full notes list (optionally filtered by subject). */
+function renderNotesPage(activeNotes) {
+    const notesList = document.getElementById('notes-list');
+    notesList.innerHTML = '';
+
+    let filteredNotes = activeNotes;
+    if (selectedSubjectFilter) {
+        filteredNotes = activeNotes.filter(function (n) { return n.subjectId === selectedSubjectFilter; });
+    }
+
+    if (filteredNotes.length === 0) {
+        const title = currentLang === 'en' ? 'No notes found' : 'هیڅ نوټ نشته';
+        const desc = currentLang === 'en' ? 'Click + to add a note.' : 'د زیاتولو لپاره پر + تڼۍ کلېک وکړئ.';
+        notesList.innerHTML = `
+            <div class="empty-box">
+                <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                <h4>${escapeHtml(title)}</h4>
+                <p style="font-size:0.8rem; color:var(--text-sub);">${escapeHtml(desc)}</p>
+            </div>
+        `;
+        return;
+    }
+
+    const subjectLabel = currentLang === 'en' ? 'Subject' : 'مضمون';
+    let html = '';
+    filteredNotes.forEach(function (note) {
+        const sub = subjects.find(function (s) { return s.id === note.subjectId; });
+        html += `
+            <div class="card-item">
+                <div class="card-info">
+                    <h4>${escapeHtml(note.title)}</h4>
+                    <p style="color:var(--primary); font-size:0.78rem;">${escapeHtml(subjectLabel)}: ${escapeHtml(sub ? sub.title : 'General')}</p>
+                    <p style="margin-top:4px; color: var(--text-main);">${escapeHtml(note.content)}</p>
+                    <span class="card-date">${escapeHtml(note.date)}</span>
+                </div>
+                <div class="card-actions">
+                    <button class="btn-icon" onclick="openNoteModal(${note.id})" style="color:var(--primary)" title="edit">
+                        <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    </button>
+                    <button class="btn-icon" onclick="moveToTrash(${note.id})" style="color:var(--danger)" title="delete">
+                        <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+    notesList.innerHTML = html;
+}
+
+/** Renders the trash list. */
+function renderTrash(trashNotes) {
+    const trashList = document.getElementById('trash-list');
+    trashList.innerHTML = '';
+
+    if (trashNotes.length === 0) {
+        const title = currentLang === 'en' ? 'Trash is empty' : 'سطل کثافات خالي دی';
+        trashList.innerHTML = `<div class="empty-box"><h4>${escapeHtml(title)}</h4></div>`;
+        return;
+    }
+
+    let html = '';
+    trashNotes.forEach(function (note) {
+        html += `
+            <div class="card-item">
+                <div class="card-info">
+                    <h4>${escapeHtml(note.title)}</h4>
+                    <p>${escapeHtml(previewText(note.content, 30))}</p>
+                </div>
+                <div class="card-actions">
+                    <button class="btn-icon" onclick="restoreNote(${note.id})" style="color:var(--success)" title="restore">
+                        <svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+                    </button>
+                    <button class="btn-icon" onclick="permanentlyDeleteNote(${note.id})" style="color:var(--danger)" title="delete">
+                        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+    trashList.innerHTML = html;
+}
+
+/** Renders the calculator history panel. */
+function renderCalcHistory() {
+    const histBox = document.getElementById('calc-history-list');
+    if (calcHistory.length > 0) {
+        histBox.innerHTML = calcHistory
+            .map(function (h) {
+                return `<div style="padding:4px 0; border-bottom:1px solid var(--border-color);">${escapeHtml(h)}</div>`;
+            })
+            .reverse()
+            .join('');
+    } else {
+        histBox.innerHTML = `<div style="color:var(--text-sub); text-align:center;">${escapeHtml(t().calcEmpty)}</div>`;
+    }
+}
+
+/** Clears the calculator history. */
+function clearCalcHistory() {
+    calcHistory = [];
+    saveData();
+}
+
+
+/* ============================================================================
+   5. NAVIGATION & HISTORY (modal-aware)
+   ============================================================================ */
+
+let currentPage = 'home';
+let modalPushed = false;      /* true when we pushed a history entry for a modal */
+let ignoreNextPopstate = false; /* true right after we call history.back() ourselves */
+
+/** Public page switcher — also manages the browser history entry. */
+function switchPage(pageId) {
+    if (currentPage !== pageId) {
+        if (pageId !== 'home') {
+            history.pushState({ page: pageId }, '', '#' + pageId);
+        } else {
+            history.replaceState({ page: 'home' }, '', '#home');
+        }
+    }
+    switchPageInternal(pageId);
+}
+
+/** Switches the visible page without touching history. */
+function switchPageInternal(pageId) {
+    currentPage = pageId;
+
+    document.querySelectorAll('.page').forEach(function (p) { p.classList.remove('active'); });
+    document.querySelectorAll('.nav-item').forEach(function (n) { n.classList.remove('active'); });
+
+    const activePage = document.getElementById('page-' + pageId);
+    if (activePage) activePage.classList.add('active');
+
+    const navIndex = ['home', 'subjects', 'attendance', 'calc', 'about'].indexOf(pageId);
+    if (navIndex !== -1) {
+        const navItems = document.querySelectorAll('.nav-item');
+        if (navItems[navIndex]) navItems[navIndex].classList.add('active');
+    }
+
+    if (pageId === 'notes' && !selectedSubjectFilter) {
+        document.getElementById('notes-page-subtitle').innerText = t().allNotes;
+        document.getElementById('pdf-export-btn').style.display = 'none';
+    }
+
+    renderAll();
+}
+
+window.addEventListener('popstate', function () {
+    /* We closed the modal programmatically and called history.back(). */
+    if (ignoreNextPopstate) {
+        ignoreNextPopstate = false;
+        return;
+    }
+
+    /* Hardware back while a modal is open → just close the modal. */
+    if (modalPushed) {
+        modalPushed = false;
+        hideAllModals();
+        return;
+    }
+
+    /* Otherwise back always returns to the Home page (original behaviour). */
+    if (currentPage !== 'home') {
+        switchPageInternal('home');
+    }
+});
+
+
+/* ============================================================================
+   6. MODALS
+   ============================================================================ */
+
+/** Shows a modal and (only for the first one) records a history entry. */
+function showModal(modalId) {
+    const anyModalOpen = document.querySelector('.modal.active');
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    modal.classList.add('active');
+
+    if (!anyModalOpen) {
+        modalPushed = true;
+        try {
+            history.pushState({ modal: true }, '', location.hash || '#home');
+        } catch (err) { modalPushed = false; }
+    }
+}
+
+/** Hides every open modal without touching history. */
+function hideAllModals() {
+    document.querySelectorAll('.modal').forEach(function (m) { m.classList.remove('active'); });
+}
+
+/** Closes modals from a UI button and removes the extra history entry. */
+function closeModals() {
+    const wasOpen = !!document.querySelector('.modal.active');
+    hideAllModals();
+
+    if (modalPushed && wasOpen) {
+        modalPushed = false;
+        ignoreNextPopstate = true;
+        try {
+            history.back();
+        } catch (err) {
+            ignoreNextPopstate = false;
+        }
+        /* Safety net: never leave the ignore flag stuck forever. */
+        setTimeout(function () { ignoreNextPopstate = false; }, 1000);
+    }
+}
+
+
+/* ============================================================================
+   7. SUBJECTS (CRUD)
+   ============================================================================ */
+
+/** Opens the "add subject" modal. */
+function openSubjectModal() {
+    document.getElementById('subject-title-input').value = '';
+    document.getElementById('subject-credit-input').value = '';
+    showModal('subject-modal');
+}
+
+/** Saves a new subject. */
+function saveSubject() {
+    const titleInput = document.getElementById('subject-title-input');
+    const creditInput = document.getElementById('subject-credit-input');
+    const title = titleInput.value.trim();
+
+    if (!title) {
+        alert(t().msgSubjectRequired);
+        return;
+    }
+
+    let credit = parseInt(creditInput.value, 10);
+    if (!credit || credit < 1) credit = 1;
+    if (credit > 10) credit = 10;
+
+    subjects.push({
+        id: generateId(),
+        title: title,
+        credit: credit,
+        score: 0,
+        present: 0,
+        absent: 0
+    });
+
+    titleInput.value = '';
+    creditInput.value = '';
+    closeModals();
+    saveData();
+}
+
+/** Deletes a subject together with all of its notes (with confirmation). */
+function deleteSubject(id) {
+    const sub = subjects.find(function (s) { return s.id === id; });
+    const noteCount = notes.filter(function (n) { return n.subjectId === id; }).length;
+    const message = t().confirmDeleteSubject + '\n\n' +
+        (sub ? sub.title : '') + ' — ' + noteCount + ' ' +
+        (currentLang === 'en' ? 'notes' : 'نوټونه');
+
+    if (!confirm(message)) return;
+
+    subjects = subjects.filter(function (s) { return s.id !== id; });
+    notes = notes.filter(function (n) { return n.subjectId !== id; });
+    saveData();
+}
+
+/** Updates the score of a subject (clamped to 0–100). */
+function updateSubjectScore(subId, val) {
+    const sub = subjects.find(function (s) { return s.id === subId; });
+    if (!sub) return;
+    const parsed = parseFloat(val);
+    sub.score = isNaN(parsed) ? 0 : Math.min(100, Math.max(0, parsed));
+    saveData();
+}
+
+/** Adjusts present / absent counters. */
+function updateAttendance(subId, type, change) {
+    const sub = subjects.find(function (s) { return s.id === subId; });
+    if (!sub) return;
+    if (type !== 'present' && type !== 'absent') return;
+    sub[type] = Math.max(0, (sub[type] || 0) + change);
+    saveData();
+}
+
+
+/* ============================================================================
+   8. NOTES (CRUD)
+   ============================================================================ */
+
+/** Opens the note editor. Pass an id to edit, or nothing to create. */
+function openNoteModal(editId) {
+    if (subjects.length === 0) {
+        alert(t().msgNoSubject);
+        openSubjectModal();
+        return;
+    }
+
+    const select = document.getElementById('note-subject-select');
+    select.innerHTML = '';
+    subjects.forEach(function (s) {
+        const opt = document.createElement('option');
+        opt.value = String(s.id);
+        opt.textContent = s.title;
+        select.appendChild(opt);
+    });
+
+    const modalTitle = document.getElementById('note-modal-title');
+    const idField = document.getElementById('edit-note-id');
+    const titleField = document.getElementById('note-title-input');
+    const contentField = document.getElementById('note-content-input');
+
+    if (editId) {
+        const note = notes.find(function (n) { return n.id === editId; });
+        if (note) {
+            modalTitle.innerText = t().modNoteEditTitle;
+            idField.value = String(note.id);
+            titleField.value = note.title;
+            select.value = String(note.subjectId);
+            contentField.value = note.content;
+        }
+    } else {
+        modalTitle.innerText = t().modNoteTitle;
+        idField.value = '';
+        titleField.value = '';
+        contentField.value = '';
+    }
+
+    showModal('note-modal');
+}
+
+/** Creates or updates a note. */
+function saveNote() {
+    const editIdRaw = document.getElementById('edit-note-id').value;
+    const title = document.getElementById('note-title-input').value.trim();
+    const content = document.getElementById('note-content-input').value.trim();
+    const subId = parseInt(document.getElementById('note-subject-select').value, 10);
+
+    if (!title || !content) {
+        alert(t().msgNoteRequired);
+        return;
+    }
+    if (!isFinite(subId)) {
+        alert(t().msgNoSubject);
+        return;
+    }
+
+    const now = new Date();
+    const formattedDate = now.toLocaleDateString() + ' ' +
+        now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    if (editIdRaw) {
+        const editId = Number(editIdRaw);
+        const idx = notes.findIndex(function (n) { return n.id === editId; });
+        if (idx !== -1) {
+            notes[idx].title = title;
+            notes[idx].subjectId = subId;
+            notes[idx].content = content;
+            notes[idx].date = formattedDate;
+        }
+    } else {
+        notes.push({
+            id: generateId(),
+            subjectId: subId,
+            title: title,
+            content: content,
+            isTrash: false,
+            date: formattedDate
+        });
+    }
+
+    document.getElementById('edit-note-id').value = '';
+    document.getElementById('note-title-input').value = '';
+    document.getElementById('note-content-input').value = '';
+
+    closeModals();
+    saveData();
+    switchPage('notes');
+}
+
+/** Filters the notes page to a single subject and enables PDF export. */
+function filterNotesBySubject(subId) {
+    selectedSubjectFilter = subId;
+    const sub = subjects.find(function (s) { return s.id === subId; });
+    document.getElementById('notes-page-subtitle').innerText = sub ? sub.title : '';
+    document.getElementById('pdf-export-btn').style.display = 'inline-flex';
+    switchPage('notes');
+}
+
+
+/* ============================================================================
+   9. TRASH
+   ============================================================================ */
+
+/** Soft-deletes a note. */
+function moveToTrash(id) {
+    const note = notes.find(function (n) { return n.id === id; });
+    if (note) note.isTrash = true;
+    saveData();
+}
+
+/** Restores a note from the trash. */
+function restoreNote(id) {
+    const note = notes.find(function (n) { return n.id === id; });
+    if (note) note.isTrash = false;
+    saveData();
+}
+
+/** Permanently removes a single note (with confirmation). */
+function permanentlyDeleteNote(id) {
+    if (!confirm(t().confirmDeleteNote)) return;
+    notes = notes.filter(function (n) { return n.id !== id; });
+    saveData();
+}
+
+/** Empties the entire trash (with confirmation). */
+function emptyTrash() {
+    const trashCount = notes.filter(function (n) { return n.isTrash; }).length;
+    if (trashCount === 0) return;
+    if (!confirm(t().confirmEmptyTrash)) return;
+    notes = notes.filter(function (n) { return !n.isTrash; });
+    saveData();
+}
+
+
+/* ============================================================================
+   10. SEARCH
+   ============================================================================ */
+
+/** Searches note titles, note content and subject names (all languages). */
+function handleSearch() {
+    const query = document.getElementById('search-input').value.trim().toLowerCase();
+    const res = document.getElementById('search-results');
+    res.innerHTML = '';
+
+    if (!query) return;
+
+    /* Cache subject titles for faster lookups. */
+    const subjectTitles = {};
+    subjects.forEach(function (s) { subjectTitles[s.id] = s.title.toLowerCase(); });
+
+    const filtered = notes.filter(function (n) {
+        if (n.isTrash) return false;
+        const subjectTitle = subjectTitles[n.subjectId] || '';
+        return n.title.toLowerCase().indexOf(query) !== -1 ||
+               n.content.toLowerCase().indexOf(query) !== -1 ||
+               subjectTitle.indexOf(query) !== -1;
+    });
+
+    if (filtered.length === 0) {
+        const empty = currentLang === 'en' ? 'No results found'
+            : (currentLang === 'dr' ? 'نتیجه‌ای یافت نشد' : 'هیڅ نتیجه ونه موندل شوه');
+        res.innerHTML = `<div class="empty-box"><h4>${escapeHtml(empty)}</h4></div>`;
+        return;
+    }
+
+    let html = '';
+    filtered.forEach(function (n) {
+        html += `
+            <div class="card-item">
+                <div class="card-info">
+                    <h4>${escapeHtml(n.title)}</h4>
+                    <p>${escapeHtml(n.content)}</p>
+                    <span class="card-date">${escapeHtml(n.date)}</span>
+                </div>
+                <div class="card-actions">
+                    <button class="btn-icon" onclick="openNoteModal(${n.id})" style="color:var(--primary)" title="edit">
+                        <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+    res.innerHTML = html;
+}
+
+
+/* ============================================================================
+   11. SCHEDULE
+   ============================================================================ */
+
+/** Opens the schedule editor and rebuilds the timetable grid. */
+function openScheduleModal() {
+    document.getElementById('sched-faculty').value = scheduleData['faculty'] || '';
+    document.getElementById('sched-semester').value = scheduleData['semester'] || '';
+
+    const tbody = document.getElementById('schedule-tbody');
+    tbody.innerHTML = '';
+
+    const days = defaultDays[currentLang] || defaultDays['ps'];
+
+    days.forEach(function (day, dayIndex) {
+        const tr = document.createElement('tr');
+
+        const dayCell = document.createElement('td');
+        dayCell.style.fontWeight = 'bold';
+        dayCell.style.background = 'rgba(0,0,0,0.02)';
+        dayCell.textContent = day;
+        tr.appendChild(dayCell);
+
+        for (let slot = 1; slot <= 4; slot++) {
+            const key = 'day_' + dayIndex + '_slot_' + slot;
+            const td = document.createElement('td');
+            const input = document.createElement('input');
+            input.className = 'schedule-input';
+            input.type = 'text';
+            input.setAttribute('data-key', key);
+            input.value = scheduleData[key] || '';
+            input.placeholder = '-';
+            td.appendChild(input);
+            tr.appendChild(td);
+        }
+
+        tbody.appendChild(tr);
+    });
+
+    showModal('schedule-modal');
+}
+
+/** Persists the schedule grid. */
+function saveSchedule() {
+    scheduleData['faculty'] = document.getElementById('sched-faculty').value.trim();
+    scheduleData['semester'] = document.getElementById('sched-semester').value.trim();
+
+    document.querySelectorAll('.schedule-input').forEach(function (input) {
+        const key = input.getAttribute('data-key');
+        if (key) scheduleData[key] = input.value.trim();
+    });
+
+    saveData();
+    closeModals();
+}
+
+
+/* ============================================================================
+   12. CALCULATOR — SAFE RECURSIVE-DESCENT EXPRESSION PARSER
+   ----------------------------------------------------------------------------
+   Replaces the previous unsafe `Function(...)` based evaluation. No dynamic
+   code is ever executed. Grammar:
+
+       expression := term (('+' | '-') term)*
+       term       := unary (('*' | '/' | '%') unary)*
+       unary      := ('-' | '+') unary | power
+       power      := primary ('^' unary)?          (right associative)
+       primary    := number | func '(' expression ')' | '(' expression ')'
+
+   Recognised names: sin, cos, tan, log (base 10), ln, sqrt, abs,
+   Math.PI, Math.E.
+   ============================================================================ */
+
+const CALC_FUNCTIONS = ['sin', 'cos', 'tan', 'log', 'ln', 'sqrt', 'abs'];
+
+/** Converts the raw expression string into a token list. Throws on bad input. */
+function tokenizeExpression(input) {
+    const tokens = [];
+    let i = 0;
+    const len = input.length;
+
+    while (i < len) {
+        const ch = input[i];
+
+        /* Whitespace */
+        if (ch === ' ') { i++; continue; }
+
+        /* Number literal */
+        if ((ch >= '0' && ch <= '9') ||
+            (ch === '.' && input[i + 1] >= '0' && input[i + 1] <= '9')) {
+            let numStr = '';
+            while (i < len && ((input[i] >= '0' && input[i] <= '9') || input[i] === '.')) {
+                numStr += input[i];
+                i++;
+            }
+            const num = parseFloat(numStr);
+            if (!isFinite(num)) throw new Error('Invalid number');
+            tokens.push({ type: 'number', value: num });
+            continue;
+        }
+
+        /* Identifier: function name or constant */
+        if ((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z')) {
+            let id = '';
+            while (i < len && /[A-Za-z0-9.]/.test(input[i])) {
+                id += input[i];
+                i++;
+            }
+            if (id === 'Math.PI') {
+                tokens.push({ type: 'number', value: Math.PI });
+            } else if (id === 'Math.E') {
+                tokens.push({ type: 'number', value: Math.E });
+            } else if (CALC_FUNCTIONS.indexOf(id) !== -1) {
+                tokens.push({ type: 'function', value: id });
+            } else {
+                throw new Error('Unknown identifier: ' + id);
+            }
+            continue;
+        }
+
+        /* Power operator ( ** → ^ ) */
+        if (ch === '*' && input[i + 1] === '*') {
+            tokens.push({ type: 'operator', value: '^' });
+            i += 2;
+            continue;
+        }
+
+        /* Single-character operators */
+        if ('+-*/%()^'.indexOf(ch) !== -1) {
+            tokens.push({ type: 'operator', value: ch });
+            i++;
+            continue;
+        }
+
+        throw new Error('Unexpected character: ' + ch);
+    }
+
+    return tokens;
+}
+
+/** Applies a named maths function to a value. */
+function applyCalcFunction(name, x) {
+    switch (name) {
+        case 'sin':  return Math.sin(x);
+        case 'cos':  return Math.cos(x);
+        case 'tan':  return Math.tan(x);
+        case 'log':  return Math.log(x) / Math.LN10; /* base 10 */
+        case 'ln':   return Math.log(x);
+        case 'sqrt': return Math.sqrt(x);
+        case 'abs':  return Math.abs(x);
+        default:     throw new Error('Unknown function: ' + name);
+    }
+}
+
+/**
+ * Safely evaluates a calculator expression.
+ * @param {string} input
+ * @returns {number}
+ * @throws {Error} when the expression is malformed
+ */
+function evaluateExpression(input) {
+    const tokens = tokenizeExpression(input);
+    if (tokens.length === 0) throw new Error('Empty expression');
+
+    let pos = 0;
+
+    function peek() { return tokens[pos]; }
+    function consume() { return tokens[pos++]; }
+
+    function parseAddSub() {
+        let left = parseMulDiv();
+        while (peek() && peek().type === 'operator' &&
+               (peek().value === '+' || peek().value === '-')) {
+            const op = consume().value;
+            const right = parseMulDiv();
+            left = (op === '+') ? left + right : left - right;
+        }
+        return left;
+    }
+
+    function parseMulDiv() {
+        let left = parseUnary();
+        while (peek() && peek().type === 'operator' &&
+               (peek().value === '*' || peek().value === '/' || peek().value === '%')) {
+            const op = consume().value;
+            const right = parseUnary();
+            if (op === '*') left = left * right;
+            else if (op === '/') left = left / right;
+            else left = left % right;
+        }
+        return left;
+    }
+
+    function parseUnary() {
+        const token = peek();
+        if (token && token.type === 'operator' && token.value === '-') {
+            consume();
+            return -parseUnary();
+        }
+        if (token && token.type === 'operator' && token.value === '+') {
+            consume();
+            return parseUnary();
+        }
+        return parsePower();
+    }
+
+    function parsePower() {
+        const base = parsePrimary();
+        if (peek() && peek().type === 'operator' && peek().value === '^') {
+            consume();
+            const exponent = parseUnary(); /* right associative */
+            return Math.pow(base, exponent);
+        }
+        return base;
+    }
+
+    function parsePrimary() {
+        const token = peek();
+        if (!token) throw new Error('Unexpected end of expression');
+
+        if (token.type === 'number') {
+            consume();
+            return token.value;
+        }
+
+        if (token.type === 'function') {
+            consume();
+            if (!peek() || peek().value !== '(') throw new Error('Expected ( after function');
+            consume();
+            const arg = parseAddSub();
+            if (!peek() || peek().value !== ')') throw new Error('Expected )');
+            consume();
+            return applyCalcFunction(token.value, arg);
+        }
+
+        if (token.value === '(') {
+            consume();
+            const value = parseAddSub();
+            if (!peek() || peek().value !== ')') throw new Error('Expected )');
+            consume();
+            return value;
+        }
+
+        throw new Error('Unexpected token: ' + token.value);
+    }
+
+    const result = parseAddSub();
+    if (pos !== tokens.length) throw new Error('Unexpected trailing input');
+    return result;
+}
+
+/* --- Calculator UI state -------------------------------------------------- */
+
+let calcVal = '0';
+
+/** Refreshes the calculator display. */
+function updateCalcDisplay() {
+    document.getElementById('calc-display').innerText = calcVal;
+}
+
+/** Resets the display when the previous result was an error. */
+function resetCalcIfError() {
+    if (calcVal === 'Error') calcVal = '0';
+}
+
+/** Appends a digit or decimal point. */
+function calcNum(n) {
+    resetCalcIfError();
+    if (calcVal === '0') calcVal = n;
+    else calcVal += n;
+    updateCalcDisplay();
+}
+
+/** Appends an operator / function / parenthesis / constant. */
+function calcOp(op) {
+    resetCalcIfError();
+    if (calcVal === '0' && op !== '(') calcVal = op;
+    else calcVal += op;
+    updateCalcDisplay();
+}
+
+/** Clears the display. */
+function calcClear() {
+    calcVal = '0';
+    updateCalcDisplay();
+}
+
+/** Deletes the last character. */
+function calcDel() {
+    resetCalcIfError();
+    if (calcVal.length > 1) calcVal = calcVal.slice(0, -1);
+    else calcVal = '0';
+    updateCalcDisplay();
+}
+
+/** Evaluates the current expression using the safe parser. */
+function calcEqual() {
+    const expression = calcVal;
+    let display;
+
+    try {
+        const value = evaluateExpression(expression);
+        if (typeof value !== 'number' || !isFinite(value)) throw new Error('Math error');
+
+        /* Keep up to 6 decimals, then trim trailing zeros. */
+        display = String(Number(value.toFixed(6)));
+
+        calcHistory.push(expression + ' = ' + display);
+        if (calcHistory.length > 10) calcHistory.shift();
+    } catch (err) {
+        display = 'Error';
+    }
+
+    calcVal = display;
+    updateCalcDisplay();
+    saveData();
+}
+
+
+/* ============================================================================
+   13. PDF EXPORT
+   ============================================================================ */
+
+/** Exports the currently filtered subject's notes as a PDF file. */
+function exportSubjectToPDF() {
+    if (!selectedSubjectFilter) return;
+
+    const sub = subjects.find(function (s) { return s.id === selectedSubjectFilter; });
+    const subNotes = notes.filter(function (n) {
+        return !n.isTrash && n.subjectId === selectedSubjectFilter;
+    });
+
+    if (subNotes.length === 0) {
+        alert(t().msgNoNotesForPdf);
+        return;
+    }
+
+    /* Build a detached, escaped document for html2pdf. */
+    const element = document.createElement('div');
+    element.style.padding = '20px';
+    element.style.fontFamily = 'sans-serif';
+    element.style.direction = currentLang === 'en' ? 'ltr' : 'rtl';
+    element.style.color = '#000000';
+
+    let notesHTML = `
+        <div style="text-align: center; border-bottom: 2px solid #6366f1; padding-bottom: 12px; margin-bottom: 20px;">
+            <h1 style="color: #6366f1; margin-bottom: 5px; font-size:22px;">${escapeHtml(sub ? sub.title : '')}</h1>
+            <p style="color: #555; font-size: 13px;">د پوهنتون درسونه او خلاصې - NOORZAI</p>
+            <p style="color: #888; font-size: 11px; margin-top:4px;">نېټه: ${escapeHtml(new Date().toLocaleDateString())}</p>
+        </div>
+    `;
+
+    subNotes.forEach(function (n, idx) {
+        notesHTML += `
+            <div style="border: 1px solid #ddd; border-radius: 8px; padding: 12px 15px; margin-bottom: 15px; background: #fafafa;">
+                <h3 style="color: #1f2937; margin-bottom: 6px; font-size:16px;">${idx + 1}. ${escapeHtml(n.title)}</h3>
+                <p style="color: #374151; font-size: 13px; line-height: 1.6; white-space: pre-wrap;">${escapeHtml(n.content)}</p>
+                <div style="text-align: left; font-size: 10px; color: #888; margin-top: 8px; direction:ltr;">${escapeHtml(n.date)}</div>
+            </div>
+        `;
+    });
+
+    element.innerHTML = notesHTML;
+
+    /* Offline-safe PDF export: use the device/browser print-to-PDF flow.
+       No internet library is required, so this also works without a network. */
+    try {
+        const printStyle = document.createElement('style');
+        printStyle.id = 'offline-pdf-print-style';
+        printStyle.textContent = `
+            @media print {
+                body > * { display: none !important; }
+                #offline-pdf-print-area { display: block !important; }
+            }
+            #offline-pdf-print-area {
+                display: none;
+                background: #fff;
+                color: #000;
+                direction: ${currentLang === 'en' ? 'ltr' : 'rtl'};
+                font-family: Arial, Tahoma, sans-serif;
+                padding: 10mm;
+            }
+            #offline-pdf-print-area .pdf-head { text-align:center; border-bottom:2px solid #6366f1; padding-bottom:12px; margin-bottom:20px; }
+            #offline-pdf-print-area .pdf-head h1 { color:#6366f1; margin:0 0 5px; font-size:22px; }
+            #offline-pdf-print-area .pdf-head p { margin:3px 0; }
+            #offline-pdf-print-area .note { border:1px solid #ddd; border-radius:8px; padding:12px 15px; margin-bottom:15px; background:#fafafa; break-inside:avoid; page-break-inside:avoid; }
+            #offline-pdf-print-area .note h3 { color:#1f2937; margin:0 0 6px; font-size:16px; }
+            #offline-pdf-print-area .note p { color:#374151; font-size:13px; line-height:1.7; white-space:pre-wrap; margin:0; }
+            #offline-pdf-print-area .note-date { text-align:left; font-size:10px; color:#888; margin-top:8px; direction:ltr; }
+            @page { size: A4; margin: 10mm; }
+        `;
+
+        const printArea = document.createElement('div');
+        printArea.id = 'offline-pdf-print-area';
+        printArea.innerHTML = notesHTML;
+        document.head.appendChild(printStyle);
+        document.body.appendChild(printArea);
+
+        const cleanup = function () {
+            if (printArea.parentNode) printArea.parentNode.removeChild(printArea);
+            if (printStyle.parentNode) printStyle.parentNode.removeChild(printStyle);
+            window.removeEventListener('afterprint', cleanup);
+        };
+
+        window.addEventListener('afterprint', cleanup);
+        setTimeout(function () {
+            window.print();
+            setTimeout(cleanup, 1500);
+        }, 100);
+    } catch (err) {
+        console.warn('Offline PDF export failed.', err);
+        alert(currentLang === 'en'
+            ? 'PDF export could not be started.'
+            : currentLang === 'dr'
+                ? 'ساخت PDF شروع نشد.'
+                : 'د PDF جوړول پیل نه شول.');
+    }
+}
+
+/* ============================================================================
+   14. THEME, CLOCK, BOOTSTRAP
+   ============================================================================ */
+
+/** Toggles the existing light/dark themes and persists the choice. */
+function toggleTheme() {
+    const currentTheme = document.body.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    document.body.setAttribute('data-theme', newTheme);
+    try { localStorage.setItem(STORAGE_KEYS.theme, newTheme); } catch (err) { /* ignore */ }
+}
+
+/* --- Live clock + current day -------------------------------------------- */
+
+let lastRenderedDayKey = '';
+
+/** Updates the day badge only when the day (or language) actually changes. */
+function updateCurrentDay() {
+    const dayName = daysOfWeek[currentLang][new Date().getDay()];
+    const key = currentLang + ':' + dayName;
+    if (key === lastRenderedDayKey) return;
+    lastRenderedDayKey = key;
+    document.getElementById('current-day-display').innerText = dayName;
+}
+
+/** Ticks the clock every second. */
+function updateClock() {
+    const now = new Date();
+    let hours = now.getHours();
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+
+    hours = hours % 12;
+    hours = hours ? hours : 12;
+    const strHours = String(hours).padStart(2, '0');
+
+    document.getElementById('clock').innerText = strHours + ':' + minutes + ':' + seconds + ' ' + ampm;
+    updateCurrentDay();
+}
+
+/* --- Application bootstrap ------------------------------------------------ */
+
+/* Restore the persisted theme choice (light is the default). */
+try {
+    const savedTheme = localStorage.getItem(STORAGE_KEYS.theme);
+    if (savedTheme === 'dark') document.body.setAttribute('data-theme', 'dark');
+} catch (err) { /* ignore */ }
+
+/* Initial paint + start the clock. */
+applyLanguage();
+updateClock();
+setInterval(updateClock, 1000);
+
+/* Make the current page reflect the initial history entry. */
+try {
+    history.replaceState({ page: 'home' }, '', '#home');
+} catch (err) { /* ignore */ }
+</script>
+</body>
+</html>
