@@ -27,6 +27,25 @@ jobs:
           cp noori-1.html www/index.html
           npx cap init "University Notes" "com.noori.universitynotes" --web-dir www
           npx cap add android
+                    python3 - <<'PY'
+          from pathlib import Path
+          p = Path("android/build.gradle")
+          s = p.read_text()
+          s += """
+          
+          allprojects {
+              configurations.all {
+                  resolutionStrategy.eachDependency { details ->
+                      if (details.requested.group == "org.jetbrains.kotlin" &&
+                          details.requested.name.startsWith("kotlin-stdlib")) {
+                          details.useVersion "1.8.22"
+                      }
+                  }
+              }
+          }
+          """
+          p.write_text(s)
+          PY
 
       - name: Setup Java
         uses: actions/setup-java@v4
