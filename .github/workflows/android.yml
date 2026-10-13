@@ -17,35 +17,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-
-      - name: Create Capacitor project
-        run: |
-          npm init -y
-          npm install @capacitor/core @capacitor/cli @capacitor/android
-          mkdir -p www
-          cp noori-1.html www/index.html
-          npx cap init "University Notes" "com.noori.universitynotes" --web-dir www
-          npx cap add android
-                    python3 - <<'PY'
-          from pathlib import Path
-          p = Path("android/build.gradle")
-          s = p.read_text()
-          s += """
-          
-          allprojects {
-              configurations.all {
-                  resolutionStrategy.eachDependency { details ->
-                      if (details.requested.group == "org.jetbrains.kotlin" &&
-                          details.requested.name.startsWith("kotlin-stdlib")) {
-                          details.useVersion "1.8.22"
-                      }
-                  }
-              }
-          }
-          """
-          p.write_text(s)
-          PY
+          node-version: 22
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -53,14 +25,90 @@ jobs:
           distribution: temurin
           java-version: 21
 
-      - name: Build APK
+      - name: Create Capacitor Project
+        shell: bash
         run: |
+          set -e
+
+          npm init -y
+
+          npm install --no-audit --no-fund \
+            @capacitor/core@8 \
+            @capacitor/cli@8 \
+            @capacitor/android@8
+
+          mkdir -p www
+
+          cp wakil.html www/index.html
+
+          npx cap init "University Notes" "com.noori.universitynotes" --web-dir www
+
+          npx cap add android
+
+          npx cap sync android
+
+      - name: Configure Android SDK
+        shell: bash
+        run: |
+          set -e
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          p = Path("android/variables.gradle")
+
+          if p.exists():
+              s = p.read_text()
+
+              s = re.sub(
+                  r'minSdkVersion\s*=\s*\d+',
+                  'minSdkVersion = 24',
+                  s
+              )
+
+              s = re.sub(
+                  r'compileSdkVersion\s*=\s*\d+',
+                  'compileSdkVersion = 36',
+                  s
+              )
+
+              s = re.sub(
+                  r'targetSdkVersion\s*=\s*\d+',
+                  'targetSdkVersion = 36',
+                  s
+              )
+
+              p.write_text(s)
+          PY
+
+      - name: Verify Android Project
+        shell: bash
+        run: |
+          set -e
+
+          test -f android/gradlew
+          test -f android/app/build.gradle
+          test -f www/index.html
+
+          echo "Android project created successfully."
+          echo "Web file copied successfully."
+
+      - name: Build Debug APK
+        shell: bash
+        run: |
+          set -e
+
           cd android
+
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon -Pandroid.useAndroidX=true
+
+          ./gradlew assembleDebug --no-daemon \
+            -Pandroid.useAndroidX=true
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: UniversityNotes-APK
           path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
