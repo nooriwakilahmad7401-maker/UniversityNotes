@@ -53,6 +53,9 @@ jobs:
           java-version: '21'
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          # Google's obsolete 'tools' package is unavailable; override v3 defaults.
+          packages: 'platform-tools'
       - name: Install Android 36
         run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
       - name: Prepare isolated web source
