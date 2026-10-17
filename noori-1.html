@@ -2,7 +2,9 @@
 <html lang="ps" dir="rtl" id="html-root">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+    <meta name="referrer" content="no-referrer">
     <title>University Notes - د پوهنتون نوټونه</title>
 
     <style>
@@ -20,7 +22,7 @@
         width: 100%;
         height: 100%;
         overflow-x: hidden;
-        background-color: #0d1117;
+        background-color: var(--bg-color);
     }
 
     .main-container {
@@ -606,8 +608,6 @@
         padding: 20px;
         border-radius: 18px;
         box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-        /* Responsive bug-fix only: prevents the tall Schedule modal from
-           being clipped on short screens. Does not affect visual style. */
         max-height: 90vh;
         overflow-y: auto;
     }
@@ -655,9 +655,7 @@
     .nav-item.active svg { stroke: var(--primary); }
 
     /* ==========================================================================
-       RESPONSIVE BUG-FIX for very small phones:
-       shrinks header padding/icon sizes only when the row would otherwise
-       overflow. Colours, layout and shapes stay identical.
+       RESPONSIVE BUG-FIX for very small phones
        ========================================================================== */
     @media (max-width: 380px) {
         header { padding: 10px; }
@@ -668,6 +666,36 @@
         .user-brand { font-size: 0.78rem; padding: 3px 6px; }
         .lang-btn { padding: 4px 7px; font-size: 0.68rem; }
     }
+    /* Safe areas, readable notes, keyboard and accessibility. */
+    html { background: var(--bg-color); }
+    body { padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)); }
+    header { padding-top: calc(12px + env(safe-area-inset-top, 0px)); }
+    nav { padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px)); }
+    button, a, input, select, textarea { touch-action: manipulation; }
+    button:focus-visible, a:focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; }
+    .note-body, .about-text { user-select: text; overflow-wrap: anywhere; }
+    textarea, input[type="text"] { unicode-bidi: plaintext; }
+    .modal { z-index: 2000; }
+    .modal-content { max-height: 85dvh; }
+    .live-clock { white-space: nowrap; font-variant-numeric: tabular-nums; }
+    @media (max-width: 420px) {
+        header { padding-inline: 10px; gap: 5px; }
+        .header-left, .header-right { gap: 5px; }
+        .header-left .btn-icon { width: 29px; height: 32px; }
+        .live-clock { font-size: 0.66rem; padding-inline: 5px; }
+        .user-brand { font-size: 0.7rem; padding-inline: 5px; }
+        .lang-btn { font-size: 0.68rem; padding-inline: 6px; }
+    }
+    .nav-item { min-width: 0; padding-inline: 2px; }
+    .nav-item span { max-width: 100%; white-space: normal; overflow-wrap: anywhere; line-height: 1.25; }
+    @media (max-width: 350px) { .nav-item { font-size: 0.65rem; } }
+    .privacy-copy { line-height: 1.9; user-select: text; overflow-wrap: anywhere; }
+    .privacy-copy h3 { margin: 18px 0 6px; }
+    .privacy-copy p { margin-bottom: 10px; }
+    #app-status { position: fixed; bottom: 88px; inset-inline: 16px; margin: auto; max-width: 470px;
+        background: var(--text-main); color: var(--card-bg); padding: 12px 16px;
+        border-radius: 12px; z-index: 4000; text-align: center; box-shadow: var(--shadow); }
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
     </style>
 </head>
 <body>
@@ -873,6 +901,7 @@
         <div class="about-container">
             <div class="about-text" id="about-text-content"></div>
 
+            <button class="contact-btn" style="width:100%;border:0;background:var(--primary);cursor:pointer" onclick="switchPage('privacy')" id="privacy-link">د محرمیت تګلاره</button>
             <div class="tag-line">Learn • Build • Improve</div>
 
             <a href="https://wa.me/93704287401" target="_blank" rel="noopener noreferrer" class="contact-btn btn-whatsapp" id="txt-contact-wa">
@@ -883,6 +912,12 @@
             </a>
         </div>
     </div>
+
+    <div id="page-privacy" class="page" style="padding:16px">
+        <button class="btn-icon" onclick="handleAppBack()" aria-label="Back">←</button>
+        <div id="privacy-policy-content" class="privacy-copy"></div>
+    </div>
+    <div id="app-status" role="status" aria-live="polite" hidden></div>
 
     <!-- ======================================================================
          MODAL: ADD SUBJECT
@@ -1077,7 +1112,7 @@ const daysOfWeek = {
 /* Days used by the schedule grid (Saturday → Thursday). */
 const defaultDays = {
     ps: ["شنبه", "یک‌شنبه", "دو‌شنبه", "سې‌شنبه", "چهارشنبه", "پنج‌شنبه"],
-    dr: ["شنبه", "یک‌شنبه", "دوشنبه", "سه‌شنبه", "چهارشنبه", "پنج‌شنبه"],
+    dr: ["شنبه", "یک‌شنبه", "دوشنبه", "سه‌شنبه", "چهارشنبه", "پنجشنبه"],
     en: ["Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"]
 };
 
@@ -1129,15 +1164,18 @@ const translations = {
         thS4: "ساعت ۴",
         contactWa: "ارتباط په واټساپ کې (0704287401)",
         contactFb: "د فېسبوک پروفایل",
+        /* Display-only fallback used when a note has an empty title.
+           It is NEVER written to the note itself. */
+        untitledLabel: "بې عنوانه",
         /* Messages */
         msgSubjectRequired: "مهرباني وکړئ د مضمون نوم ولیکئ.",
-        msgNoteRequired: "مهرباني وکړئ عنوان او منځپانګه دواړه ولیکئ.",
+        msgNoteRequired: "مهرباني وکړئ د نوټ منځپانګه ولیکئ.",
         msgNoSubject: "مهرباني وکړئ لومړی لږ تر لږه یو مضمون جوړ کړئ!",
         msgNoNotesForPdf: "په دې مضمون کې تر اوسه هیڅ نوټ نشته!",
         confirmDeleteSubject: "دا مضمون او ټول نوټونه یې د تل لپاره پاک شي؟",
         confirmDeleteNote: "دا نوټ د تل لپاره پاک شي؟",
         confirmEmptyTrash: "ټول نوټونه په سطل کثافاتو کې د تل لپاره پاک شي؟",
-        aboutText: `<p>زه <b>Wakil Ahmad Noori</b> يم، په بست پوهنتون کی د BCS يعنی د کمپیوټر ساینس پوهنځی زده‌کوونکی يم او د پروګرام جوړونې، ویب ډیزاین او نوي تکنالوژۍ له زده‌کړې سره ځانګړې علاقه لرم.</p><p>ما دا اپلیکیشن د دې لپاره جوړ کړی چې د پوهنتون درسونه، مهم تعریفونه، خلاصې او یادښتونه په منظم ډول ولیکئ او هر وخت یې په اسانۍ پیدا کړئ.</p><p>د دې اپلیکیشن یوه مهمه موخه د نوټونو لپاره ښه او اسانه چاپیریال برابرول دي، ځکه زده‌کوونکي باید وکولای شي خپل درسونه په خپله خوښه، په پښتو، دري، انګلیسی یا ګډه ژبه ولیکي.</p><p>زما هدف دا دی چې د کمپیوټر ساینس په برخه کې خپل مهارتونه ورځ تر بلې پیاوړي کړم او داسې ګټورې پروژې جوړې کړم چې په زده‌کړه او عملي ژوند کې ترې استفاده وشي.</p><p style="margin-top:16px;"><b>محرمیت:</b> دا اپلیکیشن ستاسو نوټونه، مضمونونه، حاضري، نمرې، مهالوېش او د ماشین حساب تاریخچه د همدې وسیلې په Local Storage کې ساتي. شخصي معلومات په قصدي ډول کوم آنلاین سرور ته نه لېږل کېږي. د اپلیکیشن پاکول یا د براوزر/اپلیکیشن معلومات پاکول ممکن ستاسو ځايي معلومات له منځه یوسي.</p>`
+        aboutText: `<p>زه <b>Wakil Ahmad Noori</b> يم، په بست پوهنتون کی د BCS يعنی د کمپیوټر ساینس پوهنځی زده‌کوونکی يم او د پروګرام جوړونې، ویب ډیزاین او نوي تکنالوژۍ له زده‌کړې سره ځانګړې علاقه لرم.</p><p>ما دا اپلیکیشن د دې لپاره جوړ کړی چې د پوهنتون درسونه، مهم تعریفونه، خلاصې او یادښتونه په منظم ډول ولیکئ او هر وخت یې په اسانۍ پیدا کړئ.</p><p>د دې اپلیکیشن یوه مهمه موخه د نوټونو لپاره ښه او اسانه چاپیریال برابرول دي، ځکه زده‌کوونکي باید وکولای شي خپل درسونه په خپله خوښه، په پښتو، دري، انګلیسی یا ګډه ژبه ولیکي.</p><p>زما هدف دا دی چې د کمپیوټر ساینس په برخه کې خپل مهارتونه ورځ تر بلې پیاوړي کړم او داسې ګټورې پروژې جوړې کړم چې په زده‌کړه او عملي ژوند کې ترې استفاده وشي.</p><p style="margin-top:16px;"><b>محرمیت:</b> دا اپلیکیشن ستاسو نوټونه، مضمونونه، حاضری، نمرې، مهالوېش او د ماشین حساب تاریخچه د همدې وسیلې په Local Storage کې ساتي. شخصي معلومات په قصدي ډول کوم آنلاین سرور ته نه لېږل کېږي. د اپلیکیشن پاکول یا د براوزر/اپلیکیشن معلومات پاکول ممکن ستاسو ځايي معلومات له منځه یوسي. دا اپلیکیشن هېڅ analytics، ټریکنګ یا پټ ډاټا راټولول نه لري. د واټساپ او فېسبوک بهرنۍ لینکونه یوازې د اړوند اپلیکیشن/وېبپاڼې د پرانیستلو لپاره دي او ستاسو د اپلیکیشن داخلي ډاټا سره تړاو نه لري.</p>`
     },
     dr: {
         btnLabel: "DR",
@@ -1186,14 +1224,15 @@ const translations = {
         thS4: "ساعت ۴",
         contactWa: "ارتباط در واتساپ (0704287401)",
         contactFb: "پروفایل فیسبوک",
+        untitledLabel: "بدون عنوان",
         msgSubjectRequired: "لطفاً نام مضمون را بنویسید.",
-        msgNoteRequired: "لطفاً عنوان و محتوا را وارد کنید.",
+        msgNoteRequired: "لطفاً محتوای یادداشت را وارد کنید.",
         msgNoSubject: "لطفاً ابتدا حداقل یک مضمون ایجاد کنید!",
         msgNoNotesForPdf: "در این مضمون تا هنوز یادداشتی وجود ندارد!",
         confirmDeleteSubject: "این مضمون و تمام یادداشت‌های آن برای همیشه حذف شوند؟",
         confirmDeleteNote: "این یادداشت برای همیشه حذف شود؟",
         confirmEmptyTrash: "تمام یادداشت‌های سطل زباله برای همیشه حذف شوند؟",
-        aboutText: `<p>من <b>Wakil Ahmad Noori</b> هستم، محصل پوهنځی کمپیوتر ساینس (BCS) در پوهنتون بست. علاقه خاصی به برنامه‌نویسی، دیزاین ویب و تکنالوژی‌های جدید دارم.</p><p>من این اپلیکیشن را ساختم تا محصلین بتوانند درس‌ها، خلاصه‌ها و یادداشت‌های پوهنتون خود را به شکل منظم ثبت نموده و به راحتی دسترسی داشته باشند.</p><p>هدف اصلی ارائه فضای منظم برای یادداشت‌ها به زبان‌های پشتو، دری و انگلیسی می‌باشد.</p><p style="margin-top:16px;"><b>حریم خصوصی:</b> این اپلیکیشن یادداشت‌ها، مضمون‌ها، حاضری، نمرات، تقسیم اوقات و تاریخچه ماشین حساب را در Local Storage همین دستگاه نگهداری می‌کند. معلومات شخصی به صورت عمدی به سرور آنلاین ارسال نمی‌شود. حذف برنامه یا پاک کردن معلومات مرورگر/اپلیکیشن ممکن است معلومات محلی شما را حذف کند.</p>`
+        aboutText: `<p>من <b>Wakil Ahmad Noori</b> هستم، محصل پوهنځی کمپیوتر ساینس (BCS) در پوهنتون بست. علاقه خاصی به برنامه‌نویسی، دیزاین ویب و تکنالوژی‌های جدید دارم.</p><p>من این اپلیکیشن را ساختم تا محصلین بتوانند درس‌ها، خلاصه‌ها و یادداشت‌های پوهنتون خود را به شکل منظم ثبت نموده و به راحتی دسترسی داشته باشند.</p><p>هدف اصلی ارائه فضای منظم برای یادداشت‌ها به زبان‌های پشتو، دری و انگلیسی می‌باشد.</p><p style="margin-top:16px;"><b>حریم خصوصی:</b> این اپلیکیشن یادداشت‌ها، مضمون‌ها، حاضری، نمرات، تقسیم اوقات و تاریخچه ماشین حساب را در Local Storage همین دستگاه نگهداری می‌کند. معلومات شخصی به صورت عمدی به سرور آنلاین ارسال نمی‌شود. حذف برنامه یا پاک کردن معلومات مرورگر/اپلیکیشن ممکن است معلومات محلی شما را حذف کند. این اپلیکیشن هیچ analytics، tracking یا جمع‌آوری پنهان معلومات ندارد. لینک‌های خارجی واتساپ و فیسبوک فقط برای باز کردن اپلیکیشن/وبسایت مربوطه هستند و با معلومات داخلی این اپلیکیشن ارتباطی ندارند.</p>`
     },
     en: {
         btnLabel: "EN",
@@ -1242,20 +1281,33 @@ const translations = {
         thS4: "Slot 4",
         contactWa: "Contact via WhatsApp (0704287401)",
         contactFb: "Facebook Profile",
+        untitledLabel: "Untitled",
         msgSubjectRequired: "Please enter a subject name.",
-        msgNoteRequired: "Please enter both a title and content.",
+        msgNoteRequired: "Please enter note content.",
         msgNoSubject: "Please add at least one subject first!",
         msgNoNotesForPdf: "No notes available for this subject!",
         confirmDeleteSubject: "Delete this subject and all of its notes permanently?",
         confirmDeleteNote: "Delete this note permanently?",
         confirmEmptyTrash: "Permanently delete all notes in the trash?",
-        aboutText: `<p>I am <b>Wakil Ahmad Noori</b>, a Computer Science (BCS) student at Bost University. I am passionate about programming, web design, and technology.</p><p>I built this application to help university students write, save, and easily locate their lecture notes and summaries anytime.</p><p>A core objective of this app is to provide a clean and seamless interface for notes in Pashto, Dari, English, or mixed languages.</p><p style="margin-top:16px;"><b>Privacy:</b> This app stores your notes, subjects, attendance, grades, schedule, and calculator history in Local Storage on this device. Personal information is not intentionally sent to an online server. Uninstalling the app or clearing its browser/app data may remove your locally stored information.</p>`
+        aboutText: `<p>I am <b>Wakil Ahmad Noori</b>, a Computer Science (BCS) student at Bost University. I am passionate about programming, web design, and technology.</p><p>I built this application to help university students write, save, and easily locate their lecture notes and summaries anytime.</p><p>A core objective of this app is to provide a clean and seamless interface for notes in Pashto, Dari, English, or mixed languages.</p><p style="margin-top:16px;"><b>Privacy:</b> This app stores your notes, subjects, attendance, grades, schedule, and calculator history in Local Storage on this device. Personal information is not intentionally sent to an online server. Uninstalling the app or clearing its browser/app data may remove your locally stored information. This app contains no analytics, tracking, or hidden data collection. External WhatsApp and Facebook links only open the relevant external app/website and are not connected to the app's internal data.</p>`
     }
 };
 
 /** Returns the translation table for the active language. */
 function t() {
     return translations[currentLang] || translations.ps;
+}
+
+/**
+ * Returns a display-ready title for a note.
+ * When the user leaves the title empty, we show a localized fallback
+ * ("بې عنوانه" / "بدون عنوان" / "Untitled") WITHOUT ever writing that
+ * fallback into the note object or into LocalStorage.
+ */
+function displayNoteTitle(note) {
+    const raw = note && note.title != null ? String(note.title).trim() : '';
+    if (raw) return raw;
+    return t().untitledLabel || 'Untitled';
 }
 
 /** Rebuilds the whole UI in the currently selected language. */
@@ -1324,6 +1376,9 @@ function applyLanguage() {
     document.getElementById('txt-contact-wa').innerText = lang.contactWa;
     document.getElementById('txt-contact-fb').innerText = lang.contactFb;
     document.getElementById('about-text-content').innerHTML = lang.aboutText;
+    renderPrivacy();
+    document.getElementById('pdf-export-btn').textContent = uiText('PDF خوندي کول', 'ذخیره PDF', 'Save PDF');
+    document.getElementById('note-subject-select').setAttribute('aria-label', lang.titleSubs);
 
     /* The Notes-page subtitle follows the current filter/language. */
     const sub = selectedSubjectFilter ? subjects.find(function (s) { return s.id === selectedSubjectFilter; }) : null;
@@ -1422,13 +1477,39 @@ let notes = sanitizeNotes(loadJSON(STORAGE_KEYS.notes, []));
 let calcHistory = sanitizeCalcHistory(loadJSON(STORAGE_KEYS.calc, []));
 let scheduleData = sanitizeSchedule(loadJSON(STORAGE_KEYS.schedule, {}));
 
-/** Persists all application data and refreshes the UI. */
+/* One atomic record prevents partly saved subjects/notes after a quota failure.
+   v5 keys remain readable for migration; no old data is deleted. */
+const ATOMIC_STORAGE_KEY = 'un_state_v6';
+const recoveredState = loadJSON(ATOMIC_STORAGE_KEY, null);
+if (recoveredState && recoveredState.version === 6 && Array.isArray(recoveredState.subjects) && Array.isArray(recoveredState.notes)) {
+    subjects = sanitizeSubjects(recoveredState.subjects);
+    notes = sanitizeNotes(recoveredState.notes);
+    calcHistory = sanitizeCalcHistory(recoveredState.calc);
+    scheduleData = sanitizeSchedule(recoveredState.schedule);
+}
+function stateSnapshot() {
+    return JSON.stringify({ version: 6, subjects: subjects, notes: notes, calc: calcHistory, schedule: scheduleData });
+}
+let lastSavedSnapshot = stateSnapshot();
 function saveData() {
-    saveJSON(STORAGE_KEYS.subjects, subjects);
-    saveJSON(STORAGE_KEYS.notes, notes);
-    saveJSON(STORAGE_KEYS.calc, calcHistory);
-    saveJSON(STORAGE_KEYS.schedule, scheduleData);
-    renderAll();
+    const next = stateSnapshot();
+    try {
+        localStorage.setItem(ATOMIC_STORAGE_KEY, next);
+        lastSavedSnapshot = next;
+        // Remove obsolete copies only after the complete new record is committed.
+        try { [STORAGE_KEYS.subjects, STORAGE_KEYS.notes, STORAGE_KEYS.calc, STORAGE_KEYS.schedule].forEach(key => localStorage.removeItem(key)); } catch (cleanupError) { /* committed record remains authoritative */ }
+        renderAll();
+        return true;
+    } catch (error) {
+        const restored = JSON.parse(lastSavedSnapshot);
+        subjects = restored.subjects; notes = restored.notes;
+        calcHistory = restored.calc; scheduleData = restored.schedule;
+        renderAll();
+        alert(uiText('خوندي نه شول. د وسیلې ځای وګورئ؛ لیکل شوی متن لا په فورمه کې شته.',
+            'ذخیره نشد. فضای دستگاه را بررسی کنید؛ متن در فورم باقی است.',
+            'Not saved. Check available device storage; your text is still in the form.'));
+        return false;
+    }
 }
 
 
@@ -1532,7 +1613,7 @@ function renderRecentNotes(activeNotes) {
         html += `
             <div class="card-item">
                 <div class="card-info">
-                    <h4>${escapeHtml(n.title)}</h4>
+                    <h4>${escapeHtml(displayNoteTitle(n))}</h4>
                     <p>${escapeHtml(previewText(n.content, 45))}</p>
                     <span class="card-date">${escapeHtml(n.date)}</span>
                 </div>
@@ -1653,7 +1734,7 @@ function renderNotesPage(activeNotes) {
         html += `
             <div class="card-item">
                 <div class="card-info">
-                    <h4>${escapeHtml(note.title)}</h4>
+                    <h4>${escapeHtml(displayNoteTitle(note))}</h4>
                     <p style="color:var(--primary); font-size:0.78rem;">${escapeHtml(subjectLabel)}: ${escapeHtml(sub ? sub.title : 'General')}</p>
                     <p style="margin-top:4px; color: var(--text-main);">${escapeHtml(note.content)}</p>
                     <span class="card-date">${escapeHtml(note.date)}</span>
@@ -1688,7 +1769,7 @@ function renderTrash(trashNotes) {
         html += `
             <div class="card-item">
                 <div class="card-info">
-                    <h4>${escapeHtml(note.title)}</h4>
+                    <h4>${escapeHtml(displayNoteTitle(note))}</h4>
                     <p>${escapeHtml(previewText(note.content, 30))}</p>
                 </div>
                 <div class="card-actions">
@@ -1728,112 +1809,131 @@ function clearCalcHistory() {
 
 
 /* ============================================================================
-   5. NAVIGATION & HISTORY (modal-aware)
+   5. NAVIGATION — shared by browser Back and Android's native dispatcher.
+   Each entry retains its subject filter. Android calls handleAppBack() and
+   only backgrounds the activity when it returns false at Home.
    ============================================================================ */
-
 let currentPage = 'home';
-let modalPushed = false;      /* true when we pushed a history entry for a modal */
-let ignoreNextPopstate = false; /* true right after we call history.back() ourselves */
-
-/** Public page switcher — also manages the browser history entry. */
-function switchPage(pageId) {
-    if (currentPage !== pageId) {
-        if (pageId !== 'home') {
-            history.pushState({ page: pageId }, '', '#' + pageId);
-        } else {
-            history.replaceState({ page: 'home' }, '', '#home');
-        }
+let navDepth = 0;
+let historyPending = false;
+let restoringHistory = false;
+let afterHistoryNavigation = null;
+let modalBaseline = '';
+const validPages = ['home','subjects','notes','attendance','calc','search','trash','about','privacy'];
+function pageState(modalId) {
+    return { universityNotes: true, page: currentPage, filter: selectedSubjectFilter,
+        depth: navDepth, modal: modalId || null };
+}
+function writeHistory(push, modalId) {
+    try {
+        history[push ? 'pushState' : 'replaceState'](pageState(modalId), '', '#' + currentPage);
+    } catch (error) { /* Native Back still returns Home if browser history is unavailable. */ }
+}
+function switchPage(pageId, options) {
+    if (!validPages.includes(pageId) || historyPending) return;
+    if (document.querySelector('.modal.active')) return;
+    const filter = pageId === 'notes' && options && options.filter != null ? Number(options.filter) : null;
+    const changed = currentPage !== pageId || selectedSubjectFilter !== filter;
+    if (changed) {
+        navDepth++;
+        selectedSubjectFilter = filter;
+        currentPage = pageId;
+        writeHistory(true);
     }
     switchPageInternal(pageId);
+    window.scrollTo(0, 0);
 }
-
-/** Switches the visible page without touching history. */
 function switchPageInternal(pageId) {
-    currentPage = pageId;
-
-    document.querySelectorAll('.page').forEach(function (p) { p.classList.remove('active'); });
-    document.querySelectorAll('.nav-item').forEach(function (n) { n.classList.remove('active'); });
-
-    const activePage = document.getElementById('page-' + pageId);
-    if (activePage) activePage.classList.add('active');
-
-    const navIndex = ['home', 'subjects', 'attendance', 'calc', 'about'].indexOf(pageId);
-    if (navIndex !== -1) {
-        const navItems = document.querySelectorAll('.nav-item');
-        if (navItems[navIndex]) navItems[navIndex].classList.add('active');
-    }
-
-    if (pageId === 'notes' && !selectedSubjectFilter) {
-        document.getElementById('notes-page-subtitle').innerText = t().allNotes;
-        document.getElementById('pdf-export-btn').style.display = 'none';
-    }
-
+    currentPage = validPages.includes(pageId) ? pageId : 'home';
+    document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.id === 'page-' + currentPage));
+    const navIndex = ['home','subjects','attendance','calc','about'].indexOf(currentPage);
+    document.querySelectorAll('.nav-item').forEach((item, index) => item.classList.toggle('active', index === navIndex));
+    const sub = subjects.find(s => s.id === selectedSubjectFilter);
+    document.getElementById('notes-page-subtitle').innerText = sub ? sub.title : t().allNotes;
+    document.getElementById('pdf-export-btn').style.display = sub ? 'inline-flex' : 'none';
     renderAll();
 }
-
-window.addEventListener('popstate', function () {
-    /* We closed the modal programmatically and called history.back(). */
-    if (ignoreNextPopstate) {
-        ignoreNextPopstate = false;
-        return;
+function editorSignature() {
+    const modal = document.querySelector('.modal.active');
+    return modal ? Array.from(modal.querySelectorAll('input,select,textarea')).map(el => el.value).join('\u0000') : '';
+}
+function mayDiscardEditor() {
+    return editorSignature() === modalBaseline || confirm(uiText(
+        'ناخوندي بدلونونه شته. له خوندي کولو پرته یې بندوئ؟',
+        'تغییرات ذخیره نشده است. بدون ذخیره بسته شود؟',
+        'Discard unsaved changes?'));
+}
+function goBackInApp() {
+    historyPending = true;
+    if (navDepth > 0) {
+        history.back();
+        // A file:// host can forbid history changes. Never leave navigation locked.
+        setTimeout(function () {
+            if (!historyPending) return;
+            historyPending = false;
+            navDepth = 0; selectedSubjectFilter = null;
+            hideAllModals(); switchPageInternal('home'); writeHistory(false);
+        }, 700);
+    } else {
+        historyPending = false;
+        selectedSubjectFilter = null; hideAllModals(); switchPageInternal('home'); writeHistory(false);
     }
-
-    /* Hardware back while a modal is open → just close the modal. */
-    if (modalPushed) {
-        modalPushed = false;
-        hideAllModals();
-        return;
+}
+function handleAppBack() {
+    if (historyPending) return true;
+    const modal = document.querySelector('.modal.active');
+    if (modal) {
+        if (!mayDiscardEditor()) return true;
+        hideAllModals(); goBackInApp(); return true;
     }
-
-    /* Otherwise back always returns to the Home page (original behaviour). */
-    if (currentPage !== 'home') {
-        switchPageInternal('home');
+    if (currentPage !== 'home') { goBackInApp(); return true; }
+    return false;
+}
+window.UniversityNotesBack = handleAppBack;
+window.addEventListener('popstate', function (event) {
+    if (restoringHistory) { restoringHistory = false; return; }
+    const modal = document.querySelector('.modal.active');
+    if (modal && !historyPending && !mayDiscardEditor()) {
+        restoringHistory = true; history.forward(); return;
+    }
+    historyPending = false;
+    hideAllModals();
+    const state = event.state;
+    navDepth = state && state.universityNotes ? Math.max(0, Number(state.depth) || 0) : 0;
+    selectedSubjectFilter = state && state.universityNotes ? state.filter : null;
+    switchPageInternal(state && state.universityNotes ? state.page : 'home');
+    if (state && state.modal && document.getElementById(state.modal)) {
+        document.getElementById(state.modal).classList.add('active');
+    }
+    if (afterHistoryNavigation) { const next = afterHistoryNavigation; afterHistoryNavigation = null; next(); }
+});
+window.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape' && (currentPage !== 'home' || document.querySelector('.modal.active'))) {
+        event.preventDefault(); handleAppBack();
     }
 });
 
-
 /* ============================================================================
-   6. MODALS
+   6. MODALS — Back closes the editor before leaving its underlying page.
    ============================================================================ */
-
-/** Shows a modal and (only for the first one) records a history entry. */
 function showModal(modalId) {
-    const anyModalOpen = document.querySelector('.modal.active');
+    if (historyPending) return;
     const modal = document.getElementById(modalId);
     if (!modal) return;
-    modal.classList.add('active');
-
-    if (!anyModalOpen) {
-        modalPushed = true;
-        try {
-            history.pushState({ modal: true }, '', location.hash || '#home');
-        } catch (err) { modalPushed = false; }
-    }
-}
-
-/** Hides every open modal without touching history. */
-function hideAllModals() {
-    document.querySelectorAll('.modal').forEach(function (m) { m.classList.remove('active'); });
-}
-
-/** Closes modals from a UI button and removes the extra history entry. */
-function closeModals() {
     const wasOpen = !!document.querySelector('.modal.active');
-    hideAllModals();
-
-    if (modalPushed && wasOpen) {
-        modalPushed = false;
-        ignoreNextPopstate = true;
-        try {
-            history.back();
-        } catch (err) {
-            ignoreNextPopstate = false;
-        }
-        /* Safety net: never leave the ignore flag stuck forever. */
-        setTimeout(function () { ignoreNextPopstate = false; }, 1000);
-    }
+    hideAllModals(); modal.classList.add('active');
+    modalBaseline = editorSignature();
+    if (!wasOpen) { navDepth++; writeHistory(true, modalId); }
 }
-
+function hideAllModals() {
+    document.querySelectorAll('.modal').forEach(m => m.classList.remove('active'));
+}
+function closeModals(saved, next) {
+    if (historyPending || !document.querySelector('.modal.active')) return;
+    if (saved !== true && !mayDiscardEditor()) return;
+    afterHistoryNavigation = typeof next === 'function' ? next : null;
+    hideAllModals(); goBackInApp();
+}
 
 /* ============================================================================
    7. SUBJECTS (CRUD)
@@ -1870,10 +1970,10 @@ function saveSubject() {
         absent: 0
     });
 
+    if (!saveData()) return;
     titleInput.value = '';
     creditInput.value = '';
-    closeModals();
-    saveData();
+    closeModals(true);
 }
 
 /** Deletes a subject together with all of its notes (with confirmation). */
@@ -1941,6 +2041,10 @@ function openNoteModal(editId) {
         if (note) {
             modalTitle.innerText = t().modNoteEditTitle;
             idField.value = String(note.id);
+            /* NOTE: we intentionally show the RAW stored title here.
+               If it is empty, the field stays empty — we do NOT inject
+               the display fallback ("Untitled" etc.) into the input,
+               so the user is not misled into thinking a fallback was saved. */
             titleField.value = note.title;
             select.value = String(note.subjectId);
             contentField.value = note.content;
@@ -1955,18 +2059,23 @@ function openNoteModal(editId) {
     showModal('note-modal');
 }
 
-/** Creates or updates a note. */
+/**
+ * Creates or updates a note.
+ * Required: content (text).
+ * Optional: title — an empty title is perfectly valid and is saved as-is.
+ */
 function saveNote() {
     const editIdRaw = document.getElementById('edit-note-id').value;
     const title = document.getElementById('note-title-input').value.trim();
     const content = document.getElementById('note-content-input').value.trim();
     const subId = parseInt(document.getElementById('note-subject-select').value, 10);
 
-    if (!title || !content) {
+    /* Only content is mandatory; title is optional. */
+    if (!content) {
         alert(t().msgNoteRequired);
         return;
     }
-    if (!isFinite(subId)) {
+    if (!Number.isSafeInteger(subId) || !subjects.some(s => s.id === subId)) {
         alert(t().msgNoSubject);
         return;
     }
@@ -1979,7 +2088,7 @@ function saveNote() {
         const editId = Number(editIdRaw);
         const idx = notes.findIndex(function (n) { return n.id === editId; });
         if (idx !== -1) {
-            notes[idx].title = title;
+            notes[idx].title = title;      /* may be '' — that is fine */
             notes[idx].subjectId = subId;
             notes[idx].content = content;
             notes[idx].date = formattedDate;
@@ -1988,29 +2097,25 @@ function saveNote() {
         notes.push({
             id: generateId(),
             subjectId: subId,
-            title: title,
+            title: title,                  /* may be '' — that is fine */
             content: content,
             isTrash: false,
             date: formattedDate
         });
     }
 
+    if (!saveData()) return;
     document.getElementById('edit-note-id').value = '';
     document.getElementById('note-title-input').value = '';
     document.getElementById('note-content-input').value = '';
 
-    closeModals();
-    saveData();
-    switchPage('notes');
+    closeModals(true, function () { switchPage('notes', { filter: subId }); });
 }
 
 /** Filters the notes page to a single subject and enables PDF export. */
 function filterNotesBySubject(subId) {
-    selectedSubjectFilter = subId;
-    const sub = subjects.find(function (s) { return s.id === subId; });
-    document.getElementById('notes-page-subtitle').innerText = sub ? sub.title : '';
-    document.getElementById('pdf-export-btn').style.display = 'inline-flex';
-    switchPage('notes');
+    if (!subjects.some(s => s.id === subId)) return;
+    switchPage('notes', { filter: subId });
 }
 
 
@@ -2068,7 +2173,8 @@ function handleSearch() {
     const filtered = notes.filter(function (n) {
         if (n.isTrash) return false;
         const subjectTitle = subjectTitles[n.subjectId] || '';
-        return n.title.toLowerCase().indexOf(query) !== -1 ||
+        const title = (n.title || '').toLowerCase();
+        return title.indexOf(query) !== -1 ||
                n.content.toLowerCase().indexOf(query) !== -1 ||
                subjectTitle.indexOf(query) !== -1;
     });
@@ -2085,7 +2191,7 @@ function handleSearch() {
         html += `
             <div class="card-item">
                 <div class="card-info">
-                    <h4>${escapeHtml(n.title)}</h4>
+                    <h4>${escapeHtml(displayNoteTitle(n))}</h4>
                     <p>${escapeHtml(n.content)}</p>
                     <span class="card-date">${escapeHtml(n.date)}</span>
                 </div>
@@ -2153,16 +2259,14 @@ function saveSchedule() {
         if (key) scheduleData[key] = input.value.trim();
     });
 
-    saveData();
-    closeModals();
+    if (saveData()) closeModals(true);
 }
 
 
 /* ============================================================================
    12. CALCULATOR — SAFE RECURSIVE-DESCENT EXPRESSION PARSER
    ----------------------------------------------------------------------------
-   Replaces the previous unsafe `Function(...)` based evaluation. No dynamic
-   code is ever executed. Grammar:
+   No dynamic code is ever executed. Grammar:
 
        expression := term (('+' | '-') term)*
        term       := unary (('*' | '/' | '%') unary)*
@@ -2191,12 +2295,10 @@ function tokenizeExpression(input) {
         /* Number literal */
         if ((ch >= '0' && ch <= '9') ||
             (ch === '.' && input[i + 1] >= '0' && input[i + 1] <= '9')) {
-            let numStr = '';
-            while (i < len && ((input[i] >= '0' && input[i] <= '9') || input[i] === '.')) {
-                numStr += input[i];
-                i++;
-            }
-            const num = parseFloat(numStr);
+            const match = input.slice(i).match(/^(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?/);
+            if (!match) throw new Error('Invalid number');
+            i += match[0].length;
+            const num = Number(match[0]);
             if (!isFinite(num)) throw new Error('Invalid number');
             tokens.push({ type: 'number', value: num });
             continue;
@@ -2262,6 +2364,7 @@ function applyCalcFunction(name, x) {
  * @throws {Error} when the expression is malformed
  */
 function evaluateExpression(input) {
+    if (input.length > 512) throw new Error('Expression too long');
     const tokens = tokenizeExpression(input);
     if (tokens.length === 0) throw new Error('Empty expression');
 
@@ -2369,7 +2472,8 @@ function resetCalcIfError() {
 /** Appends a digit or decimal point. */
 function calcNum(n) {
     resetCalcIfError();
-    if (calcVal === '0') calcVal = n;
+    if (n === '.' && /\d*\.\d*$/.test(calcVal.split(/[+*/%()^]/).pop())) return;
+    if (calcVal === '0') calcVal = n === '.' ? '0.' : n;
     else calcVal += n;
     updateCalcDisplay();
 }
@@ -2377,7 +2481,7 @@ function calcNum(n) {
 /** Appends an operator / function / parenthesis / constant. */
 function calcOp(op) {
     resetCalcIfError();
-    if (calcVal === '0' && op !== '(') calcVal = op;
+    if (calcVal === '0' && (op === '(' || /^[a-zA-Z]/.test(op))) calcVal = op;
     else calcVal += op;
     updateCalcDisplay();
 }
@@ -2421,103 +2525,189 @@ function calcEqual() {
 
 
 /* ============================================================================
-   13. PDF EXPORT
+   13. OFFLINE PDF — no CDN, print(), web font or remote service.
+   Canvas uses the device's own Arabic/Pashto shaping and bidi renderer. Each
+   A4 page is stored as a high-resolution JPEG inside a standards-based PDF.
+   This preserves appearance and mixed scripts; PDF text is not selectable.
+   Only one canvas is retained. Limits keep mobile memory usage predictable.
    ============================================================================ */
+function uiText(ps, dr, en) { return currentLang === 'en' ? en : currentLang === 'dr' ? dr : ps; }
+let toastTimer;
+function showStatus(message) {
+    const status = document.getElementById('app-status');
+    status.textContent = message; status.hidden = false;
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => { status.hidden = true; }, 5000);
+}
+function renderPrivacy() {
+    document.getElementById('privacy-link').textContent = uiText('د محرمیت تګلاره', 'سیاست حریم خصوصی', 'Privacy policy');
+    const contact = '<a href="https://wa.me/93704287401" target="_blank" rel="noopener noreferrer">WhatsApp: +93 704 287 401</a>';
+    const policy = uiText(
+        `<h2>University Notes — د محرمیت تګلاره</h2><p>جوړوونکی: Wakil Ahmad Noori<br>وروستی بدلون: ۲۰۲۶/۱۰/۱۷</p>
+        <h3>معلومات او ساتنه</h3><p>نوټونه، مضمونونه، نمرې، حاضري، مهالوېش، ژبه، بڼه او د حساب تاریخچه یوازې د اپ په ځايي زېرمه کې ساتل کېږي. دا نسخه حساب جوړول، اعلانونه، څارنه او تحلیلي خدمات نه لري؛ جوړوونکی ستاسو نوټونو ته لاسرسی نه لري او اپ یې سرور ته نه لېږي.</p>
+        <h3>PDF او بهرنۍ اړیکې</h3><p>PDF په همدې وسیله، بې‌انټرنېټه جوړېږي. په Android کې د فایل ځای تاسو ټاکئ؛ د ټولې حافظې اجازې ته اړتیا نشته. که آنلاین زېرمه وټاکئ، فایل هماغه خدمت ته سپارئ. شریک شوی یا خوندي شوی PDF د اپ له پاکولو وروسته هم پاتې کېدای شي. د واټساپ او فېسبوک لینکونه یوازې ستاسو په غوښتنه پرانیستل کېږي او د هغوی خپل شرایط عملي کېږي؛ نوټونه ورسره په اتومات ډول نه شریکېږي.</p>
+        <h3>پاکول او مسؤلیت</h3><p>نوټونه ترش ته انتقالېږي؛ له ترش څخه په تلپاتې پاکولو حذفېږي. د ټولو ځايي معلوماتو د پاکولو لپاره د Android د اپ معلوماتو برخه کې Clear storage وکاروئ یا اپ لرې کړئ. د پخوانۍ نسخې معلومات په خوندي ډول نوې زېرمې ته لېږدول کېږي او زاړه نقلونه له بریالي انتقال وروسته پاکېږي. له مهمو نوټونو PDF وساتئ؛ دا اپ آنلاین همغږي یا بشپړه بېرته راګرځېدونکې بیک‌اپ نه لري.</p>
+        <h3>اجازې او اړیکه</h3><p>دا نسخه کامرې، اړیکو، موقعیت، مایکروفون یا د ټولې حافظې اجازه نه غواړي. که راتلونکې نسخه اعلانونه یا نور خدمات زیات کړي، دا تګلاره او د Play Store معلومات باید هم ورسره بدل شي. د پوښتنو لپاره: ${contact}</p>`,
+        `<h2>University Notes — حریم خصوصی</h2><p>سازنده: Wakil Ahmad Noori<br>آخرین تغییر: 2026-10-17</p>
+        <h3>ذخیرۀ محلی</h3><p>یادداشت‌ها، مضمون‌ها، نمرات، حاضری، تقسیم اوقات، زبان، ظاهر و تاریخچۀ حساب فقط در ذخیرۀ محلی برنامه نگهداری می‌شوند. این نسخه حساب، تبلیغات، ردیابی یا تحلیل‌گر ندارد و یادداشت‌ها را به سرور نمی‌فرستد.</p>
+        <h3>PDF و لینک‌ها</h3><p>PDF بدون انترنت روی دستگاه ساخته می‌شود. در Android محل ذخیره را خودتان انتخاب می‌کنید؛ دسترسی عمومی به حافظه لازم نیست. انتخاب ذخیرۀ ابری فایل را به همان خدمت می‌سپارد. PDFهای ذخیره یا شریک‌شده ممکن است پس از حذف برنامه باقی بمانند. لینک‌های واتساپ و فیسبوک فقط با انتخاب شما باز می‌شوند؛ معلومات داخلی خودکار شریک نمی‌شوند و شرایط همان خدمات اعمال می‌شود.</p>
+        <h3>حذف معلومات</h3><p>یادداشت‌ها را به زباله‌دان منتقل و سپس دایمی حذف کنید. برای پاک کردن همۀ معلومات و نقل‌های نسخۀ پیشین، در تنظیمات Android گزینه Clear storage را بزنید یا برنامه را حذف کنید. معلومات نسخۀ پیشین پس از انتقال موفق به ذخیرۀ جدید پاک می‌شوند. این برنامه همگام‌سازی آنلاین یا پشتیبان قابل بازیابی ندارد؛ از مطالب مهم PDF نگه دارید.</p>
+        <h3>اجازه‌ها و تماس</h3><p>این نسخه اجازۀ کمره، موقعیت، مخاطبین، مایکروفون یا همۀ حافظه را درخواست نمی‌کند. افزودن تبلیغات یا خدمات در آینده نیازمند به‌روزرسانی این تگ‌لاره و معلومات Play Store است. تماس: ${contact}</p>`,
+        `<h2>University Notes — Privacy policy</h2><p>Developer: Wakil Ahmad Noori<br>Updated: 2026-10-17</p>
+        <h3>Local data</h3><p>Notes, subjects, grades, attendance, schedule, language, theme and calculator history are stored locally in app storage. This version has no accounts, ads, analytics or tracking. The developer does not receive your notes; the app does not upload them to a server.</p>
+        <h3>PDF files and external links</h3><p>PDFs are generated offline on your device. Android asks you to choose the destination without broad storage permission. Choosing a cloud document provider sends the file to that provider. Exported or shared copies may remain after app deletion. WhatsApp and Facebook open only when selected and follow their own policies; your notes are not automatically sent to them.</p>
+        <h3>Retention and deletion</h3><p>Move notes to Trash, then permanently delete them. To erase all local data, including retained migration copies, use Android Settings → Apps → University Notes → Storage → Clear storage, or uninstall the app. Legacy local records are removed after a successful migration save. There is no online sync or restorable full backup; keep PDFs of important notes. Exported files must be deleted separately.</p>
+        <h3>Permissions and contact</h3><p>This version requests no camera, contacts, location, microphone or broad file access. If future versions add advertising or other services, this policy and the Play Store disclosures must be updated. Questions: ${contact}</p>`);
+    document.getElementById('privacy-policy-content').innerHTML = policy;
+}
 
-/** Exports the currently filtered subject's notes as a PDF file. */
-function exportSubjectToPDF() {
-    if (!selectedSubjectFilter) return;
-
-    const sub = subjects.find(function (s) { return s.id === selectedSubjectFilter; });
-    const subNotes = notes.filter(function (n) {
-        return !n.isTrash && n.subjectId === selectedSubjectFilter;
-    });
-
-    if (subNotes.length === 0) {
-        alert(t().msgNoNotesForPdf);
-        return;
+function paragraphIsRTL(text) {
+    const firstLetter = String(text).match(/\p{L}/u);
+    return firstLetter ? /[\u0590-\u08ff\ufb1d-\ufeff]/.test(firstLetter[0]) : currentLang !== 'en';
+}
+function wrapPdfParagraph(context, text, maxWidth) {
+    const lines = [], rtl = paragraphIsRTL(text);
+    context.direction = rtl ? 'rtl' : 'ltr';
+    if (!text) return [{ text: '', rtl: rtl }];
+    let line = '';
+    const words = text.match(/\S+\s*|\s+/gu) || [''];
+    for (const word of words) {
+        if (context.measureText(line + word).width <= maxWidth) { line += word; continue; }
+        if (line) { lines.push({ text: line.trimEnd(), rtl: rtl }); line = ''; }
+        if (context.measureText(word).width <= maxWidth) { line = word; continue; }
+        // Do not split surrogate pairs, combining marks or emoji sequences.
+        const pieces = typeof Intl.Segmenter === 'function'
+            ? Array.from(new Intl.Segmenter(undefined, { granularity: 'grapheme' }).segment(word), x => x.segment)
+            : Array.from(word);
+        for (const piece of pieces) {
+            if (line && context.measureText(line + piece).width > maxWidth) {
+                lines.push({ text: line, rtl: rtl }); line = '';
+            }
+            line += piece;
+        }
     }
-
-    /* Build a detached, escaped document for html2pdf. */
-    const element = document.createElement('div');
-    element.style.padding = '20px';
-    element.style.fontFamily = 'sans-serif';
-    element.style.direction = currentLang === 'en' ? 'ltr' : 'rtl';
-    element.style.color = '#000000';
-
-    let notesHTML = `
-        <div style="text-align: center; border-bottom: 2px solid #6366f1; padding-bottom: 12px; margin-bottom: 20px;">
-            <h1 style="color: #6366f1; margin-bottom: 5px; font-size:22px;">${escapeHtml(sub ? sub.title : '')}</h1>
-            <p style="color: #555; font-size: 13px;">د پوهنتون درسونه او خلاصې - NOORZAI</p>
-            <p style="color: #888; font-size: 11px; margin-top:4px;">نېټه: ${escapeHtml(new Date().toLocaleDateString())}</p>
-        </div>
-    `;
-
-    subNotes.forEach(function (n, idx) {
-        notesHTML += `
-            <div style="border: 1px solid #ddd; border-radius: 8px; padding: 12px 15px; margin-bottom: 15px; background: #fafafa;">
-                <h3 style="color: #1f2937; margin-bottom: 6px; font-size:16px;">${idx + 1}. ${escapeHtml(n.title)}</h3>
-                <p style="color: #374151; font-size: 13px; line-height: 1.6; white-space: pre-wrap;">${escapeHtml(n.content)}</p>
-                <div style="text-align: left; font-size: 10px; color: #888; margin-top: 8px; direction:ltr;">${escapeHtml(n.date)}</div>
-            </div>
-        `;
+    if (line) lines.push({ text: line.trimEnd(), rtl: rtl });
+    return lines;
+}
+function dataUrlBytes(dataUrl) {
+    const binary = atob(dataUrl.slice(dataUrl.indexOf(',') + 1));
+    return Uint8Array.from(binary, char => char.charCodeAt(0));
+}
+/** A minimal PDF 1.4 writer, with byte-accurate object offsets and JPEG streams. */
+function assemblePdf(pageImages, width, height) {
+    const parts = [], offsets = [0], encoder = new TextEncoder(); let length = 0;
+    const append = value => { const bytes = typeof value === 'string' ? encoder.encode(value) : value; parts.push(bytes); length += bytes.length; };
+    const object = (id, content, binary) => {
+        offsets[id] = length; append(id + ' 0 obj\n'); append(content);
+        if (binary) { append('\nstream\n'); append(binary); append('\nendstream'); }
+        append('\nendobj\n');
+    };
+    append('%PDF-1.4\n%'); append(new Uint8Array([0xe2, 0xe3, 0xcf, 0xd3])); append('\n');
+    object(1, '<< /Type /Catalog /Pages 2 0 R >>');
+    const kids = pageImages.map((image, index) => (3 + index * 3) + ' 0 R').join(' ');
+    object(2, '<< /Type /Pages /Count ' + pageImages.length + ' /Kids [ ' + kids + ' ] >>');
+    pageImages.forEach((image, index) => {
+        const id = 3 + index * 3;
+        object(id, '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /XObject << /Image ' + (id + 1) + ' 0 R >> >> /Contents ' + (id + 2) + ' 0 R >>');
+        object(id + 1, '<< /Type /XObject /Subtype /Image /Width ' + width + ' /Height ' + height + ' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ' + image.length + ' >>', image);
+        const stream = encoder.encode('q\n595.28 0 0 841.89 0 0 cm\n/Image Do\nQ\n');
+        object(id + 2, '<< /Length ' + stream.length + ' >>', stream);
     });
-
-    element.innerHTML = notesHTML;
-
-    /* Offline-safe PDF export: use the device/browser print-to-PDF flow.
-       No internet library is required, so this also works without a network. */
+    const xref = length, count = 3 + pageImages.length * 3;
+    append('xref\n0 ' + count + '\n0000000000 65535 f \n');
+    for (let i = 1; i < count; i++) append(String(offsets[i]).padStart(10, '0') + ' 00000 n \n');
+    append('trailer\n<< /Size ' + count + ' /Root 1 0 R >>\nstartxref\n' + xref + '\n%%EOF\n');
+    return new Blob(parts, { type: 'application/pdf' });
+}
+async function buildOfflinePdf(subjectTitle, exportedNotes) {
+    if (document.fonts) await document.fonts.ready;
+    const width = 1240, height = 1754, margin = 76, bottom = height - 100;
+    const canvas = document.createElement('canvas'); canvas.width = width; canvas.height = height;
+    const context = canvas.getContext('2d', { alpha: false });
+    if (!context) throw new Error('Canvas unavailable');
+    const images = []; let y = 0, totalBytes = 0, linesDrawn = 0;
+    function finishPage() {
+        context.font = '20px sans-serif'; context.textAlign = 'center'; context.direction = 'ltr'; context.fillStyle = '#64748b';
+        context.fillText('University Notes  •  ' + (images.length + 1), width / 2, height - 50);
+        const bytes = dataUrlBytes(canvas.toDataURL('image/jpeg', 0.9));
+        totalBytes += bytes.length;
+        if (images.length >= 100 || totalBytes > 24 * 1024 * 1024) throw new Error('PDF_TOO_LARGE');
+        images.push(bytes);
+    }
+    function startPage() {
+        context.fillStyle = '#ffffff'; context.fillRect(0, 0, width, height);
+        context.fillStyle = '#4f46e5'; context.font = 'bold 30px sans-serif';
+        const rtl = paragraphIsRTL(subjectTitle); context.direction = rtl ? 'rtl' : 'ltr'; context.textAlign = rtl ? 'right' : 'left';
+        context.fillText(subjectTitle, rtl ? width - margin : margin, 78, width - margin * 2);
+        context.font = '19px sans-serif'; context.direction = 'ltr'; context.textAlign = 'left'; context.fillStyle = '#64748b';
+        context.fillText('University Notes • Wakil Ahmad Noori • ' + new Date().toLocaleDateString(), margin, 112);
+        context.strokeStyle = '#c7d2fe'; context.beginPath(); context.moveTo(margin, 134); context.lineTo(width - margin, 134); context.stroke();
+        y = 175;
+    }
+    async function writeText(text, size, bold, color) {
+        for (const paragraph of String(text).replace(/\r\n?/g, '\n').split('\n')) {
+            context.font = (bold ? 'bold ' : '') + size + 'px sans-serif';
+            const lines = wrapPdfParagraph(context, paragraph.replace(/\t/g, '    '), width - margin * 2);
+            for (const line of lines) {
+                if (y + size * 1.55 > bottom) { finishPage(); startPage(); }
+                context.font = (bold ? 'bold ' : '') + size + 'px sans-serif';
+                context.fillStyle = color; context.direction = line.rtl ? 'rtl' : 'ltr'; context.textAlign = line.rtl ? 'right' : 'left';
+                context.fillText(line.text, line.rtl ? width - margin : margin, y); y += size * 1.55;
+                if (++linesDrawn % 100 === 0) await new Promise(resolve => setTimeout(resolve, 0));
+            }
+        }
+    }
     try {
-        const printStyle = document.createElement('style');
-        printStyle.id = 'offline-pdf-print-style';
-        printStyle.textContent = `
-            @media print {
-                body > * { display: none !important; }
-                #offline-pdf-print-area { display: block !important; }
-            }
-            #offline-pdf-print-area {
-                display: none;
-                background: #fff;
-                color: #000;
-                direction: ${currentLang === 'en' ? 'ltr' : 'rtl'};
-                font-family: Arial, Tahoma, sans-serif;
-                padding: 10mm;
-            }
-            #offline-pdf-print-area .pdf-head { text-align:center; border-bottom:2px solid #6366f1; padding-bottom:12px; margin-bottom:20px; }
-            #offline-pdf-print-area .pdf-head h1 { color:#6366f1; margin:0 0 5px; font-size:22px; }
-            #offline-pdf-print-area .pdf-head p { margin:3px 0; }
-            #offline-pdf-print-area .note { border:1px solid #ddd; border-radius:8px; padding:12px 15px; margin-bottom:15px; background:#fafafa; break-inside:avoid; page-break-inside:avoid; }
-            #offline-pdf-print-area .note h3 { color:#1f2937; margin:0 0 6px; font-size:16px; }
-            #offline-pdf-print-area .note p { color:#374151; font-size:13px; line-height:1.7; white-space:pre-wrap; margin:0; }
-            #offline-pdf-print-area .note-date { text-align:left; font-size:10px; color:#888; margin-top:8px; direction:ltr; }
-            @page { size: A4; margin: 10mm; }
-        `;
-
-        const printArea = document.createElement('div');
-        printArea.id = 'offline-pdf-print-area';
-        printArea.innerHTML = notesHTML;
-        document.head.appendChild(printStyle);
-        document.body.appendChild(printArea);
-
-        const cleanup = function () {
-            if (printArea.parentNode) printArea.parentNode.removeChild(printArea);
-            if (printStyle.parentNode) printStyle.parentNode.removeChild(printStyle);
-            window.removeEventListener('afterprint', cleanup);
-        };
-
-        window.addEventListener('afterprint', cleanup);
-        setTimeout(function () {
-            window.print();
-            setTimeout(cleanup, 1500);
-        }, 100);
-    } catch (err) {
-        console.warn('Offline PDF export failed.', err);
-        alert(currentLang === 'en'
-            ? 'PDF export could not be started.'
-            : currentLang === 'dr'
-                ? 'ساخت PDF شروع نشد.'
-                : 'د PDF جوړول پیل نه شول.');
-    }
+        startPage();
+        for (let i = 0; i < exportedNotes.length; i++) {
+            const note = exportedNotes[i];
+            if (y + 125 > bottom) { finishPage(); startPage(); }
+            await writeText((i + 1) + '. ' + displayNoteTitle(note), 28, true, '#1e293b');
+            await writeText(note.content, 25, false, '#253247');
+            y += 8; await writeText(note.date, 18, false, '#64748b'); y += 22;
+        }
+        finishPage();
+        return assemblePdf(images, width, height);
+    } finally { canvas.width = canvas.height = 1; }
+}
+function blobBase64(blob) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader(); reader.onerror = () => reject(new Error('Cannot read PDF'));
+        reader.onload = () => resolve(String(reader.result).split(',')[1]); reader.readAsDataURL(blob);
+    });
+}
+let pdfBusy = false;
+async function exportSubjectToPDF() {
+    if (pdfBusy) return;
+    const sub = subjects.find(s => s.id === selectedSubjectFilter);
+    if (!sub) return;
+    const exportedNotes = notes.filter(n => !n.isTrash && n.subjectId === sub.id).map(n => ({ ...n }));
+    if (!exportedNotes.length) { alert(t().msgNoNotesForPdf); return; }
+    const button = document.getElementById('pdf-export-btn');
+    pdfBusy = true; button.disabled = true;
+    showStatus(uiText('PDF جوړېږي…', 'PDF ساخته می‌شود…', 'Creating PDF…'));
+    try {
+        const blob = await buildOfflinePdf(sub.title, exportedNotes);
+        const fileName = (sub.title.replace(/[\\/:*?"<>|\u0000-\u001f]/g, '_').slice(0, 70) || 'University-Notes') + '.pdf';
+        const isNative = window.Capacitor && window.Capacitor.isNativePlatform();
+        if (isNative) {
+            if (!universityNative) throw new Error('ANDROID_BRIDGE_MISSING');
+            const result = await universityNative.savePdf({ data: await blobBase64(blob), fileName: fileName });
+            showStatus(result.cancelled ? uiText('خوندي کول لغوه شول.', 'ذخیره لغو شد.', 'Save cancelled.')
+                : uiText('PDF خوندي شو.', 'PDF ذخیره شد.', 'PDF saved.'));
+        } else {
+            const url = URL.createObjectURL(blob), link = document.createElement('a');
+            link.href = url; link.download = fileName; document.body.appendChild(link); link.click(); link.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 60000);
+            showStatus(uiText('د PDF دانلود پیل شو.', 'دانلود PDF آغاز شد.', 'PDF download started.'));
+        }
+    } catch (error) {
+        console.warn('PDF export failed:', error.message);
+        alert(error.message === 'ANDROID_BRIDGE_MISSING'
+            ? uiText('د Android نوې نسخه د ملګري android.yml فایل په مرسته جوړه کړئ.', 'نسخۀ Android را با فایل android.yml همراه بسازید.', 'Rebuild Android using the included android.yml file.')
+            : error.message === 'PDF_TOO_LARGE'
+                ? uiText('PDF ډېر لوی دی. نوټونه په کوچنیو مضمونونو ووېشئ او بیا هڅه وکړئ.', 'PDF بسیار بزرگ است؛ یادداشت‌ها را تقسیم کنید.', 'PDF is too large. Split notes into smaller subjects.')
+                : uiText('PDF خوندي نه شو. د وسیلې تش ځای او ټاکل شوی فولډر وګورئ.', 'PDF ذخیره نشد؛ فضای دستگاه و پوشه را بررسی کنید.', 'PDF could not be saved. Check storage and the selected folder.'));
+    } finally { pdfBusy = false; button.disabled = false; }
 }
 
 /* ============================================================================
@@ -2529,6 +2719,7 @@ function toggleTheme() {
     const currentTheme = document.body.getAttribute('data-theme');
     const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
     document.body.setAttribute('data-theme', newTheme);
+    document.documentElement.setAttribute('data-theme', newTheme);
     try { localStorage.setItem(STORAGE_KEYS.theme, newTheme); } catch (err) { /* ignore */ }
 }
 
@@ -2566,8 +2757,27 @@ function updateClock() {
 /* Restore the persisted theme choice (light is the default). */
 try {
     const savedTheme = localStorage.getItem(STORAGE_KEYS.theme);
-    if (savedTheme === 'dark') document.body.setAttribute('data-theme', 'dark');
+    if (savedTheme === 'dark') { document.body.setAttribute('data-theme', 'dark'); document.documentElement.setAttribute('data-theme', 'dark'); }
 } catch (err) { /* ignore */ }
+
+/* Local bridge is supplied by the accompanying Android workflow. */
+let universityNative = null;
+try {
+    if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+        universityNative = window.Capacitor.Plugins && window.Capacitor.Plugins.UniversityNative;
+        if (!universityNative && window.Capacitor.registerPlugin) universityNative = window.Capacitor.registerPlugin('UniversityNative');
+    }
+} catch (error) { console.warn('Native bridge unavailable', error); }
+document.addEventListener('click', function (event) {
+    const link = event.target.closest('a[href]');
+    if (link && universityNative && /^https:\/\//.test(link.href)) {
+        event.preventDefault();
+        universityNative.openExternal({ url: link.href }).catch(() => alert(uiText(
+            'لینک پرانیستل نه شو. انټرنېټ او اړوند اپ وګورئ.', 'لینک باز نشد.', 'Unable to open link.')));
+    }
+});
+document.querySelectorAll('button[title]').forEach(button => button.setAttribute('aria-label', button.title));
+document.querySelectorAll('input[placeholder],textarea[placeholder]').forEach(input => input.setAttribute('aria-label', input.placeholder));
 
 /* Initial paint + start the clock. */
 applyLanguage();
@@ -2576,7 +2786,7 @@ setInterval(updateClock, 1000);
 
 /* Make the current page reflect the initial history entry. */
 try {
-    history.replaceState({ page: 'home' }, '', '#home');
+    writeHistory(false);
 } catch (err) { /* ignore */ }
 </script>
 </body>
