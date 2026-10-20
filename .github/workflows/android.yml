@@ -21,7 +21,7 @@ on:
       version_name:
         description: 'Visible app version'
         type: string
-        default: '1.1.0'
+        default: '1.1.1'
 
 permissions:
   contents: read
@@ -111,7 +111,7 @@ jobs:
           (target / 'capacitor.config.json').write_text(json.dumps(config, indent=2))
           (target / 'package.json').write_text(json.dumps({
               'name': 'university-notes-android',
-              'version': '1.1.0',
+              'version': '1.1.1',
               'private': True
           }))
 
@@ -204,7 +204,7 @@ jobs:
           print('Generated University Notes legacy, round, and adaptive launcher icons')
           PYICON
 
-      - name: Add native Back and offline PDF support
+      - name: Add native Back, offline files and device security
         run: |
           set -euo pipefail
           cd "$WORK_DIR"
@@ -218,24 +218,134 @@ jobs:
           java_dir.mkdir(parents=True, exist_ok=True)
 
           (java_dir / 'MainActivity.java').write_text(r'''package com.noori.universitynotes;
-
+          
           import android.os.Bundle;
           import android.webkit.WebView;
           import androidx.activity.OnBackPressedCallback;
           import com.getcapacitor.BridgeActivity;
-
+          
           public class MainActivity extends BridgeActivity {
               private boolean checkingBack = false;
-
+              // Device authentication is handled by Android; no credential enters JavaScript.
+              private volatile boolean locked = false;
+              private boolean authenticating = false;
+              private boolean promptOnResume = true;
+              private Boolean pendingLockChange = null;
+              private java.util.function.Consumer<Boolean> securityCompletion;
+              private android.widget.LinearLayout lockCover;
+              private final androidx.activity.result.ActivityResultLauncher<android.content.Intent> credentialLauncher =
+                  registerForActivityResult(new androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult(), result -> {
+                      authenticating = false;
+                      boolean success = result.getResultCode() == android.app.Activity.RESULT_OK;
+                      if (success && pendingLockChange != null) {
+                          // commit before acknowledging a security setting change.
+                          success = securityPrefs().edit().putBoolean("appLock", pendingLockChange).commit();
+                      }
+                      pendingLockChange = null;
+                      if (success) {
+                          locked = false; showLockCover(false);
+                          if (getBridge() != null && getBridge().getWebView() != null)
+                              getBridge().getWebView().evaluateJavascript("if(typeof refreshSecurity==='function')refreshSecurity();", null);
+                      }
+                      updateSecureWindow();
+                      java.util.function.Consumer<Boolean> completion = securityCompletion;
+                      securityCompletion = null;
+                      if (completion != null) completion.accept(success);
+                  });
+          
+              android.content.SharedPreferences securityPrefs() {
+                  return getSharedPreferences("university_security", MODE_PRIVATE);
+              }
+              boolean isAppLocked() { return locked; }
+              boolean isDeviceSecure() {
+                  android.app.KeyguardManager keyguard = (android.app.KeyguardManager)getSystemService(KEYGUARD_SERVICE);
+                  return keyguard != null && keyguard.isDeviceSecure();
+              }
+              private String securityText(String ps, String dr, String en) {
+                  String language = securityPrefs().getString("language", "ps");
+                  return "en".equals(language) ? en : "dr".equals(language) ? dr : ps;
+              }
+              void updateSecureWindow() {
+                  boolean secure = locked || securityPrefs().getBoolean("appLock", false) || securityPrefs().getBoolean("hideScreen", false);
+                  if (secure) getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE);
+                  else getWindow().clearFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE);
+              }
+              private void showLockCover(boolean show) {
+                  if (getBridge() != null && getBridge().getWebView() != null)
+                      getBridge().getWebView().setVisibility(show ? android.view.View.INVISIBLE : android.view.View.VISIBLE);
+                  if (lockCover == null && show) {
+                      lockCover = new android.widget.LinearLayout(this);
+                      lockCover.setOrientation(android.widget.LinearLayout.VERTICAL);
+                      lockCover.setGravity(android.view.Gravity.CENTER);
+                      lockCover.setPadding(32,32,32,32);
+                      lockCover.setBackgroundColor(android.graphics.Color.rgb(15,23,42));
+                      android.widget.TextView title = new android.widget.TextView(this);
+                      title.setText("University Notes");title.setTextColor(android.graphics.Color.WHITE);title.setTextSize(24);
+                      title.setGravity(android.view.Gravity.CENTER);
+                      lockCover.addView(title);
+                      android.widget.TextView hint = new android.widget.TextView(this);
+                      hint.setText(securityText("د موبایل PIN، بڼې یا پټنوم په وسیله اپ پرانیزئ.","برنامه را با PIN، الگو یا رمز دستگاه باز کنید.","Unlock with your device PIN, pattern or password."));
+                      hint.setTextColor(android.graphics.Color.LTGRAY);hint.setTextSize(16);hint.setPadding(0,24,0,24);hint.setGravity(android.view.Gravity.CENTER);
+                      lockCover.addView(hint);
+                      android.widget.Button unlock = new android.widget.Button(this);
+                      unlock.setText(securityText("قلف پرانیستل","باز کردن قفل","Unlock"));
+                      unlock.setOnClickListener(v -> {
+                          if (!isDeviceSecure()) {
+                              // Removing the phone credential must never silently bypass an enabled lock.
+                              try { startActivity(new android.content.Intent(android.provider.Settings.ACTION_SECURITY_SETTINGS)); }
+                              catch (Exception error) { android.widget.Toast.makeText(this, "Set a device PIN in Android Settings", android.widget.Toast.LENGTH_LONG).show(); }
+                          } else authenticate(null, null);
+                      });
+                      lockCover.addView(unlock);
+                      addContentView(lockCover, new android.view.ViewGroup.LayoutParams(-1,-1));
+                  }
+                  if (lockCover != null) { lockCover.setVisibility(show ? android.view.View.VISIBLE : android.view.View.GONE);if(show)lockCover.bringToFront(); }
+              }
+              void configureAppLock(boolean enabled, java.util.function.Consumer<Boolean> completion) {
+                  if (locked || authenticating || !isDeviceSecure()) { completion.accept(false);return; }
+                  authenticate(enabled, completion);
+              }
+              void lockNow() {
+                  if (!securityPrefs().getBoolean("appLock",false)) return;
+                  locked=true;showLockCover(true);updateSecureWindow();
+                  authenticate(null,null);
+              }
+              @SuppressWarnings("deprecation")
+              private void authenticate(Boolean change, java.util.function.Consumer<Boolean> completion) {
+                  if (authenticating) { if(completion != null)completion.accept(false);return; }
+                  android.app.KeyguardManager keyguard = (android.app.KeyguardManager)getSystemService(KEYGUARD_SERVICE);
+                  android.content.Intent intent = keyguard == null ? null : keyguard.createConfirmDeviceCredentialIntent("University Notes",
+                      securityText("د اپ د پرانیستلو لپاره خپل د موبایل قلف تایید کړئ.","برای باز کردن برنامه قفل دستگاه را تأیید کنید.","Confirm your device credential to unlock the app."));
+                  if (intent == null) { if(completion != null)completion.accept(false);return; }
+                  pendingLockChange=change;securityCompletion=completion;authenticating=true;promptOnResume=false;
+                  try { credentialLauncher.launch(intent); }
+                  catch (Exception error) { authenticating=false;pendingLockChange=null;securityCompletion=null;if(completion != null)completion.accept(false); }
+              }
+              @Override public void onResume() {
+                  super.onResume();
+                  if (locked) { showLockCover(true);updateSecureWindow();if(promptOnResume && !authenticating && isDeviceSecure())authenticate(null,null); }
+              }
+              @Override public void onPause() {
+                  if (securityPrefs().getBoolean("appLock",false) && !authenticating) {
+                      locked=true;promptOnResume=true;showLockCover(true);updateSecureWindow();
+                  }
+                  super.onPause();
+              }
+          
+          
               @Override
               public void onCreate(Bundle savedInstanceState) {
+                  locked = securityPrefs().getBoolean("appLock",false);
+                  updateSecureWindow();
                   registerPlugin(UniversityNativePlugin.class);
                   super.onCreate(savedInstanceState);
                   if (getBridge() == null) return;
-
+                  if (locked) showLockCover(true);
+          
                   getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
                       @Override
                       public void handleOnBackPressed() {
+                          if (locked) { moveTaskToBack(true);return; }
                           if (checkingBack) return;
                           final WebView webView = getBridge().getWebView();
                           if (webView == null) {
@@ -258,7 +368,7 @@ jobs:
           ''', encoding='utf-8')
 
           (java_dir / 'UniversityNativePlugin.java').write_text(r'''package com.noori.universitynotes;
-
+          
           import android.app.Activity;
           import android.content.Intent;
           import android.net.Uri;
@@ -273,14 +383,127 @@ jobs:
           import java.io.OutputStream;
           import java.nio.charset.StandardCharsets;
           import java.util.concurrent.atomic.AtomicBoolean;
-
+          
           @CapacitorPlugin(name = "UniversityNative")
           public class UniversityNativePlugin extends Plugin {
               private final AtomicBoolean saving = new AtomicBoolean(false);
+              private static final int MAX_BACKUP_BYTES = 8 * 1024 * 1024;
+              private final AtomicBoolean backupActive = new AtomicBoolean(false);
+              private MainActivity mainActivity() { return (MainActivity)getActivity(); }
+              private boolean requireUnlocked(PluginCall call) {
+                  if (mainActivity().isAppLocked()) { call.reject("App is locked");return false; }
+                  return true;
+              }
+              @PluginMethod
+              public void getSecurity(PluginCall call) {
+                  if (!requireUnlocked(call)) return;
+                  String language=call.getString("language", "ps");
+                  if ("ps".equals(language)||"dr".equals(language)||"en".equals(language))
+                      mainActivity().securityPrefs().edit().putString("language",language).apply();
+                  JSObject response=new JSObject();
+                  response.put("appLock",mainActivity().securityPrefs().getBoolean("appLock",false));
+                  response.put("hideScreen",mainActivity().securityPrefs().getBoolean("hideScreen",false));
+                  response.put("deviceSecure",mainActivity().isDeviceSecure());
+                  call.resolve(response);
+              }
+              @PluginMethod
+              public void configureSecurity(PluginCall call) {
+                  if (!requireUnlocked(call)) return;
+                  String option=call.getString("option", "");
+                  boolean enabled=Boolean.TRUE.equals(call.getBoolean("enabled", false));
+                  if ("appLock".equals(option)) {
+                      getActivity().runOnUiThread(() -> mainActivity().configureAppLock(enabled, success -> {
+                          JSObject response=new JSObject();response.put("cancelled",!success);call.resolve(response);
+                      }));
+                  } else if ("hideScreen".equals(option)) {
+                      getActivity().runOnUiThread(() -> {
+                          if (!mainActivity().securityPrefs().edit().putBoolean("hideScreen",enabled).commit()) { call.reject("Cannot save security setting");return; }
+                          mainActivity().updateSecureWindow();call.resolve();
+                      });
+                  } else call.reject("Unknown security setting");
+              }
+              @PluginMethod
+              public void lockNow(PluginCall call) {
+                  if (!requireUnlocked(call)) return;
+                  getActivity().runOnUiThread(() -> { mainActivity().lockNow();call.resolve(); });
+              }
+              @PluginMethod
+              public void saveBackup(PluginCall call) {
+                  if (!requireUnlocked(call)) return;
+                  String data=call.getString("data", "");
+                  if(data.isEmpty() || data.length()>MAX_BACKUP_BYTES || data.getBytes(StandardCharsets.UTF_8).length>MAX_BACKUP_BYTES) {call.reject("Invalid backup size");return;}
+                  try { org.json.JSONObject json=new org.json.JSONObject(data);
+                      if (!"university-notes-backup".equals(json.optString("format")) || json.optInt("version")!=1) {call.reject("Invalid backup");return;}
+                  } catch(Exception error) {call.reject("Invalid backup");return;}
+                  if(!backupActive.compareAndSet(false,true)) {call.reject("Another backup is active");return;}
+                  String name=call.getString("fileName","University-Notes-Backup.json").replaceAll("[\\\\/:*?\"<>|\\p{Cntrl}]","_");
+                  if(!name.endsWith(".json"))name+=".json";
+                  Intent intent=new Intent(Intent.ACTION_CREATE_DOCUMENT);intent.addCategory(Intent.CATEGORY_OPENABLE);
+                  intent.setType("application/json");intent.putExtra(Intent.EXTRA_TITLE,name);
+                  try {startActivityForResult(call,intent,"backupDestinationChosen");}
+                  catch(Exception error) {backupActive.set(false);call.reject("Cannot open document picker",error);}
+              }
+              @ActivityCallback
+              private void backupDestinationChosen(PluginCall call, ActivityResult result) {
+                  if(cancelledBackup(call,result))return;
+                  final Uri uri=result.getData().getData();
+                  getBridge().execute(() -> {
+                      try {
+                          byte[] bytes=call.getString("data", "").getBytes(StandardCharsets.UTF_8);
+                          if(bytes.length>MAX_BACKUP_BYTES)throw new IllegalArgumentException("Backup too large");
+                          try(OutputStream output=getContext().getContentResolver().openOutputStream(uri,"wt")) {
+                              if(output==null)throw new IllegalStateException("Destination unavailable");
+                              output.write(bytes);output.flush();
+                          }
+                          JSObject response=new JSObject();response.put("saved",true);call.resolve(response);
+                      } catch(Exception error) {call.reject("Cannot save backup",error);}
+                      finally {backupActive.set(false);}
+                  });
+              }
+              @PluginMethod
+              public void openBackup(PluginCall call) {
+                  if(!requireUnlocked(call))return;
+                  if(!backupActive.compareAndSet(false,true)) {call.reject("Another backup is active");return;}
+                  Intent intent=new Intent(Intent.ACTION_OPEN_DOCUMENT);intent.addCategory(Intent.CATEGORY_OPENABLE);
+                  // Providers sometimes label downloaded JSON as text or octet-stream; validate content after opening.
+                  intent.setType("*/*");intent.putExtra(Intent.EXTRA_MIME_TYPES,new String[]{"application/json","text/plain","application/octet-stream"});
+                  try {startActivityForResult(call,intent,"backupSourceChosen");}
+                  catch(Exception error) {backupActive.set(false);call.reject("Cannot open document picker",error);}
+              }
+              private boolean cancelledBackup(PluginCall call, ActivityResult result) {
+                  if(call==null) {backupActive.set(false);return true;}
+                  if(result.getResultCode()!=Activity.RESULT_OK||result.getData()==null||result.getData().getData()==null) {
+                      backupActive.set(false);JSObject response=new JSObject();response.put("cancelled",true);call.resolve(response);return true;
+                  }
+                  return false;
+              }
+              @ActivityCallback
+              private void backupSourceChosen(PluginCall call, ActivityResult result) {
+                  if(cancelledBackup(call,result))return;
+                  final Uri uri=result.getData().getData();
+                  getBridge().execute(() -> {
+                      try(java.io.InputStream input=getContext().getContentResolver().openInputStream(uri);
+                          java.io.ByteArrayOutputStream output=new java.io.ByteArrayOutputStream()) {
+                          if(input==null)throw new IllegalStateException("Source unavailable");
+                          byte[] buffer=new byte[8192];int read,total=0;
+                          while((read=input.read(buffer))!=-1) {
+                              total+=read;if(total>MAX_BACKUP_BYTES)throw new IllegalArgumentException("Backup too large");
+                              output.write(buffer,0,read);
+                          }
+                          // Malformed UTF-8 must not silently replace characters in the user's notes.
+                          String data=StandardCharsets.UTF_8.newDecoder().onMalformedInput(java.nio.charset.CodingErrorAction.REPORT)
+                              .decode(java.nio.ByteBuffer.wrap(output.toByteArray())).toString();
+                          JSObject response=new JSObject();response.put("data",data);call.resolve(response);
+                      } catch(Exception error) {call.reject("Cannot read backup",error);}
+                      finally {backupActive.set(false);}
+                  });
+              }
+          
               private static final int MAX_BASE64_LENGTH = 35 * 1024 * 1024;
-
+          
               @PluginMethod
               public void savePdf(PluginCall call) {
+                  if (!requireUnlocked(call)) return;
                   String data = call.getString("data", "");
                   if (data.isEmpty() || data.length() > MAX_BASE64_LENGTH) {
                       call.reject("PDF size is invalid");
@@ -290,16 +513,16 @@ jobs:
                       call.reject("Another save is active");
                       return;
                   }
-
+          
                   String name = call.getString("fileName", "University-Notes.pdf")
                       .replaceAll("[\\\\/:*?\"<>|\\p{Cntrl}]", "_");
                   if (!name.endsWith(".pdf")) name += ".pdf";
-
+          
                   Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
                   intent.addCategory(Intent.CATEGORY_OPENABLE);
                   intent.setType("application/pdf");
                   intent.putExtra(Intent.EXTRA_TITLE, name);
-
+          
                   try {
                       startActivityForResult(call, intent, "pdfDestinationChosen");
                   } catch (Exception error) {
@@ -307,7 +530,7 @@ jobs:
                       call.reject("Cannot open document picker", error);
                   }
               }
-
+          
               @ActivityCallback
               private void pdfDestinationChosen(PluginCall call, ActivityResult result) {
                   if (call == null) {
@@ -323,9 +546,9 @@ jobs:
                       call.resolve(response);
                       return;
                   }
-
+          
                   final Uri uri = result.getData().getData();
-
+          
                   // Write large PDFs outside the Android UI thread.
                   getBridge().execute(() -> {
                       try {
@@ -338,7 +561,7 @@ jobs:
                               || !new String(bytes, 0, 5, StandardCharsets.US_ASCII).equals("%PDF-")) {
                               throw new IllegalArgumentException("Invalid PDF");
                           }
-
+          
                           try (OutputStream output =
                               getContext().getContentResolver().openOutputStream(uri, "wt")) {
                               if (output == null) {
@@ -347,7 +570,7 @@ jobs:
                               output.write(bytes);
                               output.flush();
                           }
-
+          
                           JSObject response = new JSObject();
                           response.put("saved", true);
                           call.resolve(response);
@@ -358,9 +581,10 @@ jobs:
                       }
                   });
               }
-
+          
               @PluginMethod
               public void openExternal(PluginCall call) {
+                  if (!requireUnlocked(call)) return;
                   try {
                       String url = call.getString("url", "");
                       if (!("https://wa.me/93704287401".equals(url)
@@ -398,9 +622,9 @@ jobs:
           if not 1 <= version_code <= 2100000000:
               raise ValueError('Invalid versionCode')
 
-          version_name = os.environ.get('APP_VERSION_NAME') or '1.1.0'
+          version_name = os.environ.get('APP_VERSION_NAME') or '1.1.1'
           if not re.fullmatch(r'[0-9]+(?:\.[0-9]+){1,3}', version_name):
-              raise ValueError('Use a numeric version name, e.g. 1.1.0')
+              raise ValueError('Use a numeric version name, e.g. 1.1.1')
 
           gradle = base / 'android/app/build.gradle'
           s = gradle.read_text()
