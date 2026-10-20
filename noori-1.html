@@ -472,7 +472,7 @@
     /* ==========================================================================
        CALCULATOR
        ========================================================================== */
-    .calc-screen {
+    input.calc-screen {
         background: var(--card-bg);
         border: 1px solid var(--border-color);
         color: var(--text-main);
@@ -481,11 +481,19 @@
         text-align: right;
         border-radius: 16px;
         margin-bottom: 15px;
-        word-wrap: break-word;
         min-height: 80px;
+        width: 100%;
+        unicode-bidi: isolate;
+        caret-color: var(--primary);
         direction: ltr;
         box-shadow: var(--shadow);
     }
+
+    #note-subject-select[hidden] { display: none; }
+    .schedule-picker-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+    .schedule-picker-row select { flex: 1; min-width: 0; margin-bottom: 0; }
+    .schedule-picker-row .btn-icon { flex-shrink: 0; }
+    .schedule-picker-row button:disabled { opacity: 0.35; cursor: default; }
 
     .calc-grid {
         display: grid;
@@ -696,6 +704,61 @@
         background: var(--text-main); color: var(--card-bg); padding: 12px 16px;
         border-radius: 12px; z-index: 4000; text-align: center; box-shadow: var(--shadow); }
     @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+    /* Settings reuse the existing colors, cards and rounded controls. */
+    .header-time { display:flex; flex-direction:column; gap:2px; align-items:center; }
+    .header-date { color:var(--text-sub); font-size:0.65rem; font-weight:600; white-space:nowrap; direction:ltr; }
+    .header-left { flex-shrink:0; }
+    .header-right { gap:6px; min-width:0; }
+    .settings-heading { display:flex;align-items:center;gap:12px;margin-bottom:16px; }
+    .settings-heading h2 { font-size:1.2rem; }
+    .settings-card { background:var(--card-bg);border:1px solid var(--border-color);border-radius:20px;padding:18px;margin-bottom:16px;box-shadow:var(--shadow); }
+    .settings-card h3,.settings-card > label:not(.settings-check) { display:block;font-size:.95rem;font-weight:700;margin-bottom:10px; }
+    .settings-card select { margin-bottom:14px; }
+    .settings-card select:last-child { margin-bottom:0; }
+    .settings-hint { color:var(--text-sub);font-size:.8rem;line-height:1.9;margin:8px 0 14px; }
+    .settings-actions { display:flex;gap:10px;flex-wrap:wrap; }
+    .settings-button { border:0;border-radius:12px;padding:12px 16px;background:var(--primary);color:#fff;font-size:.85rem;cursor:pointer;min-height:44px; }
+    .settings-button.secondary { background:var(--bg-color);color:var(--text-main);border:1px solid var(--border-color); }
+    .settings-check { display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:.88rem;padding:8px 0;min-height:44px; }
+    .settings-check input { width:22px;height:22px;flex-shrink:0;accent-color:var(--primary);margin:0; }
+    .settings-card button:disabled,.settings-card input:disabled { opacity:.5;cursor:default; }
+    #backup-preview { margin-top:18px;border-top:1px solid var(--border-color);padding-top:14px;line-height:1.8; }
+    #backup-file[hidden],#backup-preview[hidden] { display:none; }
+    @media(max-width:350px) { header{padding-inline:10px}.header-left{gap:5px}.header-right{gap:4px}.user-brand{font-size:.75rem;padding:4px 6px}.live-clock{font-size:.68rem;padding:4px 5px} }
+
+    /* Compact Settings index; options open their own detail pages. */
+    .settings-page { padding:16px; }
+    .settings-heading { margin:0 0 18px; }
+    .settings-brand { display:flex;align-items:center;gap:14px;padding:14px 4px 24px; }
+    .settings-brand-icon { display:flex;align-items:center;justify-content:center;width:54px;height:54px;border-radius:16px;background:var(--primary-gradient);color:white;flex-shrink:0; }
+    .settings-brand strong { font-size:1.15rem; }
+    .settings-brand p { margin-top:5px;font-size:.78rem;line-height:1.6;color:var(--text-sub); }
+    .settings-brand svg { width:29px;height:29px; }
+    .settings-menu { border:1px solid var(--border-color);border-radius:18px;background:var(--card-bg);overflow:hidden;box-shadow:var(--shadow); }
+    .settings-row { width:100%;display:flex;align-items:center;gap:14px;background:transparent;color:var(--text-main);border:0;padding:16px;text-align:start;cursor:pointer;min-height:72px; }
+    .settings-row + .settings-row { border-top:1px solid var(--border-color); }
+    .settings-row:active { background:var(--bg-color); }
+    .settings-row-copy { display:flex;flex:1;min-width:0;flex-direction:column;gap:4px; }
+    .settings-row-title { font-size:.93rem;font-weight:650; }
+    .settings-row-summary { color:var(--text-sub);font-size:.74rem;line-height:1.5; }
+    .settings-row-icon { color:var(--primary);width:23px;height:23px;flex-shrink:0; }
+    .settings-chevron { width:17px;height:17px;flex-shrink:0;color:var(--text-sub); }
+    .settings-page svg { fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round; }
+    html[dir="ltr"] .settings-chevron,html[dir="rtl"] .settings-back svg { transform:rotate(180deg); }
+    .theme-segments { display:flex;padding:5px;gap:5px;border:1px solid var(--border-color);border-radius:15px;background:var(--card-bg);margin-top:18px; }
+    .theme-segments button { display:flex;align-items:center;justify-content:center;gap:8px;flex:1;min-height:44px;border:0;border-radius:11px;background:transparent;color:var(--text-sub);font-size:.85rem;cursor:pointer; }
+    .theme-segments svg { width:20px;height:20px; }
+    .theme-segments button[aria-pressed="true"] { background:var(--primary);color:white; }
+    .settings-detail .settings-card h3 { margin-bottom:12px; }
+    .settings-detail .settings-card > label:not(.settings-check) { font-weight:500;color:var(--text-sub); }
+    #note-title-input,#note-content-input { text-align:start;unicode-bidi:plaintext; }
+    #note-content-input { line-height:1.9;white-space:pre-wrap; }
+    .note-body { margin-top:6px;color:var(--text-main);font-size:.88rem;line-height:1.85; }
+    .note-paragraph,.note-preview,.note-title { unicode-bidi:plaintext;text-align:start;white-space:pre-wrap;overflow-wrap:anywhere; }
+    .note-paragraph { min-height:1.85em; }
+    .card-info { min-width:0; }
+    .note-body { user-select:text; }
+    @media(max-width:350px) { .header-left .btn-icon { width:29px;height:30px; }.header-left{gap:4px}.settings-row{padding:14px 12px;gap:12px}.settings-page{padding:14px} }
     </style>
 </head>
 <body>
@@ -708,17 +771,17 @@
             <button class="btn-icon" onclick="switchPage('search')" title="Search">
                 <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
             </button>
-            <button class="btn-icon" onclick="toggleTheme()" title="Theme">
-                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-            </button>
+            <button class="btn-icon" onclick="toggleTheme()" id="theme-quick-button" title="Theme"><svg aria-hidden="true" class="" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></svg></button>
             <button class="btn-icon" onclick="openScheduleModal()" title="د پوهنتون مهالوېش">
                 <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01"/></svg>
             </button>
-            <button class="lang-btn" onclick="toggleLanguage()" id="lang-btn">PS</button>
+            <button class="btn-icon" onclick="switchPage('settings')" id="settings-open" title="تنظیمات">
+                <svg viewBox="0 0 24 24"><path d="M9 3l-.5 2a8 8 0 00-2 1L4.5 5.5l-2 3.5L4 10.5a8 8 0 000 3L2.5 15l2 3.5 2-.5a8 8 0 002 1L9 21h4l.5-2a8 8 0 002-1l2 .5 2-3.5-1.5-1.5a8 8 0 000-3L19.5 9l-2-3.5-2 .5a8 8 0 00-2-1L13 3z"/><circle cx="11" cy="12" r="3"/></svg>
+            </button>
         </div>
 
         <div class="header-right">
-            <div class="live-clock" id="clock">00:00:00 AM</div>
+            <div class="header-time"><div class="live-clock" id="clock">00:00:00 AM</div><time id="current-date-display" class="header-date"></time></div>
             <div class="user-brand" id="current-day-display">ورځ</div>
         </div>
     </header>
@@ -834,7 +897,7 @@
          ====================================================================== -->
     <div id="page-calc" class="page" style="padding: 16px;">
         <div class="section-title" style="margin-bottom: 12px;" id="txt-calc-title">پرمختللی ماشین حساب</div>
-        <div class="calc-screen" id="calc-display">0</div>
+        <input type="text" class="calc-screen" id="calc-display" value="0" inputmode="none" autocomplete="off" spellcheck="false" maxlength="512" dir="ltr" aria-label="Calculator expression">
         <div class="calc-grid">
             <button class="calc-btn danger" onclick="calcClear()">AC</button>
             <button class="calc-btn danger" onclick="calcDel()">DEL</button>
@@ -913,6 +976,33 @@
         </div>
     </div>
 
+    <div id="page-settings" class="page settings-page">
+<div class="settings-heading"><button class="btn-icon settings-back" onclick="handleAppBack()" id="settings-back"><svg aria-hidden="true" class="" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button><h2 id="settings-title"></h2></div>
+        <div class="settings-brand"><span class="settings-brand-icon"><svg aria-hidden="true" class="" viewBox="0 0 24 24"><path d="M12 6c-3-3-7-3-10-2v15c3-1 7-1 10 2 3-3 7-3 10-2V4c-3-1-7-1-10 2zm0 0v15"/></svg></span><div><strong>University Notes</strong><p id="settings-subtitle"></p></div></div>
+        <div class="settings-menu"><button class="settings-row" id="settings-row-language" onclick="switchPage('settings-language')"><svg aria-hidden="true" class="settings-row-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a17 17 0 010 18 17 17 0 010-18z"/></svg><span class="settings-row-copy"><span id="settings-menu-language" class="settings-row-title"></span><span id="settings-summary-language" class="settings-row-summary"></span></span><svg aria-hidden="true" class="settings-chevron" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button><button class="settings-row" id="settings-row-theme" onclick="switchPage('settings-theme')"><svg aria-hidden="true" class="settings-row-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></svg><span class="settings-row-copy"><span id="settings-menu-theme" class="settings-row-title"></span><span id="settings-summary-theme" class="settings-row-summary"></span></span><svg aria-hidden="true" class="settings-chevron" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button><button class="settings-row" id="settings-row-security" onclick="switchPage('settings-security')"><svg aria-hidden="true" class="settings-row-icon" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-8 9-8 9s-8-4-8-9V6z"/><rect x="9" y="10" width="6" height="6" rx="1"/><path d="M10 10V8a2 2 0 014 0v2"/></svg><span class="settings-row-copy"><span id="settings-menu-security" class="settings-row-title"></span><span id="settings-summary-security" class="settings-row-summary"></span></span><svg aria-hidden="true" class="settings-chevron" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button><button class="settings-row" id="settings-row-backup" onclick="switchPage('settings-backup')"><svg aria-hidden="true" class="settings-row-icon" viewBox="0 0 24 24"><path d="M4 16v4h16v-4M12 16V4m-4 4l4-4 4 4"/><path d="M5 12H3m18 0h-2"/></svg><span class="settings-row-copy"><span id="settings-menu-backup" class="settings-row-title"></span><span id="settings-summary-backup" class="settings-row-summary"></span></span><svg aria-hidden="true" class="settings-chevron" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button><button class="settings-row" id="settings-row-privacy" onclick="switchPage('privacy')"><svg aria-hidden="true" class="settings-row-icon" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-8 9-8 9s-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg><span class="settings-row-copy"><span id="settings-menu-privacy" class="settings-row-title"></span><span id="settings-summary-privacy" class="settings-row-summary"></span></span><svg aria-hidden="true" class="settings-chevron" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button><button class="settings-row" id="settings-row-about" onclick="switchPage('about')"><svg aria-hidden="true" class="settings-row-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10v.1"/></svg><span class="settings-row-copy"><span id="settings-menu-about" class="settings-row-title"></span><span id="settings-summary-about" class="settings-row-summary"></span></span><svg aria-hidden="true" class="settings-chevron" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button></div>
+        <div class="theme-segments" role="group" id="settings-theme-shortcuts"><button id="settings-light-quick" onclick="setTheme('light')"><svg aria-hidden="true" class="" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></svg><span id="settings-light-quick-label"></span></button><button id="settings-dark-quick" onclick="setTheme('dark')"><svg aria-hidden="true" class="" viewBox="0 0 24 24"><path d="M20 14A9 9 0 0110 3a9 9 0 1010 11z"/></svg><span id="settings-dark-quick-label"></span></button></div>
+    </div>
+    <div id="page-settings-language" class="page settings-page settings-detail"><div class="settings-heading"><button class="btn-icon settings-back" onclick="handleAppBack()" id="settings-back-language"><svg aria-hidden="true" class="" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button><h2 id="settings-detail-title-language"></h2></div><section class="settings-card">
+            <label for="settings-language" id="settings-language-label"></label>
+            <select id="settings-language" onchange="setLanguage(this.value)"><option value="ps">پښتو</option><option value="dr">دری</option><option value="en">English</option></select>
+            </section></div>
+    <div id="page-settings-theme" class="page settings-page settings-detail"><div class="settings-heading"><button class="btn-icon settings-back" onclick="handleAppBack()" id="settings-back-theme"><svg aria-hidden="true" class="" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button><h2 id="settings-detail-title-theme"></h2></div><section class="settings-card"><label for="settings-theme" id="settings-theme-label"></label>
+            <select id="settings-theme" onchange="setTheme(this.value)"><option value="light" id="theme-light"></option><option value="dark" id="theme-dark"></option></select>
+        </section></div>
+    <div id="page-settings-security" class="page settings-page settings-detail"><div class="settings-heading"><button class="btn-icon settings-back" onclick="handleAppBack()" id="settings-back-security"><svg aria-hidden="true" class="" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button><h2 id="settings-detail-title-security"></h2></div><section class="settings-card">
+            <h3 id="security-title"></h3><p id="security-desc" class="settings-hint"></p>
+            <label class="settings-check"><span id="security-lock-label"></span><input type="checkbox" id="security-lock" onchange="changeSecurity('appLock',this.checked)"></label>
+            <p class="settings-hint" id="security-auto-hint"></p>
+            <label class="settings-check"><span id="security-screen-label"></span><input type="checkbox" id="security-screen" onchange="changeSecurity('hideScreen',this.checked)"></label>
+            <p id="security-status" class="settings-hint" role="status"></p>
+            <button class="settings-button secondary" id="security-lock-now" onclick="lockAppNow()"></button>
+        </section></div>
+    <div id="page-settings-backup" class="page settings-page settings-detail"><div class="settings-heading"><button class="btn-icon settings-back" onclick="handleAppBack()" id="settings-back-backup"><svg aria-hidden="true" class="" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button><h2 id="settings-detail-title-backup"></h2></div><section class="settings-card">
+            <h3 id="backup-title"></h3><p class="settings-hint" id="backup-desc"></p>
+            <div class="settings-actions"><button class="settings-button" id="backup-export" onclick="exportBackup()"></button><button class="settings-button secondary" id="backup-import" onclick="chooseBackup()"></button></div>
+            <input type="file" id="backup-file" accept=".json,application/json" hidden onchange="readBackupFile(this)">
+            <div id="backup-preview" hidden><p id="backup-preview-summary"></p><p class="settings-hint" id="backup-replace-warning"></p><div class="settings-actions"><button class="settings-button" id="backup-restore" onclick="restoreBackup()"></button><button class="settings-button secondary" id="backup-cancel" onclick="cancelBackupPreview()"></button></div></div>
+        </section></div>
     <div id="page-privacy" class="page" style="padding:16px">
         <button class="btn-icon" onclick="handleAppBack()" aria-label="Back">←</button>
         <div id="privacy-policy-content" class="privacy-copy"></div>
@@ -926,7 +1016,7 @@
         <div class="modal-content">
             <h3 style="margin-bottom: 12px;" id="txt-modal-sub-title">نوی مضمون زیات کړئ</h3>
             <input type="text" id="subject-title-input" placeholder="د مضمون نوم وليکئ">
-            <input type="number" id="subject-credit-input" placeholder="د مضمون کرېډیټ (مثلاً: 3 یا 2)" min="1" max="10">
+            <input type="number" id="subject-credit-input" placeholder="کریډیټ" min="1" max="5" step="1" inputmode="numeric" oninput="limitNumericInput(this, 1, 5, true)">
             <div style="display: flex; gap: 10px; justify-content: flex-end;">
                 <button onclick="closeModals()" style="background:transparent; border:none; color:var(--text-sub); cursor:pointer;" id="txt-cancel-1">بندول</button>
                 <button onclick="saveSubject()" style="background:var(--primary); color:white; border:none; padding:8px 16px; border-radius:8px; cursor:pointer;" id="txt-save-1">خوندي کول</button>
@@ -941,9 +1031,9 @@
         <div class="modal-content">
             <h3 id="note-modal-title" style="margin-bottom: 12px;">نوی نوټ زیات کړئ</h3>
             <input type="hidden" id="edit-note-id" value="">
-            <input type="text" id="note-title-input" placeholder="عنوان داخل کړئ">
+            <input type="text" id="note-title-input" dir="auto" placeholder="عنوان داخل کړئ">
             <select id="note-subject-select"></select>
-            <textarea id="note-content-input" rows="5" placeholder="د خلاصې او پښتو درس توضیحات دلته داخل کړئ..."></textarea>
+            <textarea id="note-content-input" dir="auto" rows="5" placeholder="د خلاصې او پښتو درس توضیحات دلته داخل کړئ..."></textarea>
             <div style="display: flex; gap: 10px; justify-content: flex-end;">
                 <button onclick="closeModals()" style="background:transparent; border:none; color:var(--text-sub); cursor:pointer;" id="txt-cancel-2">بندول</button>
                 <button onclick="saveNote()" style="background:var(--primary); color:white; border:none; padding:8px 16px; border-radius:8px; cursor:pointer;" id="txt-save-2">خوندي کول</button>
@@ -959,9 +1049,18 @@
             <h3 style="margin-bottom: 6px;" id="txt-sched-title">د پوهنتون تقسیم اوقات (مهالوېش)</h3>
             <p style="font-size: 0.78rem; color: var(--text-sub); margin-bottom: 10px;" id="txt-sched-desc">د پوهنځي او سمسټر په ټاکلو سره مهالوېش تنظیم کړئ:</p>
 
+            <div class="schedule-picker-row">
+                <select id="schedule-select" onchange="switchSchedule(this.value)" aria-label="مهالویش غوره کړئ"></select>
+                <button type="button" id="schedule-add-btn" class="btn-icon" style="color:var(--primary)" onclick="addSchedule()" aria-label="نوی مهالویش">
+                    <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+                </button>
+                <button type="button" id="schedule-delete-btn" class="btn-icon" style="color:var(--danger)" onclick="deleteSchedule()" aria-label="دا مهالویش ړنګ کړئ">
+                    <svg viewBox="0 0 24 24"><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7"/></svg>
+                </button>
+            </div>
             <div class="schedule-meta-grid">
-                <input type="text" id="sched-faculty" placeholder="پوهنځی (مثلاً: کمپیوټر ساینس)">
-                <input type="text" id="sched-semester" placeholder="سمسټر (مثلاً: څلورم)">
+                <input type="text" id="sched-faculty" placeholder="پوهنځی">
+                <input type="text" id="sched-semester" placeholder="سمسټر">
             </div>
 
             <div class="schedule-table-wrapper">
@@ -1146,7 +1245,7 @@ const translations = {
         navAbout: "د موږ په اړه",
         modSubTitle: "نوی مضمون زیات کړئ",
         modSubInput: "د مضمون نوم وليکئ",
-        modCreditInput: "د مضمون کرېډیټ (مثلاً: 3 یا 2)",
+        modCreditInput: "کریډیټ",
         modNoteTitle: "نوی نوټ زیات کړئ",
         modNoteEditTitle: "نوټ ویرایش کړئ",
         modTitleInput: "عنوان داخل کړئ",
@@ -1155,8 +1254,8 @@ const translations = {
         save: "خوندي کول",
         schedTitle: "د پوهنتون تقسیم اوقات (مهالوېش)",
         schedDesc: "د پوهنځي او سمسټر په ټاکلو سره مهالوېش تنظیم کړئ:",
-        schedFacultyPlaceholder: "پوهنځی (مثلاً: کمپیوټر ساینس)",
-        schedSemesterPlaceholder: "سمسټر (مثلاً: څلورم)",
+        schedFacultyPlaceholder: "پوهنځی",
+        schedSemesterPlaceholder: "سمسټر",
         thDay: "ورځ",
         thS1: "ساعت ۱",
         thS2: "ساعت ۲",
@@ -1206,7 +1305,7 @@ const translations = {
         navAbout: "درباره ما",
         modSubTitle: "افزودن مضمون جدید",
         modSubInput: "نام مضمون را بنویسید",
-        modCreditInput: "کریدیت مضمون (مثلاً: 3 یا 2)",
+        modCreditInput: "کریدیت",
         modNoteTitle: "افزودن یادداشت جدید",
         modNoteEditTitle: "ویرایش یادداشت",
         modTitleInput: "عنوان را وارد کنید",
@@ -1215,8 +1314,8 @@ const translations = {
         save: "ذخیره کردن",
         schedTitle: "تقسیم اوقات پوهنتون",
         schedDesc: "با تعیین پوهنځی و سمستر تقسیم اوقات خود را تنظیم کنید:",
-        schedFacultyPlaceholder: "پوهنځی (مثلاً: کمپیوتر ساینس)",
-        schedSemesterPlaceholder: "سمستر (مثلاً: چهارم)",
+        schedFacultyPlaceholder: "پوهنځی",
+        schedSemesterPlaceholder: "سمستر",
         thDay: "روز",
         thS1: "ساعت ۱",
         thS2: "ساعت ۲",
@@ -1263,7 +1362,7 @@ const translations = {
         navAbout: "About",
         modSubTitle: "Add New Subject",
         modSubInput: "Enter subject name",
-        modCreditInput: "Subject Credit (e.g. 3 or 2)",
+        modCreditInput: "Credit",
         modNoteTitle: "Add New Note",
         modNoteEditTitle: "Edit Note",
         modTitleInput: "Enter title",
@@ -1272,8 +1371,8 @@ const translations = {
         save: "Save",
         schedTitle: "University Schedule",
         schedDesc: "Set up your schedule with faculty and semester options:",
-        schedFacultyPlaceholder: "Faculty (e.g. Computer Science)",
-        schedSemesterPlaceholder: "Semester (e.g. 4th)",
+        schedFacultyPlaceholder: "Faculty",
+        schedSemesterPlaceholder: "Semester",
         thDay: "Day",
         thS1: "Slot 1",
         thS2: "Slot 2",
@@ -1310,6 +1409,13 @@ function displayNoteTitle(note) {
     return t().untitledLabel || 'Untitled';
 }
 
+
+/** Each paragraph chooses its own base direction, independently of the UI language. */
+function noteTextHtml(value) {
+    return String(value == null ? '' : value).replace(/\r\n?/g, '\n').split('\n').map(paragraph =>
+        '<div class="note-paragraph" dir="auto">' + (paragraph ? escapeHtml(paragraph) : '<br>') + '</div>').join('');
+}
+
 /** Rebuilds the whole UI in the currently selected language. */
 function applyLanguage() {
     const lang = t();
@@ -1323,7 +1429,7 @@ function applyLanguage() {
         html.setAttribute('lang', currentLang);
     }
 
-    document.getElementById('lang-btn').innerText = lang.btnLabel;
+    renderSettings();
     document.getElementById('txt-welcome-title').innerText = lang.welcomeTitle;
     document.getElementById('txt-welcome-desc').innerText = lang.welcomeDesc;
     document.getElementById('txt-stat-notes').innerText = lang.statNotes;
@@ -1352,6 +1458,7 @@ function applyLanguage() {
     document.getElementById('txt-modal-sub-title').innerText = lang.modSubTitle;
     document.getElementById('subject-title-input').placeholder = lang.modSubInput;
     document.getElementById('subject-credit-input').placeholder = lang.modCreditInput;
+    document.getElementById('subject-credit-input').setAttribute('aria-label', lang.modCreditInput);
 
     document.getElementById('note-title-input').placeholder = lang.modTitleInput;
     document.getElementById('note-content-input').placeholder = lang.modContentInput;
@@ -1424,7 +1531,7 @@ function sanitizeSubjects(raw) {
         out.push({
             id: id,
             title: String(s.title == null ? '' : s.title),
-            credit: Math.max(1, Math.min(10, parseInt(s.credit, 10) || 1)),
+            credit: Math.max(1, Math.min(5, parseInt(s.credit, 10) || 1)),
             score: Math.max(0, Math.min(100, parseFloat(s.score) || 0)),
             present: Math.max(0, parseInt(s.present, 10) || 0),
             absent: Math.max(0, parseInt(s.absent, 10) || 0)
@@ -1456,15 +1563,33 @@ function sanitizeNotes(raw) {
 }
 
 /** Validates the schedule object loaded from storage. */
+/** Each timetable has its own identity. Legacy single timetables migrate in memory. */
 function sanitizeSchedule(raw) {
-    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {};
-    const out = {};
-    Object.keys(raw).forEach(function (k) {
-        const v = raw[k];
-        if (typeof v === 'string' || typeof v === 'number') out[k] = String(v);
-    });
-    return out;
+    function cleanData(data) {
+        const out = {};
+        if (!data || typeof data !== 'object') return out;
+        ['faculty', 'semester'].concat(Array.from({ length: 24 }, (_, i) =>
+            'day_' + Math.floor(i / 4) + '_slot_' + (i % 4 + 1))).forEach(key => {
+            if (typeof data[key] === 'string' || typeof data[key] === 'number') out[key] = String(data[key]);
+        });
+        return out;
+    }
+    if (raw && raw.version === 2 && Array.isArray(raw.items)) {
+        const seen = new Set();
+        const items = raw.items.filter(item => item && typeof item === 'object').map(item => {
+            let id = String(item.id == null ? '' : item.id);
+            if (!id || seen.has(id)) id = String(generateId());
+            seen.add(id);
+            return { id: id, data: cleanData(item.data) };
+        });
+        const activeId = items.some(item => item.id === String(raw.activeId))
+            ? String(raw.activeId) : (items[0] ? items[0].id : null);
+        return { version: 2, activeId: activeId, items: items };
+    }
+    const id = String(generateId());
+    return { version: 2, activeId: id, items: [{ id: id, data: cleanData(raw) }] };
 }
+
 
 /** Validates the calculator history loaded from storage. */
 function sanitizeCalcHistory(raw) {
@@ -1491,7 +1616,7 @@ function stateSnapshot() {
     return JSON.stringify({ version: 6, subjects: subjects, notes: notes, calc: calcHistory, schedule: scheduleData });
 }
 let lastSavedSnapshot = stateSnapshot();
-function saveData() {
+function saveData(failureMessage) {
     const next = stateSnapshot();
     try {
         localStorage.setItem(ATOMIC_STORAGE_KEY, next);
@@ -1505,7 +1630,7 @@ function saveData() {
         subjects = restored.subjects; notes = restored.notes;
         calcHistory = restored.calc; scheduleData = restored.schedule;
         renderAll();
-        alert(uiText('خوندي نه شول. د وسیلې ځای وګورئ؛ لیکل شوی متن لا په فورمه کې شته.',
+        alert(failureMessage || uiText('خوندي نه شول. د وسیلې ځای وګورئ؛ لیکل شوی متن لا په فورمه کې شته.',
             'ذخیره نشد. فضای دستگاه را بررسی کنید؛ متن در فورم باقی است.',
             'Not saved. Check available device storage; your text is still in the form.'));
         return false;
@@ -1613,8 +1738,8 @@ function renderRecentNotes(activeNotes) {
         html += `
             <div class="card-item">
                 <div class="card-info">
-                    <h4>${escapeHtml(displayNoteTitle(n))}</h4>
-                    <p>${escapeHtml(previewText(n.content, 45))}</p>
+                    <h4 class="note-title" dir="auto">${escapeHtml(displayNoteTitle(n))}</h4>
+                    <p class="note-preview" dir="auto">${escapeHtml(previewText(n.content, 45))}</p>
                     <span class="card-date">${escapeHtml(n.date)}</span>
                 </div>
                 <div class="card-actions">
@@ -1678,7 +1803,8 @@ function renderAttendance() {
                     <span style="font-size:0.7rem; color:var(--text-sub); font-weight:normal;">${sub.credit} ${creditLabel}</span>
                 </td>
                 <td>
-                    <input type="number" class="score-input" value="${sub.score}" min="0" max="100"
+                    <input type="number" class="score-input" value="${sub.score}" min="0" max="100" step="any" inputmode="decimal"
+                           oninput="limitNumericInput(this, 0, 100, false)"
                            onchange="updateSubjectScore(${sub.id}, this.value)">
                 </td>
                 <td>
@@ -1734,9 +1860,9 @@ function renderNotesPage(activeNotes) {
         html += `
             <div class="card-item">
                 <div class="card-info">
-                    <h4>${escapeHtml(displayNoteTitle(note))}</h4>
-                    <p style="color:var(--primary); font-size:0.78rem;">${escapeHtml(subjectLabel)}: ${escapeHtml(sub ? sub.title : 'General')}</p>
-                    <p style="margin-top:4px; color: var(--text-main);">${escapeHtml(note.content)}</p>
+                    <h4 class="note-title" dir="auto">${escapeHtml(displayNoteTitle(note))}</h4>
+                    <p style="color:var(--primary); font-size:0.78rem;">${escapeHtml(subjectLabel)}: <bdi>${escapeHtml(sub ? sub.title : 'General')}</bdi></p>
+                    <div class="note-body">${noteTextHtml(note.content)}</div>
                     <span class="card-date">${escapeHtml(note.date)}</span>
                 </div>
                 <div class="card-actions">
@@ -1769,8 +1895,8 @@ function renderTrash(trashNotes) {
         html += `
             <div class="card-item">
                 <div class="card-info">
-                    <h4>${escapeHtml(displayNoteTitle(note))}</h4>
-                    <p>${escapeHtml(previewText(note.content, 30))}</p>
+                    <h4 class="note-title" dir="auto">${escapeHtml(displayNoteTitle(note))}</h4>
+                    <p class="note-preview" dir="auto">${escapeHtml(previewText(note.content, 30))}</p>
                 </div>
                 <div class="card-actions">
                     <button class="btn-icon" onclick="restoreNote(${note.id})" style="color:var(--success)" title="restore">
@@ -1819,7 +1945,7 @@ let historyPending = false;
 let restoringHistory = false;
 let afterHistoryNavigation = null;
 let modalBaseline = '';
-const validPages = ['home','subjects','notes','attendance','calc','search','trash','about','privacy'];
+const validPages = ['home','subjects','notes','attendance','calc','search','trash','about','privacy','settings','settings-language','settings-theme','settings-security','settings-backup'];
 function pageState(modalId) {
     return { universityNotes: true, page: currentPage, filter: selectedSubjectFilter,
         depth: navDepth, modal: modalId || null };
@@ -1845,6 +1971,7 @@ function switchPage(pageId, options) {
 }
 function switchPageInternal(pageId) {
     currentPage = validPages.includes(pageId) ? pageId : 'home';
+    if (currentPage === 'settings' || currentPage === 'settings-security') refreshSecurity();
     document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.id === 'page-' + currentPage));
     const navIndex = ['home','subjects','attendance','calc','about'].indexOf(currentPage);
     document.querySelectorAll('.nav-item').forEach((item, index) => item.classList.toggle('active', index === navIndex));
@@ -1946,6 +2073,18 @@ function openSubjectModal() {
     showModal('subject-modal');
 }
 
+/** Keep typed, pasted and spinner values within the displayed limits.
+ * Empty fields remain editable; save handlers supply their existing defaults.
+ * This avoids re-rendering the grade table while the user is typing.
+ */
+function limitNumericInput(input, min, max, integerOnly) {
+    if (input.value === '') return;
+    const value = input.valueAsNumber;
+    if (!Number.isFinite(value)) { input.value = ''; return; }
+    const bounded = Math.min(max, Math.max(min, integerOnly ? Math.trunc(value) : value));
+    if (bounded !== value) input.value = String(bounded);
+}
+
 /** Saves a new subject. */
 function saveSubject() {
     const titleInput = document.getElementById('subject-title-input');
@@ -1959,7 +2098,7 @@ function saveSubject() {
 
     let credit = parseInt(creditInput.value, 10);
     if (!credit || credit < 1) credit = 1;
-    if (credit > 10) credit = 10;
+    if (credit > 5) credit = 5;
 
     subjects.push({
         id: generateId(),
@@ -2015,6 +2154,8 @@ function updateAttendance(subId, type, change) {
    ============================================================================ */
 
 /** Opens the note editor. Pass an id to edit, or nothing to create. */
+let noteSubjectContextId = null;
+
 function openNoteModal(editId) {
     if (subjects.length === 0) {
         alert(t().msgNoSubject);
@@ -2022,7 +2163,13 @@ function openNoteModal(editId) {
         return;
     }
 
+    const editingNote = editId ? notes.find(note => note.id === editId && !note.isTrash) : null;
+    if (editId && !editingNote) return;
+    noteSubjectContextId = editingNote ? editingNote.subjectId : selectedSubjectFilter;
+    if (!subjects.some(subject => subject.id === noteSubjectContextId)) noteSubjectContextId = null;
     const select = document.getElementById('note-subject-select');
+    select.hidden = noteSubjectContextId != null;
+    select.disabled = noteSubjectContextId != null;
     select.innerHTML = '';
     subjects.forEach(function (s) {
         const opt = document.createElement('option');
@@ -2055,6 +2202,7 @@ function openNoteModal(editId) {
         titleField.value = '';
         contentField.value = '';
     }
+    if (noteSubjectContextId != null) select.value = String(noteSubjectContextId);
 
     showModal('note-modal');
 }
@@ -2068,7 +2216,8 @@ function saveNote() {
     const editIdRaw = document.getElementById('edit-note-id').value;
     const title = document.getElementById('note-title-input').value.trim();
     const content = document.getElementById('note-content-input').value.trim();
-    const subId = parseInt(document.getElementById('note-subject-select').value, 10);
+    const subId = noteSubjectContextId != null ? noteSubjectContextId
+        : Number(document.getElementById('note-subject-select').value);
 
     /* Only content is mandatory; title is optional. */
     if (!content) {
@@ -2191,8 +2340,8 @@ function handleSearch() {
         html += `
             <div class="card-item">
                 <div class="card-info">
-                    <h4>${escapeHtml(displayNoteTitle(n))}</h4>
-                    <p>${escapeHtml(n.content)}</p>
+                    <h4 class="note-title" dir="auto">${escapeHtml(displayNoteTitle(n))}</h4>
+                    <div class="note-body">${noteTextHtml(n.content)}</div>
                     <span class="card-date">${escapeHtml(n.date)}</span>
                 </div>
                 <div class="card-actions">
@@ -2211,25 +2360,69 @@ function handleSearch() {
    11. SCHEDULE
    ============================================================================ */
 
-/** Opens the schedule editor and rebuilds the timetable grid. */
-function openScheduleModal() {
-    document.getElementById('sched-faculty').value = scheduleData['faculty'] || '';
-    document.getElementById('sched-semester').value = scheduleData['semester'] || '';
+let scheduleEditingId = null;
+let scheduleEditorBaseline = '';
+let scheduleIsNew = false;
 
+/** Read only the active editor; never copy values into another timetable. */
+function readScheduleDraft() {
+    const data = {
+        faculty: document.getElementById('sched-faculty').value.trim(),
+        semester: document.getElementById('sched-semester').value.trim()
+    };
+    document.querySelectorAll('#schedule-modal .schedule-input').forEach(input => {
+        const key = input.getAttribute('data-key');
+        if (/^day_[0-5]_slot_[1-4]$/.test(key)) data[key] = input.value.trim();
+    });
+    return data;
+}
+
+function mayDiscardScheduleDraft() {
+    return JSON.stringify(readScheduleDraft()) === scheduleEditorBaseline || confirm(uiText(
+        'په دې مهالویش کې ناخوندي بدلونونه شته. له خوندي کولو پرته یې پرېږدئ؟',
+        'در این تقسیم اوقات تغییرات ذخیره‌نشده دارید. بدون ذخیره ادامه می‌دهید؟',
+        'Discard the unsaved changes in this timetable?'));
+}
+
+function scheduleLabel(item, index) {
+    const data = item.data;
+    return (data.faculty || uiText('مهالویش', 'تقسیم اوقات', 'Timetable') + ' ' + (index + 1)) +
+        (data.semester ? ' — ' + uiText('سمسټر', 'سمستر', 'Semester') + ' ' + data.semester : '');
+}
+
+/** Reuse the existing timetable layout, colours and four daily slots. */
+function renderScheduleEditor(data) {
+    const select = document.getElementById('schedule-select');
+    select.innerHTML = '';
+    scheduleData.items.forEach((item, index) => {
+        const option = document.createElement('option');
+        option.value = item.id;
+        option.textContent = scheduleLabel(item, index);
+        select.appendChild(option);
+    });
+    if (scheduleIsNew) {
+        const option = document.createElement('option');
+        option.value = scheduleEditingId;
+        option.textContent = uiText('نوی مهالویش', 'تقسیم اوقات جدید', 'New timetable');
+        select.appendChild(option);
+    }
+    select.value = scheduleEditingId;
+    select.setAttribute('aria-label', uiText('مهالویش غوره کړئ', 'انتخاب تقسیم اوقات', 'Choose timetable'));
+    document.getElementById('schedule-add-btn').setAttribute('aria-label', uiText('نوی مهالویش', 'تقسیم اوقات جدید', 'New timetable'));
+    const deleteButton = document.getElementById('schedule-delete-btn');
+    deleteButton.disabled = scheduleIsNew;
+    deleteButton.setAttribute('aria-label', uiText('دا مهالویش ړنګ کړئ', 'حذف این تقسیم اوقات', 'Delete this timetable'));
+    document.getElementById('sched-faculty').value = data.faculty || '';
+    document.getElementById('sched-semester').value = data.semester || '';
     const tbody = document.getElementById('schedule-tbody');
     tbody.innerHTML = '';
-
-    const days = defaultDays[currentLang] || defaultDays['ps'];
-
-    days.forEach(function (day, dayIndex) {
+    (defaultDays[currentLang] || defaultDays.ps).forEach((day, dayIndex) => {
         const tr = document.createElement('tr');
-
         const dayCell = document.createElement('td');
         dayCell.style.fontWeight = 'bold';
         dayCell.style.background = 'rgba(0,0,0,0.02)';
         dayCell.textContent = day;
         tr.appendChild(dayCell);
-
         for (let slot = 1; slot <= 4; slot++) {
             const key = 'day_' + dayIndex + '_slot_' + slot;
             const td = document.createElement('td');
@@ -2237,28 +2430,66 @@ function openScheduleModal() {
             input.className = 'schedule-input';
             input.type = 'text';
             input.setAttribute('data-key', key);
-            input.value = scheduleData[key] || '';
+            input.setAttribute('aria-label', day + ' — ' + (t()['thS' + slot] || slot));
+            input.value = data[key] || '';
             input.placeholder = '-';
             td.appendChild(input);
             tr.appendChild(td);
         }
-
         tbody.appendChild(tr);
     });
+    scheduleEditorBaseline = JSON.stringify(readScheduleDraft());
+    modalBaseline = editorSignature();
+}
 
+function openScheduleModal() {
+    const active = scheduleData.items.find(item => item.id === scheduleData.activeId) || scheduleData.items[0];
+    scheduleIsNew = !active;
+    scheduleEditingId = active ? active.id : String(generateId());
+    renderScheduleEditor(active ? active.data : {});
     showModal('schedule-modal');
 }
 
-/** Persists the schedule grid. */
+function switchSchedule(id) {
+    const item = scheduleData.items.find(entry => entry.id === String(id));
+    if (!item || !mayDiscardScheduleDraft()) {
+        document.getElementById('schedule-select').value = scheduleEditingId;
+        return;
+    }
+    scheduleEditingId = item.id;
+    scheduleIsNew = false;
+    renderScheduleEditor(item.data);
+}
+
+function addSchedule() {
+    if (!mayDiscardScheduleDraft()) return;
+    scheduleEditingId = String(generateId());
+    scheduleIsNew = true;
+    renderScheduleEditor({});
+}
+
+function deleteSchedule() {
+    const index = scheduleData.items.findIndex(item => item.id === scheduleEditingId);
+    if (index < 0) return;
+    const label = scheduleLabel(scheduleData.items[index], index);
+    if (!confirm(uiText('دا مهالویش د تل لپاره ړنګ کړئ؟', 'این تقسیم اوقات برای همیشه حذف شود؟',
+        'Permanently delete this timetable?') + '\n\n' + label)) return;
+    scheduleData.items.splice(index, 1);
+    scheduleData.activeId = scheduleData.items[0] ? scheduleData.items[0].id : null;
+    if (!saveData()) return;
+    const next = scheduleData.items[0];
+    scheduleIsNew = !next;
+    scheduleEditingId = next ? next.id : String(generateId());
+    renderScheduleEditor(next ? next.data : {});
+}
+
+/** One atomic save retains all timetables and existing notes together. */
 function saveSchedule() {
-    scheduleData['faculty'] = document.getElementById('sched-faculty').value.trim();
-    scheduleData['semester'] = document.getElementById('sched-semester').value.trim();
-
-    document.querySelectorAll('.schedule-input').forEach(function (input) {
-        const key = input.getAttribute('data-key');
-        if (key) scheduleData[key] = input.value.trim();
-    });
-
+    const data = readScheduleDraft();
+    const index = scheduleData.items.findIndex(item => item.id === scheduleEditingId);
+    if (index < 0) scheduleData.items.push({ id: scheduleEditingId, data: data });
+    else scheduleData.items[index].data = data;
+    scheduleData.activeId = scheduleEditingId;
     if (saveData()) closeModals(true);
 }
 
@@ -2269,9 +2500,9 @@ function saveSchedule() {
    No dynamic code is ever executed. Grammar:
 
        expression := term (('+' | '-') term)*
-       term       := unary (('*' | '/' | '%') unary)*
+       term       := unary (('*' | '/') unary)*
        unary      := ('-' | '+') unary | power
-       power      := primary ('^' unary)?          (right associative)
+       power      := primary ('%' | '²')* ('^' unary)?  (right associative)
        primary    := number | func '(' expression ')' | '(' expression ')'
 
    Recognised names: sin, cos, tan, log (base 10), ln, sqrt, abs,
@@ -2313,7 +2544,7 @@ function tokenizeExpression(input) {
             }
             if (id === 'Math.PI') {
                 tokens.push({ type: 'number', value: Math.PI });
-            } else if (id === 'Math.E') {
+            } else if (id === 'Math.E' || id === 'e') {
                 tokens.push({ type: 'number', value: Math.E });
             } else if (CALC_FUNCTIONS.indexOf(id) !== -1) {
                 tokens.push({ type: 'function', value: id });
@@ -2331,7 +2562,7 @@ function tokenizeExpression(input) {
         }
 
         /* Single-character operators */
-        if ('+-*/%()^'.indexOf(ch) !== -1) {
+        if ('+-*/%()^²'.indexOf(ch) !== -1) {
             tokens.push({ type: 'operator', value: ch });
             i++;
             continue;
@@ -2363,164 +2594,266 @@ function applyCalcFunction(name, x) {
  * @returns {number}
  * @throws {Error} when the expression is malformed
  */
+/** Safe recursive-descent evaluation. Percent and square are postfix operations.
+ * A standalone percentage after + or - is relative to the left-hand amount.
+ * Trigonometric functions retain their original radian convention.
+ */
 function evaluateExpression(input) {
+    input = normalizeCalcSymbols(input).replace(/×/g, '*').replace(/÷/g, '/').replace(/π/g, 'Math.PI');
     if (input.length > 512) throw new Error('Expression too long');
     const tokens = tokenizeExpression(input);
-    if (tokens.length === 0) throw new Error('Empty expression');
-
+    if (!tokens.length) throw new Error('Empty expression');
     let pos = 0;
-
-    function peek() { return tokens[pos]; }
-    function consume() { return tokens[pos++]; }
-
-    function parseAddSub() {
-        let left = parseMulDiv();
-        while (peek() && peek().type === 'operator' &&
-               (peek().value === '+' || peek().value === '-')) {
-            const op = consume().value;
-            const right = parseMulDiv();
-            left = (op === '+') ? left + right : left - right;
+    const node = (value, percent) => ({ value: value, percent: !!percent });
+    function peek(value) { return tokens[pos] && tokens[pos].value === value; }
+    function addSub() {
+        let left = mulDiv();
+        while (peek('+') || peek('-')) {
+            const op = tokens[pos++].value;
+            const right = mulDiv();
+            const amount = right.percent ? left.value * right.value : right.value;
+            left = node(op === '+' ? left.value + amount : left.value - amount);
         }
         return left;
     }
-
-    function parseMulDiv() {
-        let left = parseUnary();
-        while (peek() && peek().type === 'operator' &&
-               (peek().value === '*' || peek().value === '/' || peek().value === '%')) {
-            const op = consume().value;
-            const right = parseUnary();
-            if (op === '*') left = left * right;
-            else if (op === '/') left = left / right;
-            else left = left % right;
+    function mulDiv() {
+        let left = unary();
+        while (peek('*') || peek('/')) {
+            const op = tokens[pos++].value;
+            const right = unary();
+            left = node(op === '*' ? left.value * right.value : left.value / right.value);
         }
         return left;
     }
-
-    function parseUnary() {
-        const token = peek();
-        if (token && token.type === 'operator' && token.value === '-') {
-            consume();
-            return -parseUnary();
+    function unary() {
+        if (peek('-') || peek('+')) {
+            const op = tokens[pos++].value;
+            const result = unary();
+            return node(op === '-' ? -result.value : result.value, result.percent);
         }
-        if (token && token.type === 'operator' && token.value === '+') {
-            consume();
-            return parseUnary();
-        }
-        return parsePower();
+        return power();
     }
-
-    function parsePower() {
-        const base = parsePrimary();
-        if (peek() && peek().type === 'operator' && peek().value === '^') {
-            consume();
-            const exponent = parseUnary(); /* right associative */
-            return Math.pow(base, exponent);
+    function power() {
+        let value = primary();
+        while (peek('%') || peek('²')) {
+            const op = tokens[pos++].value;
+            value = op === '%' ? node(value.value / 100, true) : node(value.value * value.value);
         }
-        return base;
+        if (peek('^')) {
+            pos++;
+            value = node(Math.pow(value.value, unary().value));
+        }
+        return value;
     }
-
-    function parsePrimary() {
-        const token = peek();
-        if (!token) throw new Error('Unexpected end of expression');
-
-        if (token.type === 'number') {
-            consume();
-            return token.value;
-        }
-
+    function primary() {
+        const token = tokens[pos++];
+        if (!token) throw new Error('Incomplete expression');
+        if (token.type === 'number') return node(token.value);
         if (token.type === 'function') {
-            consume();
-            if (!peek() || peek().value !== '(') throw new Error('Expected ( after function');
-            consume();
-            const arg = parseAddSub();
-            if (!peek() || peek().value !== ')') throw new Error('Expected )');
-            consume();
-            return applyCalcFunction(token.value, arg);
+            if (!peek('(')) throw new Error('Expected (');
+            pos++;
+            const arg = addSub();
+            if (!peek(')')) throw new Error('Expected )');
+            pos++;
+            return node(applyCalcFunction(token.value, arg.value));
         }
-
         if (token.value === '(') {
-            consume();
-            const value = parseAddSub();
-            if (!peek() || peek().value !== ')') throw new Error('Expected )');
-            consume();
-            return value;
+            const result = addSub();
+            if (!peek(')')) throw new Error('Expected )');
+            pos++;
+            return result;
         }
-
-        throw new Error('Unexpected token: ' + token.value);
+        throw new Error('Unexpected token');
     }
-
-    const result = parseAddSub();
+    const result = addSub().value;
     if (pos !== tokens.length) throw new Error('Unexpected trailing input');
+    if (!Number.isFinite(result)) throw new Error('Math error');
     return result;
 }
+
 
 /* --- Calculator UI state -------------------------------------------------- */
 
 let calcVal = '0';
+let calcJustEvaluated = false;
 
-/** Refreshes the calculator display. */
-function updateCalcDisplay() {
-    document.getElementById('calc-display').innerText = calcVal;
+/** Convert local digits and familiar mobile-calculator symbols to one spelling. */
+function normalizeCalcSymbols(value) {
+    return String(value).replace(/[۰-۹٠-٩]/g, digit => String(digit.charCodeAt(0) - (digit >= '۰' ? 1776 : 1632)))
+        .replace(/٫/g, '.').replace(/[−–]/g, '-').replace(/[×*]/g, '×').replace(/[÷/]/g, '÷')
+        .replace(/Math\.PI/g, 'π').replace(/Math\.E/g, 'e').replace(/\s/g, '');
 }
 
-/** Resets the display when the previous result was an error. */
-function resetCalcIfError() {
-    if (calcVal === 'Error') calcVal = '0';
+function calcEndsOperand(value) {
+    return /[\d.)πe%²]$/.test(value);
 }
 
-/** Appends a digit or decimal point. */
-function calcNum(n) {
-    resetCalcIfError();
-    if (n === '.' && /\d*\.\d*$/.test(calcVal.split(/[+*/%()^]/).pop())) return;
-    if (calcVal === '0') calcVal = n === '.' ? '0.' : n;
-    else calcVal += n;
-    updateCalcDisplay();
+/** Replace a pending operation; a minus after ×, ÷ or ^ remains a unary sign. */
+function appendCalcOperator(left, operator) {
+    const pending = left.match(/[+\-×÷^]+$/);
+    if (pending) {
+        const base = left.slice(0, -pending[0].length);
+        if (!calcEndsOperand(base)) return operator === '-' ? base + '-' : base;
+        if (operator === '-' && /^[×÷^]-?$/.test(pending[0])) return base + pending[0][0] + '-';
+        return base + operator;
+    }
+    if (!calcEndsOperand(left)) return operator === '-' ? left + '-' : left;
+    return left + operator;
 }
 
-/** Appends an operator / function / parenthesis / constant. */
-function calcOp(op) {
-    resetCalcIfError();
-    if (calcVal === '0' && (op === '(' || /^[a-zA-Z]/.test(op))) calcVal = op;
-    else calcVal += op;
-    updateCalcDisplay();
+/** Normalise pasted / physical-keyboard input without evaluating any code. */
+function normalizeCalcText(value) {
+    const input = normalizeCalcSymbols(value);
+    if (input.length > 512) return null;
+    let out = '', pos = 0, balance = 0;
+    while (pos < input.length) {
+        const rest = input.slice(pos);
+        const number = rest.match(/^(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?/);
+        const fn = rest.match(/^(sin|cos|tan|log|ln|sqrt|abs)\(/);
+        if (number) {
+            if (number[0][0] === '.' && /[\d.]$/.test(out)) {
+                out += number[0].slice(1);
+                pos += number[0].length;
+                continue;
+            }
+            let text = number[0].replace(/^0+(?=\d)/, '');
+            if (text[0] === '.') text = '0' + text;
+            if (/[)πe%²]$/.test(out)) out += '×';
+            out += text;
+            pos += number[0].length;
+        } else if (fn) {
+            if (calcEndsOperand(out)) out += '×';
+            out += fn[0]; balance++; pos += fn[0].length;
+        } else {
+            const ch = input[pos++];
+            if ('+-×÷^'.includes(ch)) out = appendCalcOperator(out, ch);
+            else if (ch === '(') {
+                if (calcEndsOperand(out)) out += '×';
+                out += ch; balance++;
+            } else if (ch === ')') {
+                if (balance > 0 && calcEndsOperand(out)) { out += ch; balance--; }
+            } else if (ch === 'π' || ch === 'e') {
+                if (calcEndsOperand(out)) out += '×';
+                out += ch;
+            } else if (ch === '%' || ch === '²') {
+                if (calcEndsOperand(out) && !(ch === '%' && out.endsWith('%'))) out += ch;
+            } else if (ch === '.') {
+                // Ignore a second decimal separator in the same numeric literal.
+                if (!/\d*\.\d*$/.test(out)) out += /\d$/.test(out) ? '.' : '0.';
+            } else return null;
+        }
+    }
+    return out;
 }
 
-/** Clears the display. */
+function updateCalcDisplay(start, end) {
+    const input = document.getElementById('calc-display');
+    input.value = calcVal;
+    const caret = start == null ? calcVal.length : Math.min(start, calcVal.length);
+    input.setSelectionRange(caret, end == null ? caret : Math.min(end, calcVal.length));
+    input.setAttribute('aria-invalid', calcVal === 'Error' ? 'true' : 'false');
+}
+
+/** Insert at the caret or replace the selected range, retaining the existing keypad. */
+function insertCalcText(text, isNumber) {
+    const input = document.getElementById('calc-display');
+    let start = input.selectionStart == null ? calcVal.length : input.selectionStart;
+    let end = input.selectionEnd == null ? start : input.selectionEnd;
+    if (calcVal === 'Error' || (calcJustEvaluated && isNumber)) {
+        calcVal = '0'; start = 0; end = 1;
+    }
+    calcJustEvaluated = false;
+    let left = calcVal.slice(0, start), right = calcVal.slice(end);
+    if (calcVal === '0' && start === end && start === 1 && (isNumber || text === '(' || /[a-zπe]/.test(text))) left = '';
+    let inserted = normalizeCalcSymbols(text);
+    if (inserted === '.') {
+        const before = left.match(/(?:\d+(?:\.\d*)?|\.\d*)$/);
+        const after = right.match(/^\d*(?:\.\d*)?/);
+        if ((before && before[0].includes('.')) || (after && after[0].includes('.'))) return;
+        if (!/\d$/.test(left)) inserted = '0.';
+    }
+    const prefix = normalizeCalcText(left + inserted);
+    if (prefix == null) return;
+    // A newly entered operation replaces the pending operation to its right, too.
+    if (/^[+\-×÷^]$/.test(inserted)) right = right.replace(/^[+\-×÷^]+/, '');
+    const candidate = normalizeCalcText(prefix + right);
+    if (candidate == null) return;
+    calcVal = candidate || '0';
+    input.focus({ preventScroll: true });
+    updateCalcDisplay(Math.min(prefix.length, calcVal.length));
+}
+
+function calcNum(number) { insertCalcText(number, true); }
+function calcOp(operator) { insertCalcText(operator === '**2' ? '²' : operator, false); }
+
 function calcClear() {
-    calcVal = '0';
+    calcVal = '0'; calcJustEvaluated = false;
     updateCalcDisplay();
 }
 
-/** Deletes the last character. */
-function calcDel() {
-    resetCalcIfError();
-    if (calcVal.length > 1) calcVal = calcVal.slice(0, -1);
-    else calcVal = '0';
-    updateCalcDisplay();
+/** DEL removes the selected range, or the token immediately before the caret. */
+function calcDel(forward) {
+    const input = document.getElementById('calc-display');
+    if (calcVal === 'Error') { calcClear(); return; }
+    let start = input.selectionStart == null ? calcVal.length : input.selectionStart;
+    let end = input.selectionEnd == null ? start : input.selectionEnd;
+    if (start === end) {
+        if (forward === true) end = Math.min(calcVal.length, end + 1);
+        else if (start > 0) {
+            const fn = calcVal.slice(0, start).match(/(?:sin|cos|tan|log|ln|sqrt|abs)\($/);
+            start -= fn ? fn[0].length : 1;
+        } else return;
+    }
+    calcVal = calcVal.slice(0, start) + calcVal.slice(end);
+    if (!calcVal) calcVal = '0';
+    calcJustEvaluated = false;
+    input.focus({ preventScroll: true });
+    updateCalcDisplay(start);
 }
 
-/** Evaluates the current expression using the safe parser. */
+/** Mathematical errors stay in the display and are never stored as successful history. */
 function calcEqual() {
     const expression = calcVal;
     let display;
-
     try {
         const value = evaluateExpression(expression);
-        if (typeof value !== 'number' || !isFinite(value)) throw new Error('Math error');
-
-        /* Keep up to 6 decimals, then trim trailing zeros. */
-        display = String(Number(value.toFixed(6)));
-
+        if (!Number.isFinite(value)) throw new Error('Math error');
+        display = String(Number(value.toPrecision(12)));
         calcHistory.push(expression + ' = ' + display);
         if (calcHistory.length > 10) calcHistory.shift();
-    } catch (err) {
-        display = 'Error';
-    }
-
+    } catch (error) { display = 'Error'; }
     calcVal = display;
+    calcJustEvaluated = display !== 'Error';
     updateCalcDisplay();
     saveData();
+}
+
+function setupCalculator() {
+    const input = document.getElementById('calc-display');
+    input.addEventListener('pointerdown', () => { calcJustEvaluated = false; });
+    document.querySelector('.calc-grid').addEventListener('mousedown', event => event.preventDefault());
+    input.addEventListener('keydown', event => {
+        if (event.ctrlKey || event.metaKey || event.altKey) return;
+        if (event.key === 'Enter' || event.key === '=') { event.preventDefault(); calcEqual(); }
+        else if (event.key === 'Backspace' || event.key === 'Delete') { event.preventDefault(); calcDel(event.key === 'Delete'); }
+        else if (event.key === 'Escape') { event.preventDefault(); calcClear(); }
+        else if (/^[0-9.]$/.test(event.key)) { event.preventDefault(); calcNum(event.key); }
+        else if (/^[+\-*/^()%]$/.test(event.key)) { event.preventDefault(); calcOp(event.key); }
+        else if (event.key.length === 1) event.preventDefault();
+    });
+    input.addEventListener('paste', event => {
+        event.preventDefault();
+        const text = event.clipboardData && event.clipboardData.getData('text/plain');
+        if (text) insertCalcText(text, true);
+    });
+    input.addEventListener('input', () => {
+        const caret = input.selectionStart || 0;
+        const next = normalizeCalcText(input.value);
+        if (next != null) calcVal = next || '0';
+        calcJustEvaluated = false;
+        updateCalcDisplay(Math.min(caret, calcVal.length));
+    });
+    updateCalcDisplay();
 }
 
 
@@ -2542,20 +2875,20 @@ function renderPrivacy() {
     document.getElementById('privacy-link').textContent = uiText('د محرمیت تګلاره', 'سیاست حریم خصوصی', 'Privacy policy');
     const contact = '<a href="https://wa.me/93704287401" target="_blank" rel="noopener noreferrer">WhatsApp: +93 704 287 401</a>';
     const policy = uiText(
-        `<h2>University Notes — د محرمیت تګلاره</h2><p>جوړوونکی: Wakil Ahmad Noori<br>وروستی بدلون: ۲۰۲۶/۱۰/۱۷</p>
+        `<h2>University Notes — د محرمیت تګلاره</h2><p>جوړوونکی: Wakil Ahmad Noori<br>وروستی بدلون: ۲۰۲۶/۱۰/۲۰</p>
         <h3>معلومات او ساتنه</h3><p>نوټونه، مضمونونه، نمرې، حاضري، مهالوېش، ژبه، بڼه او د حساب تاریخچه یوازې د اپ په ځايي زېرمه کې ساتل کېږي. دا نسخه حساب جوړول، اعلانونه، څارنه او تحلیلي خدمات نه لري؛ جوړوونکی ستاسو نوټونو ته لاسرسی نه لري او اپ یې سرور ته نه لېږي.</p>
         <h3>PDF او بهرنۍ اړیکې</h3><p>PDF په همدې وسیله، بې‌انټرنېټه جوړېږي. په Android کې د فایل ځای تاسو ټاکئ؛ د ټولې حافظې اجازې ته اړتیا نشته. که آنلاین زېرمه وټاکئ، فایل هماغه خدمت ته سپارئ. شریک شوی یا خوندي شوی PDF د اپ له پاکولو وروسته هم پاتې کېدای شي. د واټساپ او فېسبوک لینکونه یوازې ستاسو په غوښتنه پرانیستل کېږي او د هغوی خپل شرایط عملي کېږي؛ نوټونه ورسره په اتومات ډول نه شریکېږي.</p>
-        <h3>پاکول او مسؤلیت</h3><p>نوټونه ترش ته انتقالېږي؛ له ترش څخه په تلپاتې پاکولو حذفېږي. د ټولو ځايي معلوماتو د پاکولو لپاره د Android د اپ معلوماتو برخه کې Clear storage وکاروئ یا اپ لرې کړئ. د پخوانۍ نسخې معلومات په خوندي ډول نوې زېرمې ته لېږدول کېږي او زاړه نقلونه له بریالي انتقال وروسته پاکېږي. له مهمو نوټونو PDF وساتئ؛ دا اپ آنلاین همغږي یا بشپړه بېرته راګرځېدونکې بیک‌اپ نه لري.</p>
+        <h3>پاکول او مسؤلیت</h3><p>نوټونه ترش ته انتقالېږي؛ له ترش څخه په تلپاتې پاکولو حذفېږي. د ټولو ځايي معلوماتو د پاکولو لپاره د Android د اپ معلوماتو برخه کې Clear storage وکاروئ یا اپ لرې کړئ. د پخوانۍ نسخې معلومات په خوندي ډول نوې زېرمې ته لېږدول کېږي او زاړه نقلونه له بریالي انتقال وروسته پاکېږي. اپ آنلاین همغږي نه لري. په تنظیماتو کې په خپله غوښتنه JSON بیک‌اپ جوړول او بېرته راوستلای شئ. فایل نوټونه، ترش، نمرې، حاضري، مهالوېشونه او د حساب تاریخچه لري؛ پټنوم نه لري. خوندي یې وساتئ او د اړتیا پر وخت یې جلا پاک کړئ. که آنلاین زېرمه وټاکئ، فایل هماغه خدمت ته لېږدول کېږي. بېرته راوستل ستاسو په تایید اوسني معلومات بدلوي. د Android اختیاري قلف د موبایل PIN/بڼې/پټنوم کاروي؛ اپ یې نه لولي او نه یې ساتي. قلف له اپه تر وتلو وروسته بیا فعالېږي. د سکرین‌شاټ بندول هم اختیاري دي؛ دا قلف د نوټونو یا بیک‌اپ د فایلونو کوډول نه دي. د امنیت تنظیمات په بیک‌اپ کې نه ساتل کېږي.</p>
         <h3>اجازې او اړیکه</h3><p>دا نسخه کامرې، اړیکو، موقعیت، مایکروفون یا د ټولې حافظې اجازه نه غواړي. که راتلونکې نسخه اعلانونه یا نور خدمات زیات کړي، دا تګلاره او د Play Store معلومات باید هم ورسره بدل شي. د پوښتنو لپاره: ${contact}</p>`,
-        `<h2>University Notes — حریم خصوصی</h2><p>سازنده: Wakil Ahmad Noori<br>آخرین تغییر: 2026-10-17</p>
+        `<h2>University Notes — حریم خصوصی</h2><p>سازنده: Wakil Ahmad Noori<br>آخرین تغییر: 2026-10-20</p>
         <h3>ذخیرۀ محلی</h3><p>یادداشت‌ها، مضمون‌ها، نمرات، حاضری، تقسیم اوقات، زبان، ظاهر و تاریخچۀ حساب فقط در ذخیرۀ محلی برنامه نگهداری می‌شوند. این نسخه حساب، تبلیغات، ردیابی یا تحلیل‌گر ندارد و یادداشت‌ها را به سرور نمی‌فرستد.</p>
         <h3>PDF و لینک‌ها</h3><p>PDF بدون انترنت روی دستگاه ساخته می‌شود. در Android محل ذخیره را خودتان انتخاب می‌کنید؛ دسترسی عمومی به حافظه لازم نیست. انتخاب ذخیرۀ ابری فایل را به همان خدمت می‌سپارد. PDFهای ذخیره یا شریک‌شده ممکن است پس از حذف برنامه باقی بمانند. لینک‌های واتساپ و فیسبوک فقط با انتخاب شما باز می‌شوند؛ معلومات داخلی خودکار شریک نمی‌شوند و شرایط همان خدمات اعمال می‌شود.</p>
-        <h3>حذف معلومات</h3><p>یادداشت‌ها را به زباله‌دان منتقل و سپس دایمی حذف کنید. برای پاک کردن همۀ معلومات و نقل‌های نسخۀ پیشین، در تنظیمات Android گزینه Clear storage را بزنید یا برنامه را حذف کنید. معلومات نسخۀ پیشین پس از انتقال موفق به ذخیرۀ جدید پاک می‌شوند. این برنامه همگام‌سازی آنلاین یا پشتیبان قابل بازیابی ندارد؛ از مطالب مهم PDF نگه دارید.</p>
+        <h3>حذف معلومات</h3><p>یادداشت‌ها را به زباله‌دان منتقل و سپس دایمی حذف کنید. برای پاک کردن همۀ معلومات و نقل‌های نسخۀ پیشین، در تنظیمات Android گزینه Clear storage را بزنید یا برنامه را حذف کنید. معلومات نسخۀ پیشین پس از انتقال موفق به ذخیرۀ جدید پاک می‌شوند. برنامه همگام‌سازی آنلاین ندارد. در تنظیمات می‌توانید دستی پشتیبان JSON بسازید و بازیابی کنید. فایل شامل یادداشت‌ها، زباله‌دان، نمرات، حاضری، تقسیم اوقات و تاریخچۀ حساب است و رمز ندارد؛ آن را محفوظ نگه دارید و جداگانه حذف کنید. انتخاب ذخیرۀ ابری فایل را به همان خدمت می‌سپارد. بازیابی با تأیید شما جایگزین معلومات فعلی می‌شود. قفل اختیاری Android از PIN/الگو/رمز دستگاه استفاده می‌کند؛ برنامه رمز را نمی‌خواند و ذخیره نمی‌کند. پس از ترک برنامه دوباره قفل می‌شود. مسدود کردن تصویر صفحه اختیاری است؛ این قفل فایل‌های یادداشت و پشتیبان را رمزگذاری نمی‌کند. تنظیمات امنیت داخل پشتیبان نیست.</p>
         <h3>اجازه‌ها و تماس</h3><p>این نسخه اجازۀ کمره، موقعیت، مخاطبین، مایکروفون یا همۀ حافظه را درخواست نمی‌کند. افزودن تبلیغات یا خدمات در آینده نیازمند به‌روزرسانی این تگ‌لاره و معلومات Play Store است. تماس: ${contact}</p>`,
-        `<h2>University Notes — Privacy policy</h2><p>Developer: Wakil Ahmad Noori<br>Updated: 2026-10-17</p>
+        `<h2>University Notes — Privacy policy</h2><p>Developer: Wakil Ahmad Noori<br>Updated: 2026-10-20</p>
         <h3>Local data</h3><p>Notes, subjects, grades, attendance, schedule, language, theme and calculator history are stored locally in app storage. This version has no accounts, ads, analytics or tracking. The developer does not receive your notes; the app does not upload them to a server.</p>
         <h3>PDF files and external links</h3><p>PDFs are generated offline on your device. Android asks you to choose the destination without broad storage permission. Choosing a cloud document provider sends the file to that provider. Exported or shared copies may remain after app deletion. WhatsApp and Facebook open only when selected and follow their own policies; your notes are not automatically sent to them.</p>
-        <h3>Retention and deletion</h3><p>Move notes to Trash, then permanently delete them. To erase all local data, including retained migration copies, use Android Settings → Apps → University Notes → Storage → Clear storage, or uninstall the app. Legacy local records are removed after a successful migration save. There is no online sync or restorable full backup; keep PDFs of important notes. Exported files must be deleted separately.</p>
+        <h3>Retention and deletion</h3><p>Move notes to Trash, then permanently delete them. To erase all local data, including retained migration copies, use Android Settings → Apps → University Notes → Storage → Clear storage, or uninstall the app. Legacy local records are removed after a successful migration save. There is no online sync. Settings offers manual JSON backup and restore, including notes, Trash, grades, attendance, timetables and calculator history. Backup files are not encrypted; keep them safe. Choosing a cloud provider sends the file to that provider. Restore replaces current data only after confirmation. Optional Android app lock uses your device PIN, pattern or password; the app never reads or stores that credential. It locks again when you leave the app. Screenshot protection is optional. App lock does not encrypt note or backup files. Security settings are device-only and excluded from backups. Exported files must be deleted separately.</p>
         <h3>Permissions and contact</h3><p>This version requests no camera, contacts, location, microphone or broad file access. If future versions add advertising or other services, this policy and the Play Store disclosures must be updated. Questions: ${contact}</p>`);
     document.getElementById('privacy-policy-content').innerHTML = policy;
 }
@@ -2714,14 +3047,230 @@ async function exportSubjectToPDF() {
    14. THEME, CLOCK, BOOTSTRAP
    ============================================================================ */
 
-/** Toggles the existing light/dark themes and persists the choice. */
-function toggleTheme() {
-    const currentTheme = document.body.getAttribute('data-theme');
-    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    document.body.setAttribute('data-theme', newTheme);
-    document.documentElement.setAttribute('data-theme', newTheme);
-    try { localStorage.setItem(STORAGE_KEYS.theme, newTheme); } catch (err) { /* ignore */ }
+/* Preferences and manual, versioned backup. Security stays on this device. */
+const BACKUP_LIMIT = 8 * 1024 * 1024;
+let backupBusy = false, pendingBackup = null, securityBusy = false;
+let securityState = { available: false, appLock: false, hideScreen: false, deviceSecure: false };
+function setLanguage(value) {
+    if (!['ps','dr','en'].includes(value)) return;
+    currentLang = value;
+    try { localStorage.setItem('un_lang_v5', value); } catch (err) { /* session still usable */ }
+    applyLanguage();
+    refreshSecurity();
 }
+function setTheme(value) {
+    if (!['light','dark'].includes(value)) return;
+    document.body.setAttribute('data-theme', value);
+    document.documentElement.setAttribute('data-theme', value);
+    try { localStorage.setItem(STORAGE_KEYS.theme, value); } catch (err) { /* session still usable */ }
+    renderSettings();
+}
+function renderSettings() {
+    const copy = {
+        'settings-title': ['تنظیمات','تنظیمات','Settings'],
+        'settings-language-label': ['ژبه','زبان','Language'],
+        'settings-theme-label': ['بڼه / ټیم','ظاهر / تم','Theme'],
+        'theme-light': ['روښانه','روشن','Light'], 'theme-dark': ['تیاره','تاریک','Dark'],
+        'security-title': ['امنیت','امنیت','Security'],
+        'security-desc': ['د Android د موبایل PIN، بڼې یا پټنوم په وسیله اپ قلف کړئ. دا د نوټونو د فایلونو کوډول نه دي.','برنامه را با PIN، الگو یا رمز دستگاه Android قفل کنید. این گزینه فایل‌های یادداشت را رمزگذاری نمی‌کند.','Lock the Android app with your device PIN, pattern or password. This does not encrypt note files.'],
+        'security-lock-label': ['د اپ قلف','قفل برنامه','App lock'],
+        'security-auto-hint': ['له اپه تر وتلو یا د سکرین تر بندېدو وروسته بیا قلف کېږي. د قلف پر مهال سکرین‌شاټ هم بندېږي.','پس از ترک برنامه یا خاموش شدن صفحه دوباره قفل می‌شود. قفل برنامه تصویر صفحه را نیز مسدود می‌کند.','Locks again when you leave the app or turn off the screen. App lock also blocks screenshots.'],
+        'security-screen-label': ['سکرین‌شاټ او د سکرین ثبت بندول','مسدود کردن تصویر و ضبط صفحه','Block screenshots and screen recording'],
+        'security-lock-now': ['اوس قلف کول','همین حالا قفل شود','Lock now'],
+        'backup-title': ['بیک‌اپ او بېرته راوستل','پشتیبان و بازیابی','Backup and restore'],
+        'backup-desc': ['مضمونونه، ټول نوټونه (د ترش په ګډون)، نمرې، حاضري، مهالوېشونه او د حساب تاریخچه په JSON فایل کې وساتئ. فایل پټنوم نه لري؛ خوندي ځای کې یې وساتئ. اپ یې په اتومات ډول انټرنېټ ته نه لېږي.','مضمون‌ها، تمام یادداشت‌ها (با زباله‌دان)، نمرات، حاضری، تقسیم اوقات و تاریخچۀ حساب را در فایل JSON ذخیره کنید. فایل رمز ندارد؛ آن را محفوظ نگه دارید. برنامه آن را خودکار به انترنت نمی‌فرستد.','Save subjects, all notes (including Trash), grades, attendance, timetables and calculator history to a JSON file. The file is not encrypted; keep it somewhere safe. The app never uploads it automatically.'],
+        'backup-export': ['بیک‌اپ خوندي کول','ذخیرۀ پشتیبان','Save backup'],
+        'backup-import': ['بیک‌اپ ټاکل','انتخاب پشتیبان','Choose backup'],
+        'backup-restore': ['معلومات بېرته راوستل','بازیابی معلومات','Restore data'],
+        'backup-cancel': ['بندول','لغو','Cancel'],
+        'backup-replace-warning': ['بېرته راوستل اوسني معلومات بدلوي. لومړی د اوسنیو معلوماتو بیک‌اپ وساتئ. د امنیت تنظیمات نه بدلېږي.','بازیابی جایگزین معلومات فعلی می‌شود. نخست از معلومات فعلی پشتیبان بگیرید. تنظیمات امنیت تغییر نمی‌کند.','Restoring replaces your current data. Save a backup of your current data first. Security settings stay on this device.'],
+    };
+    Object.entries(copy).forEach(([id, values]) => { document.getElementById(id).textContent = uiText(...values); });
+    document.getElementById('settings-language').value = currentLang;
+    document.getElementById('settings-theme').value = document.body.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+    const title = uiText('تنظیمات','تنظیمات','Settings');
+    document.getElementById('settings-open').title = title;
+    document.getElementById('settings-open').setAttribute('aria-label', title);
+    document.getElementById('settings-back').setAttribute('aria-label', uiText('بېرته','بازگشت','Back'));
+    ['backup-export','backup-import','backup-restore'].forEach(id => { document.getElementById(id).disabled = backupBusy; });
+    document.getElementById('security-lock').checked = securityState.appLock;
+    document.getElementById('security-screen').checked = securityState.hideScreen;
+    ['security-lock','security-screen'].forEach(id => { document.getElementById(id).disabled = securityBusy || !securityState.available; });
+    document.getElementById('security-lock-now').disabled = securityBusy || !securityState.available || !securityState.appLock;
+    document.getElementById('security-status').textContent = !securityState.available
+        ? uiText('د قلف او سکرین ساتنې لپاره د Android نوې نسخه وکاروئ.','برای قفل و محافظت صفحه نسخۀ جدید Android را نصب کنید.','App lock and screen protection require the updated Android app.')
+        : !securityState.deviceSecure ? uiText('د اپ قلف لپاره لومړی د موبایل په تنظیماتو کې PIN یا پټنوم جوړ کړئ.','برای قفل برنامه نخست در تنظیمات موبایل PIN یا رمز بسازید.','Set a device PIN, pattern or password in Android Settings to use app lock.') : '';
+    renderSettingsMenu();
+    const preview = document.getElementById('backup-preview');
+    preview.hidden = !pendingBackup;
+    if (pendingBackup) {
+        const s = pendingBackup.state;
+        document.getElementById('backup-preview-summary').textContent = uiText(
+            s.subjects.length + ' مضمونونه، ' + s.notes.length + ' نوټونه، ' + s.schedule.items.length + ' مهالوېشونه',
+            s.subjects.length + ' مضمون، ' + s.notes.length + ' یادداشت، ' + s.schedule.items.length + ' تقسیم اوقات',
+            s.subjects.length + ' subjects, ' + s.notes.length + ' notes, ' + s.schedule.items.length + ' timetables');
+    }
+}
+
+function renderSettingsMenu() {
+    const labels = {
+        language: uiText('ژبه','زبان','Language'), theme: uiText('ټیمونه / بڼه','تم‌ها / ظاهر','Themes'),
+        security: uiText('امنیت','امنیت','Security'), backup: uiText('بیک‌اپ او بېرته راوستل','پشتیبان و بازیابی','Backup and restore'),
+        privacy: uiText('د محرمیت تګلاره','حریم خصوصی','Privacy policy'), about: uiText('د اپ په اړه','دربارۀ برنامه','About the app')
+    };
+    const dark = document.body.getAttribute('data-theme') === 'dark';
+    const lightLabel = uiText('روښانه','روشن','Light');
+    const darkLabel = uiText('تیاره','تاریک','Dark');
+    const summaries = {
+        language: currentLang === 'en' ? 'English' : currentLang === 'dr' ? 'دری' : 'پښتو',
+        theme: dark ? darkLabel : lightLabel,
+        security: securityState.available ? (securityState.appLock ? uiText('د اپ قلف فعال دی','قفل برنامه فعال است','App lock is on') : uiText('د قلف او سکرین ساتنه','قفل و محافظت صفحه','App lock and screen protection')) : uiText('د Android اختیاري ساتنه','محافظت اختیاری Android','Optional Android protection'),
+        backup: uiText('خپل معلومات خوندي وساتئ','معلومات خود را محفوظ نگه دارید','Keep a copy of your data'),
+        privacy: uiText('معلومات او محرمیت','معلومات و حریم خصوصی','Your data and privacy'),
+        about: uiText('د اپ معلومات او اړیکه','معلومات برنامه و تماس','App information and contact')
+    };
+    Object.keys(labels).forEach(key => {
+        document.getElementById('settings-menu-' + key).textContent = labels[key];
+        document.getElementById('settings-summary-' + key).textContent = summaries[key];
+        const title = document.getElementById('settings-detail-title-' + key);
+        if (title) title.textContent = labels[key];
+    });
+    document.getElementById('settings-subtitle').textContent = uiText('ژبه، بڼه او شخصي تنظیمات','زبان، ظاهر و تنظیمات شخصی','Language, appearance and preferences');
+    document.getElementById('settings-light-quick-label').textContent = lightLabel;
+    document.getElementById('settings-dark-quick-label').textContent = darkLabel;
+    document.getElementById('settings-theme-shortcuts').setAttribute('aria-label', labels.theme);
+    ['light','dark'].forEach(theme => {
+        const button = document.getElementById('settings-' + theme + '-quick');
+        const selected = (theme === 'dark') === dark;
+        button.setAttribute('aria-pressed', String(selected));
+    });
+    const themeButton = document.getElementById('theme-quick-button');
+    themeButton.title = labels.theme;
+    themeButton.setAttribute('aria-label', labels.theme);
+    themeButton.setAttribute('aria-pressed', String(dark));
+    document.querySelectorAll('.settings-back').forEach(button => button.setAttribute('aria-label', uiText('بېرته','بازگشت','Back')));
+}
+
+async function refreshSecurity() {
+    if (!universityNative) { renderSettings(); return; }
+    try { securityState = { ...(await universityNative.getSecurity({language: currentLang})), available: true }; }
+    catch (err) { securityState.available = false; }
+    renderSettings();
+}
+async function changeSecurity(option, enabled) {
+    if (securityBusy || !securityState.available) return;
+    securityBusy = true; renderSettings();
+    try {
+        const result = await universityNative.configureSecurity({ option: option, enabled: !!enabled });
+        if (result.cancelled) showStatus(uiText('بدلون لغوه شو.','تغییر لغو شد.','Change cancelled.'));
+    } catch (error) {
+        alert(uiText('تنظیم بدل نه شو. د موبایل PIN/پټنوم او د Android نوې نسخه وګورئ.','تنظیم تغییر نکرد. PIN/رمز دستگاه و نسخۀ جدید Android را بررسی کنید.','Could not change security. Check your device PIN/password and the updated Android app.'));
+    } finally { securityBusy = false; await refreshSecurity(); }
+}
+async function lockAppNow() {
+    if (!securityState.appLock || securityBusy) return;
+    try { await universityNative.lockNow(); } catch (err) { await refreshSecurity(); }
+}
+function backupDocument() {
+    return {format:'university-notes-backup', version:1, exportedAt:new Date().toISOString(),
+        state:JSON.parse(stateSnapshot()), preferences:{language:currentLang, theme:document.body.getAttribute('data-theme') === 'dark' ? 'dark' : 'light'}};
+}
+function validateBackup(text) {
+    const bad = () => { throw new Error('INVALID_BACKUP'); };
+    if (typeof text !== 'string' || new Blob([text]).size > BACKUP_LIMIT) bad();
+    let raw;
+    try { raw = JSON.parse(text.replace(/^\uFEFF/, '')); } catch (err) { bad(); }
+    const object = v => v && typeof v === 'object' && !Array.isArray(v);
+    const string = v => typeof v === 'string';
+    const number = v => typeof v === 'number' && Number.isFinite(v);
+    const count = v => Number.isSafeInteger(v) && v >= 0;
+    const id = v => Number.isSafeInteger(v) && v > 0;
+    if (!object(raw) || raw.format !== 'university-notes-backup' || raw.version !== 1 || !string(raw.exportedAt) || !Number.isFinite(Date.parse(raw.exportedAt))) bad();
+    const s = raw.state, p = raw.preferences;
+    if (!object(s) || s.version !== 6 || !Array.isArray(s.subjects) || !Array.isArray(s.notes) || !Array.isArray(s.calc) || !object(p) || !['ps','dr','en'].includes(p.language) || !['light','dark'].includes(p.theme)) bad();
+    const subjectIds = new Set(), noteIds = new Set(), scheduleIds = new Set();
+    s.subjects.forEach(v => {
+        if (!object(v) || !id(v.id) || subjectIds.has(v.id) || !string(v.title) || !Number.isInteger(v.credit) || v.credit < 1 || v.credit > 5 || !number(v.score) || v.score < 0 || v.score > 100 || !count(v.present) || !count(v.absent)) bad();
+        subjectIds.add(v.id);
+    });
+    s.notes.forEach(v => {
+        if (!object(v) || !id(v.id) || noteIds.has(v.id) || !subjectIds.has(v.subjectId) || !string(v.title) || !string(v.content) || !string(v.date) || typeof v.isTrash !== 'boolean') bad();
+        noteIds.add(v.id);
+    });
+    if (s.calc.length > 10 || !s.calc.every(string)) bad();
+    const schedule = s.schedule;
+    if (!object(schedule) || schedule.version !== 2 || !Array.isArray(schedule.items)) bad();
+    const keys = ['faculty','semester'].concat(Array.from({length:24},(_,i) => 'day_' + Math.floor(i/4) + '_slot_' + (i%4+1)));
+    schedule.items.forEach(v => {
+        if (!object(v) || !string(v.id) || !v.id || scheduleIds.has(v.id) || !object(v.data) || !Object.keys(v.data).every(key => keys.includes(key) && string(v.data[key]))) bad();
+        scheduleIds.add(v.id);
+    });
+    if (schedule.items.length ? !scheduleIds.has(schedule.activeId) : schedule.activeId !== null) bad();
+    // Copy only known fields: imported text is rendered as text, never executable markup.
+    return {state:{version:6,subjects:sanitizeSubjects(s.subjects),notes:sanitizeNotes(s.notes),calc:sanitizeCalcHistory(s.calc),schedule:sanitizeSchedule(schedule)},preferences:{language:p.language,theme:p.theme}};
+}
+async function exportBackup() {
+    if (backupBusy) return;
+    backupBusy = true; renderSettings();
+    try {
+        const data = JSON.stringify(backupDocument());
+        const blob = new Blob([data],{type:'application/json'});
+        if (blob.size > BACKUP_LIMIT) throw new Error('SIZE');
+        const fileName = 'University-Notes-Backup-' + new Date().toISOString().slice(0,10) + '.json';
+        if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+            if (!universityNative) throw new Error('BRIDGE');
+            const result = await universityNative.saveBackup({data:data,fileName:fileName});
+            showStatus(result.cancelled ? uiText('خوندي کول لغوه شول.','ذخیره لغو شد.','Save cancelled.') : uiText('بیک‌اپ خوندي شو.','پشتیبان ذخیره شد.','Backup saved.'));
+        } else {
+            const url = URL.createObjectURL(blob), link = document.createElement('a');
+            link.href=url;link.download=fileName;document.body.appendChild(link);link.click();link.remove();
+            setTimeout(()=>URL.revokeObjectURL(url),60000);
+            showStatus(uiText('د بیک‌اپ دانلود پیل شو.','دانلود پشتیبان آغاز شد.','Backup download started.'));
+        }
+    } catch (err) { backupError(); }
+    finally { backupBusy=false;renderSettings(); }
+}
+function backupError() {
+    alert(uiText('بیک‌اپ بشپړ نه شو. د University Notes سم JSON فایل (تر ۸ MB)، تش ځای او د Android نوې نسخه وګورئ. اوسني معلومات نه دي بدل شوي.','پشتیبان کامل نشد. فایل JSON درست University Notes (تا ۸ MB)، فضای خالی و نسخۀ جدید Android را بررسی کنید. معلومات فعلی تغییر نکرد.','Backup could not be completed. Check the University Notes JSON file (up to 8 MB), free storage and updated Android app. Your current data was not changed.'));
+}
+async function chooseBackup() {
+    if (backupBusy) return;
+    cancelBackupPreview();
+    if (!(window.Capacitor && window.Capacitor.isNativePlatform())) { document.getElementById('backup-file').click();return; }
+    backupBusy=true;renderSettings();
+    try {
+        if (!universityNative) throw new Error('BRIDGE');
+        const result = await universityNative.openBackup();
+        if (!result.cancelled) pendingBackup=validateBackup(result.data);
+    } catch (err) { backupError(); }
+    finally { backupBusy=false;renderSettings(); }
+}
+async function readBackupFile(input) {
+    if (backupBusy || !input.files.length) return;
+    backupBusy=true;pendingBackup=null;renderSettings();
+    try {
+        const file=input.files[0];
+        if(file.size > BACKUP_LIMIT) throw new Error('SIZE');
+        pendingBackup=validateBackup(await file.text());
+    } catch(err) { backupError(); }
+    finally { input.value='';backupBusy=false;renderSettings(); }
+}
+function cancelBackupPreview() { pendingBackup=null;document.getElementById('backup-file').value='';renderSettings(); }
+function restoreBackup() {
+    if (backupBusy || !pendingBackup) return;
+    if (!confirm(uiText('اوسني ټول معلومات د ټاکل شوي بیک‌اپ په معلوماتو بدلوئ؟ لومړی خپل اوسني معلومات خوندي کړئ.','تمام معلومات فعلی با این پشتیبان جایگزین شود؟ نخست از معلومات فعلی پشتیبان بگیرید.','Replace all current data with this backup? Save a backup of your current data first.'))) return;
+    const next = pendingBackup;
+    // saveData commits one record, or restores lastSavedSnapshot on quota failure.
+    subjects=next.state.subjects;notes=next.state.notes;calcHistory=next.state.calc;scheduleData=next.state.schedule;
+    if (!saveData(uiText('بیک‌اپ راونه ګرځېد؛ تش ځای وګورئ. اوسني معلومات خوندي پاتې دي.','بازیابی نشد؛ فضای خالی را بررسی کنید. معلومات فعلی محفوظ است.','Restore failed; check available storage. Your current data is safe.'))) return;
+    selectedSubjectFilter=null;
+    pendingBackup=null;
+    setTheme(next.preferences.theme);setLanguage(next.preferences.language);
+    calcClear();renderAll();renderSettings();
+    showStatus(uiText('معلومات په بریالیتوب بېرته راوستل شول.','معلومات با موفقیت بازیابی شد.','Data restored successfully.'));
+}
+
+function toggleTheme() { setTheme(document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'); }
 
 /* --- Live clock + current day -------------------------------------------- */
 
@@ -2729,11 +3278,19 @@ let lastRenderedDayKey = '';
 
 /** Updates the day badge only when the day (or language) actually changes. */
 function updateCurrentDay() {
-    const dayName = daysOfWeek[currentLang][new Date().getDay()];
-    const key = currentLang + ':' + dayName;
+    const now = new Date();
+    const dayName = daysOfWeek[currentLang][now.getDay()];
+    const key = currentLang + ':' + now.getFullYear() + ':' + now.getMonth() + ':' + now.getDate();
     if (key === lastRenderedDayKey) return;
     lastRenderedDayKey = key;
     document.getElementById('current-day-display').innerText = dayName;
+    const date = document.getElementById('current-date-display');
+    const localISO = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
+    date.dateTime = localISO;
+    try {
+        date.textContent = new Intl.DateTimeFormat(currentLang === 'en' ? 'en-GB' : 'fa-AF-u-ca-persian', {year:'numeric',month:'2-digit',day:'2-digit'}).format(now);
+    } catch(err) { date.textContent = localISO; }
+    date.title = uiText('هجري لمریزه نېټه','تاریخ هجری خورشیدی','Date');
 }
 
 /** Ticks the clock every second. */
@@ -2779,8 +3336,11 @@ document.addEventListener('click', function (event) {
 document.querySelectorAll('button[title]').forEach(button => button.setAttribute('aria-label', button.title));
 document.querySelectorAll('input[placeholder],textarea[placeholder]').forEach(input => input.setAttribute('aria-label', input.placeholder));
 
+setupCalculator();
+
 /* Initial paint + start the clock. */
 applyLanguage();
+refreshSecurity();
 updateClock();
 setInterval(updateClock, 1000);
 
