@@ -1,0 +1,771 @@
+name: University Notes Android
+
+on:
+  push:
+    branches: [main]
+    paths: ['noori-1.html', 'wakil.html', '.github/workflows/android.yml', 'privacy-policy.html', 'app-icon.png']
+  workflow_dispatch:
+    inputs:
+      html_file:
+        description: 'HTML filename in the repository root'
+        type: string
+        default: 'noori-1.html'
+      release:
+        description: 'Create a signed Play Store AAB (requires your upload-key secrets)'
+        type: boolean
+        default: false
+      version_code:
+        description: 'Must exceed the versionCode already uploaded to Play. Empty = 1000 + run number'
+        type: string
+        default: ''
+      version_name:
+        description: 'Visible app version'
+        type: string
+        default: '1.1.1'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: university-notes-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      SIGN_RELEASE: ${{ github.event_name == 'workflow_dispatch' && inputs.release && 'true' || 'false' }}
+      APP_VERSION_CODE: ${{ inputs.version_code }}
+      APP_VERSION_NAME: ${{ inputs.version_name }}
+      SOURCE_HTML: ${{ inputs.html_file || 'noori-1.html' }}
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Setup Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools'
+
+      - name: Install Android 36
+        run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
+
+      - name: Prepare isolated web source
+        run: |
+          set -euo pipefail
+          python3 - <<'PYINIT'
+          import os, shutil, json
+          from pathlib import Path
+
+          source_name = os.environ['SOURCE_HTML']
+          if Path(source_name).name != source_name or not source_name.endswith('.html'):
+              raise SystemExit('HTML must be a filename in the repository root')
+
+          source = Path(source_name)
+          if not source.is_file():
+              raise SystemExit(f'Upload the corrected HTML as {source_name} first')
+
+          target = Path(os.environ['RUNNER_TEMP']) / 'university-notes-build'
+          target.mkdir(parents=True, exist_ok=True)
+          (target / 'www').mkdir(exist_ok=True)
+          shutil.copy2(source, target / 'www/index.html')
+
+          # Preserve the local origin used by existing note storage.
+          server = {'hostname': 'localhost', 'androidScheme': 'https'}
+          old_config = Path('capacitor.config.json')
+          if old_config.is_file():
+              existing = json.loads(old_config.read_text()).get('server', {})
+              if existing.get('androidScheme') in ('http', 'https'):
+                  server['androidScheme'] = existing['androidScheme']
+              if existing.get('hostname'):
+                  if existing['hostname'] not in ('localhost',):
+                      raise SystemExit('Custom hostname: review storage migration before changing it')
+                  server['hostname'] = existing['hostname']
+
+          config = {
+              'appId': 'com.noori.universitynotes',
+              'appName': 'University Notes',
+              'webDir': 'www',
+              'server': server,
+              'android': {'allowMixedContent': False},
+              'plugins': {
+                  'SystemBars': {
+                      'insetsHandling': 'native',
+                      'initialViewportFitValueHint': 'cover'
+                  }
+              }
+          }
+          (target / 'capacitor.config.json').write_text(json.dumps(config, indent=2))
+          (target / 'package.json').write_text(json.dumps({
+              'name': 'university-notes-android',
+              'version': '1.1.1',
+              'private': True
+          }))
+
+          with open(os.environ['GITHUB_ENV'], 'a') as output:
+              output.write(f'WORK_DIR={target}\n')
+          PYINIT
+
+      - name: Install pinned Capacitor and add Android
+        run: |
+          set -euo pipefail
+          cd "$WORK_DIR"
+          npm install --save-exact --no-audit --no-fund @capacitor/core@8.5.3 @capacitor/cli@8.5.3 @capacitor/android@8.5.3
+          npx cap add android
+          npx cap sync android
+
+      - name: Generate University Notes launcher icons
+        run: |
+          set -euo pipefail
+          python3 -m venv "$RUNNER_TEMP/university-icon-tools"
+          "$RUNNER_TEMP/university-icon-tools/bin/pip" --disable-pip-version-check install Pillow==11.3.0
+          "$RUNNER_TEMP/university-icon-tools/bin/python" - <<'PYICON'
+          import os
+          from pathlib import Path
+          from PIL import Image, ImageDraw
+
+          source = Path(os.environ['GITHUB_WORKSPACE']) / 'app-icon.png'
+          if not source.is_file():
+              raise SystemExit('Upload the University Notes logo to the repository root as app-icon.png')
+
+          with Image.open(source) as uploaded:
+              if uploaded.format != 'PNG' or uploaded.size != (512, 512):
+                  raise SystemExit('app-icon.png must be the 512 x 512 University Notes PNG')
+              icon = uploaded.convert('RGBA')
+
+          res = Path(os.environ['WORK_DIR']) / 'android/app/src/main/res'
+
+          # Remove the default Capacitor launcher icons.
+          for directory in res.glob('mipmap-*'):
+              for path in directory.glob('ic_launcher*'):
+                  if path.is_file():
+                      path.unlink()
+
+          densities = {
+              'mdpi': 1,
+              'hdpi': 1.5,
+              'xhdpi': 2,
+              'xxhdpi': 3,
+              'xxxhdpi': 4
+          }
+          for density, scale in densities.items():
+              mipmap = res / ('mipmap-' + density)
+              mipmap.mkdir(parents=True, exist_ok=True)
+
+              size = round(48 * scale)
+              legacy = icon.resize((size, size), Image.Resampling.LANCZOS)
+              legacy.save(mipmap / 'ic_launcher.png')
+
+              mask = Image.new('L', (size, size), 0)
+              ImageDraw.Draw(mask).ellipse((0, 0, size - 1, size - 1), fill=255)
+              rounded = legacy.copy()
+              rounded.putalpha(mask)
+              rounded.save(mipmap / 'ic_launcher_round.png')
+
+              # Keep the emblem inside the adaptive icon's central area.
+              layer_size = round(108 * scale)
+              artwork_size = round(72 * scale)
+              foreground = Image.new('RGBA', (layer_size, layer_size), (0, 0, 0, 0))
+              offset = (layer_size - artwork_size) // 2
+              foreground.alpha_composite(
+                  icon.resize((artwork_size, artwork_size), Image.Resampling.LANCZOS),
+                  (offset, offset)
+              )
+
+              drawable = res / ('drawable-' + density)
+              drawable.mkdir(parents=True, exist_ok=True)
+              foreground.save(drawable / 'university_icon_foreground.png')
+
+          adaptive = res / 'mipmap-anydpi-v26'
+          adaptive.mkdir(parents=True, exist_ok=True)
+          xml = '<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android"><background android:drawable="@color/university_icon_background"/><foreground android:drawable="@drawable/university_icon_foreground"/></adaptive-icon>'
+
+          for name in ['ic_launcher.xml', 'ic_launcher_round.xml']:
+              (adaptive / name).write_text(xml)
+
+          values = res / 'values'
+          values.mkdir(parents=True, exist_ok=True)
+          (values / 'university_icon_colors.xml').write_text(
+              '<resources><color name="university_icon_background">#052A6D</color></resources>'
+          )
+          print('Generated University Notes legacy, round, and adaptive launcher icons')
+          PYICON
+
+      - name: Add native Back, offline files and device security
+        run: |
+          set -euo pipefail
+          cd "$WORK_DIR"
+          python3 - <<'PYNATIVE'
+          import os, re
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+
+          base = Path.cwd()
+          java_dir = base / 'android/app/src/main/java/com/noori/universitynotes'
+          java_dir.mkdir(parents=True, exist_ok=True)
+
+          (java_dir / 'MainActivity.java').write_text(r'''package com.noori.universitynotes;
+          
+          import android.os.Bundle;
+          import android.webkit.WebView;
+          import androidx.activity.OnBackPressedCallback;
+          import com.getcapacitor.BridgeActivity;
+          
+          public class MainActivity extends BridgeActivity {
+              private boolean checkingBack = false;
+              // Device authentication is handled by Android; no credential enters JavaScript.
+              private volatile boolean locked = false;
+              private boolean authenticating = false;
+              private boolean promptOnResume = true;
+              private Boolean pendingLockChange = null;
+              private java.util.function.Consumer<Boolean> securityCompletion;
+              private android.widget.LinearLayout lockCover;
+              private final androidx.activity.result.ActivityResultLauncher<android.content.Intent> credentialLauncher =
+                  registerForActivityResult(new androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult(), result -> {
+                      authenticating = false;
+                      boolean success = result.getResultCode() == android.app.Activity.RESULT_OK;
+                      if (success && pendingLockChange != null) {
+                          // commit before acknowledging a security setting change.
+                          success = securityPrefs().edit().putBoolean("appLock", pendingLockChange).commit();
+                      }
+                      pendingLockChange = null;
+                      if (success) {
+                          locked = false; showLockCover(false);
+                          if (getBridge() != null && getBridge().getWebView() != null)
+                              getBridge().getWebView().evaluateJavascript("if(typeof refreshSecurity==='function')refreshSecurity();", null);
+                      }
+                      updateSecureWindow();
+                      java.util.function.Consumer<Boolean> completion = securityCompletion;
+                      securityCompletion = null;
+                      if (completion != null) completion.accept(success);
+                  });
+          
+              android.content.SharedPreferences securityPrefs() {
+                  return getSharedPreferences("university_security", MODE_PRIVATE);
+              }
+              boolean isAppLocked() { return locked; }
+              boolean isDeviceSecure() {
+                  android.app.KeyguardManager keyguard = (android.app.KeyguardManager)getSystemService(KEYGUARD_SERVICE);
+                  return keyguard != null && keyguard.isDeviceSecure();
+              }
+              private String securityText(String ps, String dr, String en) {
+                  String language = securityPrefs().getString("language", "ps");
+                  return "en".equals(language) ? en : "dr".equals(language) ? dr : ps;
+              }
+              void updateSecureWindow() {
+                  boolean secure = locked || securityPrefs().getBoolean("appLock", false) || securityPrefs().getBoolean("hideScreen", false);
+                  if (secure) getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE);
+                  else getWindow().clearFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE);
+              }
+              private void showLockCover(boolean show) {
+                  if (getBridge() != null && getBridge().getWebView() != null)
+                      getBridge().getWebView().setVisibility(show ? android.view.View.INVISIBLE : android.view.View.VISIBLE);
+                  if (lockCover == null && show) {
+                      lockCover = new android.widget.LinearLayout(this);
+                      lockCover.setOrientation(android.widget.LinearLayout.VERTICAL);
+                      lockCover.setGravity(android.view.Gravity.CENTER);
+                      lockCover.setPadding(32,32,32,32);
+                      lockCover.setBackgroundColor(android.graphics.Color.rgb(15,23,42));
+                      android.widget.TextView title = new android.widget.TextView(this);
+                      title.setText("University Notes");title.setTextColor(android.graphics.Color.WHITE);title.setTextSize(24);
+                      title.setGravity(android.view.Gravity.CENTER);
+                      lockCover.addView(title);
+                      android.widget.TextView hint = new android.widget.TextView(this);
+                      hint.setText(securityText("د موبایل PIN، بڼې یا پټنوم په وسیله اپ پرانیزئ.","برنامه را با PIN، الگو یا رمز دستگاه باز کنید.","Unlock with your device PIN, pattern or password."));
+                      hint.setTextColor(android.graphics.Color.LTGRAY);hint.setTextSize(16);hint.setPadding(0,24,0,24);hint.setGravity(android.view.Gravity.CENTER);
+                      lockCover.addView(hint);
+                      android.widget.Button unlock = new android.widget.Button(this);
+                      unlock.setText(securityText("قلف پرانیستل","باز کردن قفل","Unlock"));
+                      unlock.setOnClickListener(v -> {
+                          if (!isDeviceSecure()) {
+                              // Removing the phone credential must never silently bypass an enabled lock.
+                              try { startActivity(new android.content.Intent(android.provider.Settings.ACTION_SECURITY_SETTINGS)); }
+                              catch (Exception error) { android.widget.Toast.makeText(this, "Set a device PIN in Android Settings", android.widget.Toast.LENGTH_LONG).show(); }
+                          } else authenticate(null, null);
+                      });
+                      lockCover.addView(unlock);
+                      addContentView(lockCover, new android.view.ViewGroup.LayoutParams(-1,-1));
+                  }
+                  if (lockCover != null) { lockCover.setVisibility(show ? android.view.View.VISIBLE : android.view.View.GONE);if(show)lockCover.bringToFront(); }
+              }
+              void configureAppLock(boolean enabled, java.util.function.Consumer<Boolean> completion) {
+                  if (locked || authenticating || !isDeviceSecure()) { completion.accept(false);return; }
+                  authenticate(enabled, completion);
+              }
+              void lockNow() {
+                  if (!securityPrefs().getBoolean("appLock",false)) return;
+                  locked=true;showLockCover(true);updateSecureWindow();
+                  authenticate(null,null);
+              }
+              @SuppressWarnings("deprecation")
+              private void authenticate(Boolean change, java.util.function.Consumer<Boolean> completion) {
+                  if (authenticating) { if(completion != null)completion.accept(false);return; }
+                  android.app.KeyguardManager keyguard = (android.app.KeyguardManager)getSystemService(KEYGUARD_SERVICE);
+                  android.content.Intent intent = keyguard == null ? null : keyguard.createConfirmDeviceCredentialIntent("University Notes",
+                      securityText("د اپ د پرانیستلو لپاره خپل د موبایل قلف تایید کړئ.","برای باز کردن برنامه قفل دستگاه را تأیید کنید.","Confirm your device credential to unlock the app."));
+                  if (intent == null) { if(completion != null)completion.accept(false);return; }
+                  pendingLockChange=change;securityCompletion=completion;authenticating=true;promptOnResume=false;
+                  try { credentialLauncher.launch(intent); }
+                  catch (Exception error) { authenticating=false;pendingLockChange=null;securityCompletion=null;if(completion != null)completion.accept(false); }
+              }
+              @Override public void onResume() {
+                  super.onResume();
+                  if (locked) { showLockCover(true);updateSecureWindow();if(promptOnResume && !authenticating && isDeviceSecure())authenticate(null,null); }
+              }
+              @Override public void onPause() {
+                  if (securityPrefs().getBoolean("appLock",false) && !authenticating) {
+                      locked=true;promptOnResume=true;showLockCover(true);updateSecureWindow();
+                  }
+                  super.onPause();
+              }
+          
+          
+              @Override
+              public void onCreate(Bundle savedInstanceState) {
+                  locked = securityPrefs().getBoolean("appLock",false);
+                  updateSecureWindow();
+                  registerPlugin(UniversityNativePlugin.class);
+                  super.onCreate(savedInstanceState);
+                  if (getBridge() == null) return;
+                  if (locked) showLockCover(true);
+          
+                  getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+                      @Override
+                      public void handleOnBackPressed() {
+                          if (locked) { moveTaskToBack(true);return; }
+                          if (checkingBack) return;
+                          final WebView webView = getBridge().getWebView();
+                          if (webView == null) {
+                              moveTaskToBack(true);
+                              return;
+                          }
+                          checkingBack = true;
+                          webView.evaluateJavascript(
+                              "(function(){return typeof window.UniversityNotesBack==='function' ? window.UniversityNotesBack() : true;})()",
+                              result -> {
+                                  checkingBack = false;
+                                  if ("false".equals(result)) moveTaskToBack(true);
+                              }
+                          );
+                          webView.postDelayed(() -> checkingBack = false, 1000);
+                      }
+                  });
+              }
+          }
+          ''', encoding='utf-8')
+
+          (java_dir / 'UniversityNativePlugin.java').write_text(r'''package com.noori.universitynotes;
+          
+          import android.app.Activity;
+          import android.content.Intent;
+          import android.net.Uri;
+          import android.util.Base64;
+          import androidx.activity.result.ActivityResult;
+          import com.getcapacitor.JSObject;
+          import com.getcapacitor.Plugin;
+          import com.getcapacitor.PluginCall;
+          import com.getcapacitor.PluginMethod;
+          import com.getcapacitor.annotation.ActivityCallback;
+          import com.getcapacitor.annotation.CapacitorPlugin;
+          import java.io.OutputStream;
+          import java.nio.charset.StandardCharsets;
+          import java.util.concurrent.atomic.AtomicBoolean;
+          
+          @CapacitorPlugin(name = "UniversityNative")
+          public class UniversityNativePlugin extends Plugin {
+              private final AtomicBoolean saving = new AtomicBoolean(false);
+              private static final int MAX_BACKUP_BYTES = 8 * 1024 * 1024;
+              private final AtomicBoolean backupActive = new AtomicBoolean(false);
+              private MainActivity mainActivity() { return (MainActivity)getActivity(); }
+              private boolean requireUnlocked(PluginCall call) {
+                  if (mainActivity().isAppLocked()) { call.reject("App is locked");return false; }
+                  return true;
+              }
+              @PluginMethod
+              public void getSecurity(PluginCall call) {
+                  if (!requireUnlocked(call)) return;
+                  String language=call.getString("language", "ps");
+                  if ("ps".equals(language)||"dr".equals(language)||"en".equals(language))
+                      mainActivity().securityPrefs().edit().putString("language",language).apply();
+                  JSObject response=new JSObject();
+                  response.put("appLock",mainActivity().securityPrefs().getBoolean("appLock",false));
+                  response.put("hideScreen",mainActivity().securityPrefs().getBoolean("hideScreen",false));
+                  response.put("deviceSecure",mainActivity().isDeviceSecure());
+                  call.resolve(response);
+              }
+              @PluginMethod
+              public void configureSecurity(PluginCall call) {
+                  if (!requireUnlocked(call)) return;
+                  String option=call.getString("option", "");
+                  boolean enabled=Boolean.TRUE.equals(call.getBoolean("enabled", false));
+                  if ("appLock".equals(option)) {
+                      getActivity().runOnUiThread(() -> mainActivity().configureAppLock(enabled, success -> {
+                          JSObject response=new JSObject();response.put("cancelled",!success);call.resolve(response);
+                      }));
+                  } else if ("hideScreen".equals(option)) {
+                      getActivity().runOnUiThread(() -> {
+                          if (!mainActivity().securityPrefs().edit().putBoolean("hideScreen",enabled).commit()) { call.reject("Cannot save security setting");return; }
+                          mainActivity().updateSecureWindow();call.resolve();
+                      });
+                  } else call.reject("Unknown security setting");
+              }
+              @PluginMethod
+              public void lockNow(PluginCall call) {
+                  if (!requireUnlocked(call)) return;
+                  getActivity().runOnUiThread(() -> { mainActivity().lockNow();call.resolve(); });
+              }
+              @PluginMethod
+              public void saveBackup(PluginCall call) {
+                  if (!requireUnlocked(call)) return;
+                  String data=call.getString("data", "");
+                  if(data.isEmpty() || data.length()>MAX_BACKUP_BYTES || data.getBytes(StandardCharsets.UTF_8).length>MAX_BACKUP_BYTES) {call.reject("Invalid backup size");return;}
+                  try { org.json.JSONObject json=new org.json.JSONObject(data);
+                      if (!"university-notes-backup".equals(json.optString("format")) || json.optInt("version")!=1) {call.reject("Invalid backup");return;}
+                  } catch(Exception error) {call.reject("Invalid backup");return;}
+                  if(!backupActive.compareAndSet(false,true)) {call.reject("Another backup is active");return;}
+                  String name=call.getString("fileName","University-Notes-Backup.json").replaceAll("[\\\\/:*?\"<>|\\p{Cntrl}]","_");
+                  if(!name.endsWith(".json"))name+=".json";
+                  Intent intent=new Intent(Intent.ACTION_CREATE_DOCUMENT);intent.addCategory(Intent.CATEGORY_OPENABLE);
+                  intent.setType("application/json");intent.putExtra(Intent.EXTRA_TITLE,name);
+                  try {startActivityForResult(call,intent,"backupDestinationChosen");}
+                  catch(Exception error) {backupActive.set(false);call.reject("Cannot open document picker",error);}
+              }
+              @ActivityCallback
+              private void backupDestinationChosen(PluginCall call, ActivityResult result) {
+                  if(cancelledBackup(call,result))return;
+                  final Uri uri=result.getData().getData();
+                  getBridge().execute(() -> {
+                      try {
+                          byte[] bytes=call.getString("data", "").getBytes(StandardCharsets.UTF_8);
+                          if(bytes.length>MAX_BACKUP_BYTES)throw new IllegalArgumentException("Backup too large");
+                          try(OutputStream output=getContext().getContentResolver().openOutputStream(uri,"wt")) {
+                              if(output==null)throw new IllegalStateException("Destination unavailable");
+                              output.write(bytes);output.flush();
+                          }
+                          JSObject response=new JSObject();response.put("saved",true);call.resolve(response);
+                      } catch(Exception error) {call.reject("Cannot save backup",error);}
+                      finally {backupActive.set(false);}
+                  });
+              }
+              @PluginMethod
+              public void openBackup(PluginCall call) {
+                  if(!requireUnlocked(call))return;
+                  if(!backupActive.compareAndSet(false,true)) {call.reject("Another backup is active");return;}
+                  Intent intent=new Intent(Intent.ACTION_OPEN_DOCUMENT);intent.addCategory(Intent.CATEGORY_OPENABLE);
+                  // Providers sometimes label downloaded JSON as text or octet-stream; validate content after opening.
+                  intent.setType("*/*");intent.putExtra(Intent.EXTRA_MIME_TYPES,new String[]{"application/json","text/plain","application/octet-stream"});
+                  try {startActivityForResult(call,intent,"backupSourceChosen");}
+                  catch(Exception error) {backupActive.set(false);call.reject("Cannot open document picker",error);}
+              }
+              private boolean cancelledBackup(PluginCall call, ActivityResult result) {
+                  if(call==null) {backupActive.set(false);return true;}
+                  if(result.getResultCode()!=Activity.RESULT_OK||result.getData()==null||result.getData().getData()==null) {
+                      backupActive.set(false);JSObject response=new JSObject();response.put("cancelled",true);call.resolve(response);return true;
+                  }
+                  return false;
+              }
+              @ActivityCallback
+              private void backupSourceChosen(PluginCall call, ActivityResult result) {
+                  if(cancelledBackup(call,result))return;
+                  final Uri uri=result.getData().getData();
+                  getBridge().execute(() -> {
+                      try(java.io.InputStream input=getContext().getContentResolver().openInputStream(uri);
+                          java.io.ByteArrayOutputStream output=new java.io.ByteArrayOutputStream()) {
+                          if(input==null)throw new IllegalStateException("Source unavailable");
+                          byte[] buffer=new byte[8192];int read,total=0;
+                          while((read=input.read(buffer))!=-1) {
+                              total+=read;if(total>MAX_BACKUP_BYTES)throw new IllegalArgumentException("Backup too large");
+                              output.write(buffer,0,read);
+                          }
+                          // Malformed UTF-8 must not silently replace characters in the user's notes.
+                          String data=StandardCharsets.UTF_8.newDecoder().onMalformedInput(java.nio.charset.CodingErrorAction.REPORT)
+                              .decode(java.nio.ByteBuffer.wrap(output.toByteArray())).toString();
+                          JSObject response=new JSObject();response.put("data",data);call.resolve(response);
+                      } catch(Exception error) {call.reject("Cannot read backup",error);}
+                      finally {backupActive.set(false);}
+                  });
+              }
+          
+              private static final int MAX_BASE64_LENGTH = 35 * 1024 * 1024;
+          
+              @PluginMethod
+              public void savePdf(PluginCall call) {
+                  if (!requireUnlocked(call)) return;
+                  String data = call.getString("data", "");
+                  if (data.isEmpty() || data.length() > MAX_BASE64_LENGTH) {
+                      call.reject("PDF size is invalid");
+                      return;
+                  }
+                  if (!saving.compareAndSet(false, true)) {
+                      call.reject("Another save is active");
+                      return;
+                  }
+          
+                  String name = call.getString("fileName", "University-Notes.pdf")
+                      .replaceAll("[\\\\/:*?\"<>|\\p{Cntrl}]", "_");
+                  if (!name.endsWith(".pdf")) name += ".pdf";
+          
+                  Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+                  intent.addCategory(Intent.CATEGORY_OPENABLE);
+                  intent.setType("application/pdf");
+                  intent.putExtra(Intent.EXTRA_TITLE, name);
+          
+                  try {
+                      startActivityForResult(call, intent, "pdfDestinationChosen");
+                  } catch (Exception error) {
+                      saving.set(false);
+                      call.reject("Cannot open document picker", error);
+                  }
+              }
+          
+              @ActivityCallback
+              private void pdfDestinationChosen(PluginCall call, ActivityResult result) {
+                  if (call == null) {
+                      saving.set(false);
+                      return;
+                  }
+                  if (result.getResultCode() != Activity.RESULT_OK
+                      || result.getData() == null
+                      || result.getData().getData() == null) {
+                      saving.set(false);
+                      JSObject response = new JSObject();
+                      response.put("cancelled", true);
+                      call.resolve(response);
+                      return;
+                  }
+          
+                  final Uri uri = result.getData().getData();
+          
+                  // Write large PDFs outside the Android UI thread.
+                  getBridge().execute(() -> {
+                      try {
+                          String encoded = call.getString("data", "");
+                          if (encoded.length() > MAX_BASE64_LENGTH) {
+                              throw new IllegalArgumentException("PDF too large");
+                          }
+                          byte[] bytes = Base64.decode(encoded, Base64.DEFAULT);
+                          if (bytes.length < 5
+                              || !new String(bytes, 0, 5, StandardCharsets.US_ASCII).equals("%PDF-")) {
+                              throw new IllegalArgumentException("Invalid PDF");
+                          }
+          
+                          try (OutputStream output =
+                              getContext().getContentResolver().openOutputStream(uri, "wt")) {
+                              if (output == null) {
+                                  throw new IllegalStateException("Destination unavailable");
+                              }
+                              output.write(bytes);
+                              output.flush();
+                          }
+          
+                          JSObject response = new JSObject();
+                          response.put("saved", true);
+                          call.resolve(response);
+                      } catch (Exception error) {
+                          call.reject("Cannot save PDF to the selected destination", error);
+                      } finally {
+                          saving.set(false);
+                      }
+                  });
+              }
+          
+              @PluginMethod
+              public void openExternal(PluginCall call) {
+                  if (!requireUnlocked(call)) return;
+                  try {
+                      String url = call.getString("url", "");
+                      if (!("https://wa.me/93704287401".equals(url)
+                          || "https://www.facebook.com/share/19suowiLHi/".equals(url))) {
+                          call.reject("External destination not allowed");
+                          return;
+                      }
+                      Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                      getActivity().runOnUiThread(() -> {
+                          try {
+                              getActivity().startActivity(intent);
+                              call.resolve();
+                          } catch (Exception error) {
+                              call.reject("No app can open this link", error);
+                          }
+                      });
+                  } catch (Exception error) {
+                      call.reject("Cannot open link", error);
+                  }
+              }
+          }
+          ''', encoding='utf-8')
+
+          # Preserve the package ID and configure Android API 36.
+          variables = base / 'android/variables.gradle'
+          s = variables.read_text()
+          s = re.sub(r'compileSdkVersion = \d+', 'compileSdkVersion = 36', s)
+          s = re.sub(r'targetSdkVersion = \d+', 'targetSdkVersion = 36', s)
+          variables.write_text(s)
+
+          version_code = int(
+              os.environ.get('APP_VERSION_CODE')
+              or (1000 + int(os.environ.get('GITHUB_RUN_NUMBER', '1')))
+          )
+          if not 1 <= version_code <= 2100000000:
+              raise ValueError('Invalid versionCode')
+
+          version_name = os.environ.get('APP_VERSION_NAME') or '1.1.1'
+          if not re.fullmatch(r'[0-9]+(?:\.[0-9]+){1,3}', version_name):
+              raise ValueError('Use a numeric version name, e.g. 1.1.1')
+
+          gradle = base / 'android/app/build.gradle'
+          s = gradle.read_text()
+          s = re.sub(r'versionCode \d+', f'versionCode {version_code}', s)
+          s = re.sub(r'versionName "[^"]+"', f'versionName "{version_name}"', s)
+
+          # Avoid duplicate classes from obsolete Kotlin split libraries.
+          s += """
+          configurations.configureEach {
+              exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk7'
+              exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk8'
+          }
+          dependencies {
+              implementation platform('org.jetbrains.kotlin:kotlin-bom:2.2.20')
+          }
+          android {
+              compileOptions {
+                  sourceCompatibility JavaVersion.VERSION_21
+                  targetCompatibility JavaVersion.VERSION_21
+              }
+          }
+          if (System.getenv('SIGN_RELEASE') == 'true') {
+              android {
+                  signingConfigs {
+                      releaseUpload {
+                          storeFile file(System.getenv('UPLOAD_KEYSTORE_PATH'))
+                          storePassword System.getenv('UPLOAD_KEYSTORE_PASSWORD')
+                          keyAlias System.getenv('UPLOAD_KEY_ALIAS')
+                          keyPassword System.getenv('UPLOAD_KEY_PASSWORD')
+                      }
+                  }
+                  buildTypes {
+                      release { signingConfig signingConfigs.releaseUpload }
+                  }
+              }
+          }
+          """
+          gradle.write_text(s)
+
+          android_ns = 'http://schemas.android.com/apk/res/android'
+          ET.register_namespace('android', android_ns)
+          manifest = base / 'android/app/src/main/AndroidManifest.xml'
+          tree = ET.parse(manifest)
+          doc = tree.getroot()
+          application = doc.find('application')
+
+          application.set('{' + android_ns + '}allowBackup', 'false')
+          application.set('{' + android_ns + '}fullBackupContent', 'false')
+          application.set('{' + android_ns + '}dataExtractionRules', '@xml/data_extraction_rules')
+          application.set('{' + android_ns + '}usesCleartextTraffic', 'false')
+
+          xml_dir = base / 'android/app/src/main/res/xml'
+          xml_dir.mkdir(parents=True, exist_ok=True)
+          exclusions = ''.join(
+              '<exclude domain="' + domain + '" path="."/>'
+              for domain in ['root', 'file', 'database', 'sharedpref', 'external']
+          )
+          (xml_dir / 'data_extraction_rules.xml').write_text(
+              '<?xml version="1.0" encoding="utf-8"?>'
+              '<data-extraction-rules><cloud-backup>'
+              + exclusions
+              + '</cloud-backup><device-transfer>'
+              + exclusions
+              + '</device-transfer></data-extraction-rules>'
+          )
+
+          activity = application.find('activity')
+          activity.set('{' + android_ns + '}windowSoftInputMode', 'adjustResize')
+          tree.write(manifest, encoding='utf-8', xml_declaration=True)
+          print(f'Prepared University Notes {version_name} ({version_code}), target API 36')
+          PYNATIVE
+
+      - name: Load your existing Play upload key
+        if: env.SIGN_RELEASE == 'true'
+        env:
+          UPLOAD_KEYSTORE_BASE64: ${{ secrets.UPLOAD_KEYSTORE_BASE64 }}
+          UPLOAD_KEYSTORE_PASSWORD: ${{ secrets.UPLOAD_KEYSTORE_PASSWORD }}
+          UPLOAD_KEY_ALIAS: ${{ secrets.UPLOAD_KEY_ALIAS }}
+          UPLOAD_KEY_PASSWORD: ${{ secrets.UPLOAD_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PYKEY'
+          import os, base64
+          from pathlib import Path
+
+          required = [
+              'UPLOAD_KEYSTORE_BASE64',
+              'UPLOAD_KEYSTORE_PASSWORD',
+              'UPLOAD_KEY_ALIAS',
+              'UPLOAD_KEY_PASSWORD'
+          ]
+          missing = [key for key in required if not os.environ.get(key)]
+          if missing:
+              raise SystemExit('Missing repository Secrets: ' + ', '.join(missing))
+
+          key_path = Path(os.environ['RUNNER_TEMP']) / 'university-notes-upload.jks'
+          key_path.write_bytes(
+              base64.b64decode(os.environ['UPLOAD_KEYSTORE_BASE64'], validate=True)
+          )
+          key_path.chmod(0o600)
+
+          with open(os.environ['GITHUB_ENV'], 'a') as output:
+              output.write(f'UPLOAD_KEYSTORE_PATH={key_path}\n')
+          PYKEY
+
+      - name: Build test APK and release AAB; check release lint
+        env:
+          UPLOAD_KEYSTORE_PASSWORD: ${{ secrets.UPLOAD_KEYSTORE_PASSWORD }}
+          UPLOAD_KEY_ALIAS: ${{ secrets.UPLOAD_KEY_ALIAS }}
+          UPLOAD_KEY_PASSWORD: ${{ secrets.UPLOAD_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          cd "$WORK_DIR/android"
+          chmod +x gradlew
+          ./gradlew --no-daemon --max-workers=2 --stacktrace :app:assembleDebug :app:bundleRelease :app:lintRelease
+          mkdir -p "$WORK_DIR/deliverables"
+          cp app/build/outputs/apk/debug/app-debug.apk "$WORK_DIR/deliverables/University-Notes-TEST-ONLY.apk"
+          if [ "$SIGN_RELEASE" = 'true' ]; then
+            jarsigner -verify app/build/outputs/bundle/release/app-release.aab
+            cp app/build/outputs/bundle/release/app-release.aab "$WORK_DIR/deliverables/University-Notes-PLAY-SIGNED.aab"
+          else
+            cp app/build/outputs/bundle/release/app-release.aab "$WORK_DIR/deliverables/University-Notes-UNSIGNED-NOT-FOR-UPLOAD.aab"
+          fi
+
+      - name: Upload Android files
+        uses: actions/upload-artifact@v4
+        with:
+          name: University-Notes-Android-${{ github.run_number }}
+          path: ${{ env.WORK_DIR }}/deliverables/*
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload lint report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: University-Notes-Lint-${{ github.run_number }}
+          path: ${{ env.WORK_DIR }}/android/app/build/reports/lint-results-release.*
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Remove temporary upload key
+        if: always()
+        run: rm -f "$RUNNER_TEMP/university-notes-upload.jks"
