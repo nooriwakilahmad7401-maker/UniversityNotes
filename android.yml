@@ -21,7 +21,7 @@ on:
       version_name:
         description: 'Visible app version'
         type: string
-        default: '1.1.1'
+        default: '1.1.2'
 
 permissions:
   contents: read
@@ -111,7 +111,7 @@ jobs:
           (target / 'capacitor.config.json').write_text(json.dumps(config, indent=2))
           (target / 'package.json').write_text(json.dumps({
               'name': 'university-notes-android',
-              'version': '1.1.1',
+              'version': '1.1.2',
               'private': True
           }))
 
@@ -305,8 +305,15 @@ jobs:
                   if (locked || authenticating || !isDeviceSecure()) { completion.accept(false);return; }
                   authenticate(enabled, completion);
               }
+              private void interruptVoice() {
+                  if(getBridge()==null)return;
+                  com.getcapacitor.PluginHandle handle=getBridge().getPlugin("VoiceNotes");
+                  if(handle!=null && handle.getInstance() instanceof VoiceNotesPlugin)
+                      ((VoiceNotesPlugin)handle.getInstance()).interruptForSecurity();
+              }
               void lockNow() {
                   if (!securityPrefs().getBoolean("appLock",false)) return;
+                  interruptVoice();
                   locked=true;showLockCover(true);updateSecureWindow();
                   authenticate(null,null);
               }
@@ -338,6 +345,7 @@ jobs:
                   locked = securityPrefs().getBoolean("appLock",false);
                   updateSecureWindow();
                   registerPlugin(UniversityNativePlugin.class);
+                  registerPlugin(VoiceNotesPlugin.class);
                   super.onCreate(savedInstanceState);
                   if (getBridge() == null) return;
                   if (locked) showLockCover(true);
@@ -499,6 +507,157 @@ jobs:
                   });
               }
           
+              // A PDF crosses the WebView bridge in bounded chunks, never as one giant JSON string.
+              private static final long MAX_PDF_BYTES = 72L * 1024 * 1024;
+              private final Object pdfMutex = new Object();
+              private java.io.File stagedPdf;
+              private String pdfTransferId, pdfFileName;
+              private long pdfExpectedBytes, pdfWrittenBytes;
+              private int pdfNextChunk;
+              private boolean pdfPickerOpen;
+
+              @PluginMethod
+              public void getPdfCapabilities(PluginCall call) {
+                  if (!requireUnlocked(call)) return;
+                  JSObject response = new JSObject(); response.put("chunked", 1); call.resolve(response);
+              }
+
+              private void cleanupPdf() {
+                  // Call only while holding pdfMutex. Cache files are private and never included in backups.
+                  if (stagedPdf != null) stagedPdf.delete();
+                  stagedPdf = null; pdfTransferId = null; pdfFileName = null;
+                  pdfExpectedBytes = 0; pdfWrittenBytes = 0; pdfNextChunk = 0; pdfPickerOpen = false;
+                  saving.set(false);
+              }
+
+              private boolean matchesPdf(PluginCall call) {
+                  return stagedPdf != null && pdfTransferId != null && pdfTransferId.equals(call.getString("id", ""));
+              }
+
+              @PluginMethod
+              public void beginPdf(PluginCall call) {
+                  if (!requireUnlocked(call)) return;
+                  Integer size = call.getInt("size");
+                  if (size == null || size < 50 || size > MAX_PDF_BYTES) { call.reject("Invalid PDF size"); return; }
+                  if (!saving.compareAndSet(false, true)) { call.reject("Another PDF export is active"); return; }
+                  getBridge().execute(() -> {
+                      synchronized (pdfMutex) {
+                          try {
+                              java.io.File directory = new java.io.File(getContext().getCacheDir(), "pdf-export");
+                              if (!directory.isDirectory() && !directory.mkdirs()) throw new java.io.IOException("Cache unavailable");
+                              // Remove exports abandoned by an earlier process; never touch unrelated cache files.
+                              java.io.File[] oldFiles = directory.listFiles();
+                              if (oldFiles != null) for (java.io.File old : oldFiles)
+                                  if (old.isFile() && old.getName().startsWith("notes-") && old.lastModified() < System.currentTimeMillis()-86400000L) old.delete();
+                              stagedPdf = java.io.File.createTempFile("notes-", ".pdf", directory);
+                              pdfTransferId = java.util.UUID.randomUUID().toString();
+                              pdfFileName = call.getString("fileName", "University-Notes.pdf").replaceAll("[\\\\/:*?\"<>|\\p{Cntrl}]", "_");
+                              if (pdfFileName.length() > 100) pdfFileName = pdfFileName.substring(0,100);
+                              if (!pdfFileName.endsWith(".pdf")) pdfFileName += ".pdf";
+                              pdfExpectedBytes = size; pdfWrittenBytes = 0; pdfNextChunk = 0; pdfPickerOpen = false;
+                              JSObject response = new JSObject(); response.put("id",pdfTransferId); call.resolve(response);
+                          } catch (Exception error) { cleanupPdf(); call.reject("Cannot prepare PDF export",error); }
+                      }
+                  });
+              }
+
+              @PluginMethod
+              public void appendPdf(PluginCall call) {
+                  if (!requireUnlocked(call)) return;
+                  final String encoded = call.getString("data", "");
+                  final Integer index = call.getInt("index");
+                  getBridge().execute(() -> {
+                      synchronized (pdfMutex) {
+                          if (!matchesPdf(call) || pdfPickerOpen) { call.reject("Unknown PDF transfer"); return; }
+                          try {
+                              if (index == null || index != pdfNextChunk || encoded.isEmpty() || encoded.length() > 131072
+                                  || encoded.length()%4 != 0 || !encoded.matches("[A-Za-z0-9+/]*={0,2}"))
+                                  throw new IllegalArgumentException("Invalid PDF chunk");
+                              byte[] bytes = Base64.decode(encoded,Base64.NO_WRAP);
+                              if (bytes.length == 0 || bytes.length > 98304 || pdfWrittenBytes+bytes.length > pdfExpectedBytes)
+                                  throw new IllegalArgumentException("PDF size mismatch");
+                              if (pdfWrittenBytes == 0 && (bytes.length < 5 || !new String(bytes,0,5,StandardCharsets.US_ASCII).equals("%PDF-")))
+                                  throw new IllegalArgumentException("Invalid PDF header");
+                              try (java.io.FileOutputStream output = new java.io.FileOutputStream(stagedPdf,true)) { output.write(bytes); }
+                              pdfWrittenBytes += bytes.length; pdfNextChunk++;
+                              call.resolve();
+                          } catch (Exception error) { cleanupPdf(); call.reject("Cannot receive PDF chunk",error); }
+                      }
+                  });
+              }
+
+              @PluginMethod
+              public void cancelPdf(PluginCall call) {
+                  // Cleanup is allowed after locking; it cannot read or disclose any document content.
+                  synchronized (pdfMutex) {
+                      if (matchesPdf(call) && !pdfPickerOpen) cleanupPdf();
+                      call.resolve();
+                  }
+              }
+
+              @PluginMethod
+              public void finishPdf(PluginCall call) {
+                  if (!requireUnlocked(call)) return;
+                  getBridge().execute(() -> {
+                      final String name;
+                      synchronized (pdfMutex) {
+                          if (!matchesPdf(call) || pdfPickerOpen) { call.reject("Unknown PDF transfer"); return; }
+                          try {
+                              if (pdfWrittenBytes != pdfExpectedBytes || stagedPdf.length() != pdfExpectedBytes)
+                                  throw new IllegalArgumentException("Incomplete PDF");
+                              try (java.io.RandomAccessFile input = new java.io.RandomAccessFile(stagedPdf,"r")) {
+                                  int count = (int)Math.min(32,input.length()); byte[] tail = new byte[count];
+                                  input.seek(input.length()-count); input.readFully(tail);
+                                  if (!new String(tail,StandardCharsets.US_ASCII).trim().endsWith("%%EOF"))
+                                      throw new IllegalArgumentException("Incomplete PDF trailer");
+                              }
+                              pdfPickerOpen = true; name = pdfFileName;
+                          } catch (Exception error) { cleanupPdf(); call.reject("Invalid PDF export",error); return; }
+                      }
+                      // The destination is created only after a complete PDF has reached private cache.
+                      getActivity().runOnUiThread(() -> {
+                          if (!requireUnlocked(call)) { synchronized(pdfMutex) { cleanupPdf(); } return; }
+                          Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+                          intent.addCategory(Intent.CATEGORY_OPENABLE); intent.setType("application/pdf");
+                          intent.putExtra(Intent.EXTRA_TITLE,name);
+                          try { startActivityForResult(call,intent,"chunkedPdfDestinationChosen"); }
+                          catch (Exception error) { synchronized(pdfMutex) { cleanupPdf(); } call.reject("Cannot open document picker",error); }
+                      });
+                  });
+              }
+
+              @ActivityCallback
+              private void chunkedPdfDestinationChosen(PluginCall call, ActivityResult result) {
+                  if (call == null) { synchronized(pdfMutex) { cleanupPdf(); } return; }
+                  if (result.getResultCode()!=Activity.RESULT_OK || result.getData()==null || result.getData().getData()==null) {
+                      synchronized(pdfMutex) { cleanupPdf(); }
+                      JSObject response = new JSObject(); response.put("cancelled",true); call.resolve(response); return;
+                  }
+                  final Uri uri = result.getData().getData();
+                  getBridge().execute(() -> {
+                      synchronized (pdfMutex) {
+                          try {
+                              if (!matchesPdf(call) || !pdfPickerOpen || stagedPdf.length()!=pdfExpectedBytes)
+                                  throw new java.io.IOException("PDF cache unavailable");
+                              long copied = 0;
+                              try (java.io.FileInputStream input = new java.io.FileInputStream(stagedPdf);
+                                   OutputStream output = getContext().getContentResolver().openOutputStream(uri,"wt")) {
+                                  if (output == null) throw new java.io.IOException("Destination unavailable");
+                                  byte[] buffer = new byte[32768]; int count;
+                                  while ((count=input.read(buffer)) != -1) { output.write(buffer,0,count);copied+=count; }
+                                  output.flush();
+                              }
+                              if (copied != pdfExpectedBytes) throw new java.io.IOException("Incomplete destination");
+                              JSObject response = new JSObject(); response.put("saved",true); call.resolve(response);
+                          } catch (Exception error) {
+                              // Do not leave a misleading empty or partial PDF when the provider permits deletion.
+                              try { android.provider.DocumentsContract.deleteDocument(getContext().getContentResolver(),uri); } catch (Exception ignored) {}
+                              call.reject("Cannot save PDF to the selected destination",error);
+                          } finally { cleanupPdf(); }
+                      }
+                  });
+              }
+
               private static final int MAX_BASE64_LENGTH = 35 * 1024 * 1024;
           
               @PluginMethod
@@ -608,6 +767,320 @@ jobs:
           }
           ''', encoding='utf-8')
 
+          (java_dir / 'VoiceNotesPlugin.java').write_text(r'''package com.noori.universitynotes;
+
+          import android.Manifest;
+          import android.app.Activity;
+          import android.content.Intent;
+          import android.media.AudioManager;
+          import android.media.MediaMetadataRetriever;
+          import android.media.MediaPlayer;
+          import android.media.MediaRecorder;
+          import android.net.Uri;
+          import android.os.SystemClock;
+          import android.util.AtomicFile;
+          import androidx.activity.result.ActivityResult;
+          import com.getcapacitor.JSArray;
+          import com.getcapacitor.JSObject;
+          import com.getcapacitor.PermissionState;
+          import com.getcapacitor.Plugin;
+          import com.getcapacitor.PluginCall;
+          import com.getcapacitor.PluginMethod;
+          import com.getcapacitor.annotation.ActivityCallback;
+          import com.getcapacitor.annotation.CapacitorPlugin;
+          import com.getcapacitor.annotation.Permission;
+          import com.getcapacitor.annotation.PermissionCallback;
+          import java.io.*;
+          import java.nio.charset.StandardCharsets;
+          import java.util.*;
+          import java.util.concurrent.atomic.AtomicBoolean;
+          import org.json.JSONObject;
+
+          /** Standalone, local-only voice notes. No audio bytes cross the JavaScript bridge. */
+          @CapacitorPlugin(name="VoiceNotes", permissions={@Permission(alias="microphone", strings={Manifest.permission.RECORD_AUDIO})})
+          public class VoiceNotesPlugin extends Plugin {
+              private static final long MAX_BYTES=64L*1024*1024;
+              private static final int MAX_DURATION=60*60*1000;
+              private MediaRecorder recorder;
+              private MediaPlayer player;
+              private volatile JSONObject draft;
+              private String playerId="";
+              private volatile String problem="";
+              private long startedAt, accumulated;
+              private boolean paused, preparing, visible=true, requesting;
+              private PluginCall pendingStart;
+              private final AtomicBoolean exporting=new AtomicBoolean(false);
+
+              private MainActivity main(){return (MainActivity)getActivity();}
+              private boolean unlocked(PluginCall call){
+                  if(main().isAppLocked()){call.reject("Unlock the app first","LOCKED");return false;}return true;
+              }
+              private File directory() throws IOException {
+                  File dir=new File(getContext().getFilesDir(),"voice-notes");
+                  if(!dir.isDirectory()&&!dir.mkdirs())throw new IOException("Storage unavailable");return dir;
+              }
+              private String validId(String id) throws IOException {
+                  if(id==null||!id.matches("[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"))throw new IOException("Invalid recording id");return id;
+              }
+              private File file(String id,String suffix)throws IOException{return new File(directory(),validId(id)+suffix);}
+              private static String cleanTitle(String title){
+                  String result=title==null?"":title.replaceAll("[\\p{Cntrl}]"," ").trim();
+                  if(result.isEmpty())result="Recording";return result.length()>120?result.substring(0,120):result;
+              }
+              private JSONObject read(File f)throws Exception{
+                  AtomicFile atomic=new AtomicFile(f);
+                  try(InputStream in=atomic.openRead();ByteArrayOutputStream out=new ByteArrayOutputStream()){
+                      byte[] buffer=new byte[1024];int n,total=0;while((n=in.read(buffer))!=-1){total+=n;if(total>16384)throw new IOException("Metadata too large");out.write(buffer,0,n);}
+                      return new JSONObject(out.toString("UTF-8"));
+                  }
+              }
+              private void write(File f,JSONObject value)throws IOException{
+                  AtomicFile atomic=new AtomicFile(f);FileOutputStream out=null;
+                  try{
+                      byte[] bytes=value.toString().getBytes(StandardCharsets.UTF_8);
+                      out=atomic.startWrite();out.write(bytes);atomic.finishWrite(out);
+                      // AtomicFile can log a rename/sync failure without throwing. Verify the committed bytes.
+                      if(!f.isFile()||f.length()!=bytes.length)throw new IOException("Metadata not committed");
+                      try(InputStream in=atomic.openRead()){
+                          for(byte expected:bytes)if(in.read()!=(expected&255))throw new IOException("Metadata verification failed");
+                          if(in.read()!=-1)throw new IOException("Metadata verification failed");
+                      }
+                  }
+                  catch(IOException error){if(out!=null)atomic.failWrite(out);throw error;}
+              }
+              private JSONObject metadata(String id)throws Exception{
+                  JSONObject meta=read(file(id,".json"));
+                  if(!id.equals(meta.optString("id"))||!file(id,".m4a").isFile())throw new IOException("Recording unavailable");return meta;
+              }
+              private int audioDuration(File audio)throws Exception{
+                  MediaMetadataRetriever info=new MediaMetadataRetriever();
+                  try{info.setDataSource(audio.getAbsolutePath());String value=info.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);return value==null?0:Integer.parseInt(value);}
+                  finally{info.release();}
+              }
+              private JSONObject finalizeDraft(JSONObject meta)throws Exception{
+                  String id=meta.getString("id");File audio=file(id,".m4a");int duration=audioDuration(audio);
+                  if(!audio.isFile()||audio.length()<64||audio.length()>MAX_BYTES||duration<1)throw new IOException("No valid audio");
+                  meta.put("durationMs",duration);meta.put("bytes",audio.length());
+                  write(file(id,".json"),meta);new AtomicFile(file(id,".pending.json")).delete();return meta;
+              }
+              /** A finalized audio file can survive a metadata-write failure / process restart. */
+              private void recoverDrafts()throws IOException{
+                  File[] files=directory().listFiles();if(files==null)return;
+                  boolean pending=false;
+                  for(File f:files){
+                      if(!f.getName().endsWith(".pending.json"))continue;
+                      String id=f.getName().replace(".pending.json","");
+                      try{
+                          validId(id);if(draft!=null&&id.equals(draft.optString("id")))continue;
+                          JSONObject meta=read(f);finalizeDraft(meta);
+                      }catch(Exception error){
+                          // Retain drafts for recovery/export on a later attempt; never silently delete audio.
+                          pending=true;
+                      }
+                  }
+                  if(pending)problem="RECOVERY_PENDING";else if("RECOVERY_PENDING".equals(problem))problem="";
+              }
+              private AudioManager audioManager(){return (AudioManager)getContext().getSystemService(android.content.Context.AUDIO_SERVICE);}
+              private final AudioManager.OnAudioFocusChangeListener focusChange=change->{
+                  if(change==AudioManager.AUDIOFOCUS_LOSS||change==AudioManager.AUDIOFOCUS_LOSS_TRANSIENT)
+                      getActivity().runOnUiThread(()->{stopAndSave();pausePlayback();});
+              };
+              @SuppressWarnings("deprecation")
+              private boolean focus(){AudioManager audio=audioManager();return audio!=null&&audio.requestAudioFocus(focusChange,AudioManager.STREAM_MUSIC,AudioManager.AUDIOFOCUS_GAIN_TRANSIENT)==AudioManager.AUDIOFOCUS_REQUEST_GRANTED;}
+              @SuppressWarnings("deprecation")
+              private void abandonFocus(){AudioManager audio=audioManager();if(audio!=null)audio.abandonAudioFocus(focusChange);}
+              private void releasePlayer(){
+                  MediaPlayer old=player;player=null;playerId="";preparing=false;
+                  if(old!=null){try{old.release();}catch(Exception ignored){}}abandonFocus();
+              }
+              private void pausePlayback(){if(player!=null&&!preparing){try{if(player.isPlaying())player.pause();}catch(Exception ignored){}}abandonFocus();}
+              private long elapsed(){return accumulated+(recorder!=null&&!paused?Math.max(0,SystemClock.elapsedRealtime()-startedAt):0);}
+
+              @PluginMethod public void getCapabilities(PluginCall call){
+                  if(!unlocked(call))return;JSObject response=new JSObject();response.put("version",1);response.put("offline",true);call.resolve(response);
+              }
+              @PluginMethod public void list(PluginCall call){
+                  if(!unlocked(call))return;
+                  getBridge().execute(()->{
+                      try{
+                          recoverDrafts();ArrayList<JSONObject> items=new ArrayList<>();File[] files=directory().listFiles();
+                          if(files!=null)for(File f:files){
+                              if(!f.getName().endsWith(".json")||f.getName().endsWith(".pending.json"))continue;
+                              try{String id=f.getName().replace(".json","");items.add(metadata(validId(id)));}catch(Exception ignored){}
+                          }
+                          items.sort((a,b)->Long.compare(b.optLong("createdAt"),a.optLong("createdAt")));
+                          JSArray array=new JSArray();for(JSONObject item:items)array.put(item);
+                          JSObject response=new JSObject();response.put("items",array);call.resolve(response);
+                      }catch(Exception error){call.reject("Cannot read recordings","STORAGE",error);}
+                  });
+              }
+              @PluginMethod public void start(PluginCall call){
+                  if(!unlocked(call))return;
+                  getActivity().runOnUiThread(()->{
+                      if(recorder!=null||requesting||exporting.get()){call.reject("Another audio operation is active","BUSY");return;}
+                      if(getPermissionState("microphone")!=PermissionState.GRANTED){requesting=true;requestPermissionForAlias("microphone",call,"microphoneResult");return;}
+                      startReady(call);
+                  });
+              }
+              @PermissionCallback private void microphoneResult(PluginCall call){
+                  requesting=false;
+                  if(getPermissionState("microphone")!=PermissionState.GRANTED){call.reject("Microphone permission is required","MICROPHONE_DENIED");return;}
+                  if(!visible){pendingStart=call;return;}
+                  getActivity().runOnUiThread(()->startReady(call));
+              }
+              @SuppressWarnings("deprecation")
+              private void startReady(PluginCall call){
+                  if(!unlocked(call))return;
+                  if(!visible||recorder!=null||exporting.get()){call.reject("Open the recorder page and try again","BUSY");return;}
+                  JSONObject candidate=null;
+                  try{
+                      releasePlayer();if(!focus())throw new IOException("AUDIO_BUSY");
+                      if(directory().getUsableSpace()<10L*1024*1024)throw new IOException("STORAGE");
+                      String id=UUID.randomUUID().toString();candidate=new JSONObject();candidate.put("id",id);
+                      candidate.put("title",cleanTitle(call.getString("title","Recording")));candidate.put("createdAt",System.currentTimeMillis());
+                      write(file(id,".pending.json"),candidate);
+                      recorder=android.os.Build.VERSION.SDK_INT>=31?new MediaRecorder(getContext()):new MediaRecorder();
+                      recorder.setAudioSource(MediaRecorder.AudioSource.MIC);recorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+                      recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);recorder.setAudioChannels(1);
+                      recorder.setAudioSamplingRate(44100);recorder.setAudioEncodingBitRate(96000);
+                      recorder.setMaxDuration(MAX_DURATION);recorder.setMaxFileSize(MAX_BYTES);
+                      recorder.setOutputFile(file(id,".m4a").getAbsolutePath());
+                      recorder.setOnInfoListener((source,what,extra)->getActivity().runOnUiThread(()->{if(recorder==source&&(what==MediaRecorder.MEDIA_RECORDER_INFO_MAX_DURATION_REACHED||what==MediaRecorder.MEDIA_RECORDER_INFO_MAX_FILESIZE_REACHED)){stopAndSave();problem="LIMIT_SAVED";}}));
+                      recorder.setOnErrorListener((source,what,extra)->getActivity().runOnUiThread(()->{if(recorder==source){stopAndSave();problem="INTERRUPTED";}}));
+                      recorder.prepare();recorder.start();draft=candidate;accumulated=0;startedAt=SystemClock.elapsedRealtime();paused=false;problem="";
+                      JSObject response=new JSObject();response.put("recording",true);call.resolve(response);
+                  }catch(Exception error){
+                      if(recorder!=null){try{recorder.release();}catch(Exception ignored){}recorder=null;}
+                      if(candidate!=null)try{String id=candidate.getString("id");file(id,".m4a").delete();new AtomicFile(file(id,".pending.json")).delete();}catch(Exception ignored){}
+                      draft=null;abandonFocus();call.reject("Cannot start recording","START_FAILED",error);
+                  }
+              }
+              @PluginMethod public void pause(PluginCall call){
+                  if(!unlocked(call))return;getActivity().runOnUiThread(()->{
+                      try{if(recorder==null)throw new IllegalStateException();if(!paused){long elapsed=elapsed();recorder.pause();accumulated=elapsed;paused=true;}call.resolve();}
+                      catch(Exception error){call.reject("Cannot pause recording","RECORDING",error);}
+                  });
+              }
+              @PluginMethod public void resume(PluginCall call){
+                  if(!unlocked(call))return;getActivity().runOnUiThread(()->{
+                      try{if(recorder==null||!visible)throw new IllegalStateException();if(paused){recorder.resume();startedAt=SystemClock.elapsedRealtime();paused=false;}call.resolve();}
+                      catch(Exception error){call.reject("Cannot resume recording","RECORDING",error);}
+                  });
+              }
+              private JSONObject stopAndSave(){
+                  if(recorder==null)return null;
+                  MediaRecorder old=recorder;JSONObject meta=draft;recorder=null;draft=null;paused=false;accumulated=0;
+                  boolean stopped=false, validAudio=false;
+                  try{old.stop();stopped=true;}catch(Exception ignored){}finally{try{old.release();}catch(Exception ignored){}abandonFocus();}
+                  try{
+                      if(meta==null)throw new IOException("Recording too short");
+                      // Android may have already stopped at a duration/file limit. A second stop()
+                      // can throw although the M4A is complete; never discard that valid audio.
+                      File completed=file(meta.getString("id"),".m4a");
+                      validAudio=completed.isFile()&&completed.length()>=64&&audioDuration(completed)>0;
+                      if(!validAudio)throw new IOException("Recording too short");
+                      return finalizeDraft(meta);
+                  }catch(Exception error){
+                      problem=(stopped||validAudio)?"RECOVERY_PENDING":"TOO_SHORT";
+                      if(!stopped&&!validAudio&&meta!=null)try{String id=meta.getString("id");file(id,".m4a").delete();new AtomicFile(file(id,".pending.json")).delete();}catch(Exception ignored){}
+                      return null;
+                  }
+              }
+              @PluginMethod public void stop(PluginCall call){
+                  if(!unlocked(call))return;getActivity().runOnUiThread(()->{
+                      if(recorder==null){JSObject result=new JSObject();result.put("alreadyStopped",true);call.resolve(result);return;}
+                      JSONObject meta=stopAndSave();if(meta==null){call.reject("Recording could not be finalized",problem);return;}
+                      JSObject result=new JSObject();result.put("saved",true);result.put("item",meta);call.resolve(result);
+                  });
+              }
+              @PluginMethod public void state(PluginCall call){
+                  if(!unlocked(call))return;getActivity().runOnUiThread(()->{
+                      JSObject response=new JSObject();response.put("recording",recorder!=null);response.put("paused",paused);
+                      response.put("elapsedMs",elapsed());response.put("preparing",preparing);response.put("playerId",playerId);
+                      response.put("problem",problem);
+                      try{response.put("level",recorder!=null&&!paused?recorder.getMaxAmplitude()/32768.0:0);}catch(Exception ignored){response.put("level",0);}
+                      boolean playing=false;int position=0,duration=0;
+                      try{if(player!=null&&!preparing){playing=player.isPlaying();position=player.getCurrentPosition();duration=player.getDuration();}}catch(Exception ignored){}
+                      response.put("playing",playing);response.put("positionMs",position);response.put("durationMs",duration);call.resolve(response);
+                  });
+              }
+              @PluginMethod public void play(PluginCall call){
+                  if(!unlocked(call))return;getActivity().runOnUiThread(()->{
+                      try{
+                          if(recorder!=null||exporting.get()||!visible)throw new IOException("BUSY");
+                          String id=validId(call.getString("id",""));metadata(id);
+                          if(id.equals(playerId)&&player!=null&&!preparing){
+                              if(player.isPlaying())pausePlayback();else{if(!focus())throw new IOException("AUDIO_BUSY");if(player.getCurrentPosition()>=player.getDuration()-100)player.seekTo(0);player.start();}call.resolve();return;
+                          }
+                          releasePlayer();if(!focus())throw new IOException("AUDIO_BUSY");
+                          player=new MediaPlayer();playerId=id;preparing=true;MediaPlayer current=player;
+                          current.setAudioStreamType(AudioManager.STREAM_MUSIC);current.setDataSource(file(id,".m4a").getAbsolutePath());
+                          current.setOnPreparedListener(mp->{if(player!=mp)return;preparing=false;if(!visible||main().isAppLocked()){releasePlayer();return;}try{mp.start();}catch(Exception error){releasePlayer();problem="PLAY_FAILED";}});
+                          current.setOnCompletionListener(mp->{if(player==mp){abandonFocus();}});
+                          current.setOnErrorListener((mp,what,extra)->{if(player==mp){releasePlayer();problem="PLAY_FAILED";}return true;});
+                          current.prepareAsync();call.resolve();
+                      }catch(Exception error){releasePlayer();call.reject("Cannot play recording","PLAY_FAILED",error);}
+                  });
+              }
+              @PluginMethod public void seek(PluginCall call){
+                  if(!unlocked(call))return;getActivity().runOnUiThread(()->{
+                      try{Integer position=call.getInt("positionMs");if(player==null||preparing||position==null)throw new IllegalStateException();player.seekTo(Math.max(0,Math.min(position,player.getDuration())));call.resolve();}
+                      catch(Exception error){call.reject("Cannot seek audio","PLAY_FAILED",error);}
+                  });
+              }
+              @PluginMethod public void stopPlayback(PluginCall call){if(!unlocked(call))return;getActivity().runOnUiThread(()->{releasePlayer();call.resolve();});}
+              @PluginMethod public void rename(PluginCall call){
+                  if(!unlocked(call))return;getBridge().execute(()->{
+                      try{String id=validId(call.getString("id",""));JSONObject meta=metadata(id);meta.put("title",cleanTitle(call.getString("title","")));write(file(id,".json"),meta);call.resolve();}
+                      catch(Exception error){call.reject("Cannot rename recording","STORAGE",error);}
+                  });
+              }
+              @PluginMethod public void remove(PluginCall call){
+                  if(!unlocked(call))return;getActivity().runOnUiThread(()->{
+                      try{
+                          String id=validId(call.getString("id",""));
+                          if(exporting.get()||(draft!=null&&id.equals(draft.optString("id"))))throw new IOException("BUSY");
+                          if(id.equals(playerId))releasePlayer();File audio=file(id,".m4a");
+                          if(audio.exists()&&!audio.delete())throw new IOException("Cannot delete audio");
+                          new AtomicFile(file(id,".json")).delete();new AtomicFile(file(id,".pending.json")).delete();call.resolve();
+                      }catch(Exception error){call.reject("Cannot delete recording","STORAGE",error);}
+                  });
+              }
+              @PluginMethod public void export(PluginCall call){
+                  if(!unlocked(call))return;getActivity().runOnUiThread(()->{
+                      if(recorder!=null||!exporting.compareAndSet(false,true)){call.reject("Finish recording first","BUSY");return;}
+                      try{
+                          String id=validId(call.getString("id",""));JSONObject meta=metadata(id);releasePlayer();
+                          String name=cleanTitle(meta.optString("title")).replaceAll("[\\\\/:*?\"<>|\\p{Cntrl}]","_")+".m4a";
+                          Intent intent=new Intent(Intent.ACTION_CREATE_DOCUMENT);intent.addCategory(Intent.CATEGORY_OPENABLE);intent.setType("audio/mp4");intent.putExtra(Intent.EXTRA_TITLE,name);
+                          startActivityForResult(call,intent,"audioDestinationChosen");
+                      }catch(Exception error){exporting.set(false);call.reject("Cannot export recording","STORAGE",error);}
+                  });
+              }
+              @ActivityCallback private void audioDestinationChosen(PluginCall call,ActivityResult result){
+                  if(call==null){exporting.set(false);return;}
+                  if(result.getResultCode()!=Activity.RESULT_OK||result.getData()==null||result.getData().getData()==null){exporting.set(false);JSObject response=new JSObject();response.put("cancelled",true);call.resolve(response);return;}
+                  final Uri uri=result.getData().getData();
+                  getBridge().execute(()->{
+                      try{
+                          String id=validId(call.getString("id",""));File source=file(id,".m4a");long copied=0;
+                          try(InputStream in=new FileInputStream(source);OutputStream out=getContext().getContentResolver().openOutputStream(uri,"wt")){
+                              if(out==null)throw new IOException("Destination unavailable");byte[] buffer=new byte[32768];int n;
+                              while((n=in.read(buffer))!=-1){out.write(buffer,0,n);copied+=n;}out.flush();
+                          }
+                          if(copied!=source.length())throw new IOException("Incomplete export");JSObject response=new JSObject();response.put("saved",true);call.resolve(response);
+                      }catch(Exception error){try{android.provider.DocumentsContract.deleteDocument(getContext().getContentResolver(),uri);}catch(Exception ignored){}call.reject("Cannot save audio file","STORAGE",error);}
+                      finally{exporting.set(false);}
+                  });
+              }
+              /** Explicit app lock, leaving the app, calls or screen-off stop and save microphone use. */
+              void interruptForSecurity(){stopAndSave();pausePlayback();}
+              @Override protected void handleOnPause(){visible=false;interruptForSecurity();}
+              @Override protected void handleOnResume(){visible=true;if(pendingStart!=null){PluginCall call=pendingStart;pendingStart=null;getActivity().runOnUiThread(()->startReady(call));}}
+              @Override protected void handleOnDestroy(){interruptForSecurity();releasePlayer();if(pendingStart!=null){pendingStart.reject("Recording cancelled","BUSY");pendingStart=null;}}
+          }
+          ''', encoding='utf-8')
+
           # Preserve the package ID and configure Android API 36.
           variables = base / 'android/variables.gradle'
           s = variables.read_text()
@@ -622,7 +1095,7 @@ jobs:
           if not 1 <= version_code <= 2100000000:
               raise ValueError('Invalid versionCode')
 
-          version_name = os.environ.get('APP_VERSION_NAME') or '1.1.1'
+          version_name = os.environ.get('APP_VERSION_NAME') or '1.1.2'
           if not re.fullmatch(r'[0-9]+(?:\.[0-9]+){1,3}', version_name):
               raise ValueError('Use a numeric version name, e.g. 1.1.1')
 
@@ -670,6 +1143,12 @@ jobs:
           tree = ET.parse(manifest)
           doc = tree.getroot()
           application = doc.find('application')
+          # Microphone is optional: devices without one can use all other app features.
+          permission = ET.SubElement(doc, 'uses-permission')
+          permission.set('{' + android_ns + '}name', 'android.permission.RECORD_AUDIO')
+          feature = ET.SubElement(doc, 'uses-feature')
+          feature.set('{' + android_ns + '}name', 'android.hardware.microphone')
+          feature.set('{' + android_ns + '}required', 'false')
 
           application.set('{' + android_ns + '}allowBackup', 'false')
           application.set('{' + android_ns + '}fullBackupContent', 'false')
