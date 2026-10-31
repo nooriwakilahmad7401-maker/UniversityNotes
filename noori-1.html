@@ -1043,6 +1043,7 @@
     <div id="page-pdf" class="page" style="padding:16px;">
         <div class="section-title" id="pdf-title"></div>
         <p class="settings-hint" id="pdf-description"></p>
+        <p id="pdf-status" role="status" aria-live="polite"></p>
         <div class="pdf-tools">
             <button type="button" class="pdf-tool" id="pdf-pick" onclick="pdfAction('pick')"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8zM14 2v6h6M8 13h8M8 17h5"/></svg><strong id="pdf-pick-label"></strong><span id="pdf-pick-hint"></span></button>
             <button type="button" class="pdf-tool" id="pdf-scan" onclick="pdfAction('scan')"><svg viewBox="0 0 24 24"><path d="M4 8V4h4m8 0h4v4M4 16v4h4m8 0h4v-4M3 12h18M8 7h8v10H8z"/></svg><strong id="pdf-scan-label"></strong><span id="pdf-scan-hint"></span></button>
@@ -1050,7 +1051,6 @@
         <div class="pdf-folder-actions"><button type="button" class="settings-button secondary" id="pdf-folder" onclick="pdfAction('folder')"></button><button type="button" class="settings-button secondary" id="pdf-refresh" onclick="refreshPdfLibrary()"></button></div>
         <p class="settings-hint" id="pdf-access-hint"></p>
         <p class="settings-hint" id="pdf-availability"></p>
-        <p id="pdf-status" role="status" aria-live="polite"></p>
         <label for="pdf-search" id="pdf-search-label" class="voice-label"></label>
         <input id="pdf-search" type="search" dir="auto" maxlength="120" oninput="renderPdfList()" autocomplete="off">
         <div class="voice-list-heading"><h3 id="pdf-list-title"></h3><span id="pdf-count"></span></div>
@@ -3597,6 +3597,10 @@ function pdfText(key){
         partial:['ځینې فایلونه ورزیات شول؛ ځینې نور PDF معتبر نه وو، لاسرسی یې نه کېده یا د اندازې حد یې پوره کاوه.','بعضی فایل‌ها اضافه شدند؛ بعضی دیگر معتبر یا قابل دسترسی نبودند یا از حد اندازه بیشتر بودند.','Some files were added; others were invalid, inaccessible or exceeded the size limit.'],limited:['د فولډر لېست د خوندي کار لپاره محدود شو؛ د نورو فایلونو لپاره کوچنی فولډر یا «PDF پرانیستل» وکاروئ.','فهرست پوشه برای کارکرد ایمن محدود شد؛ پوشۀ کوچک‌تر یا «باز کردن PDF» را انتخاب کنید.','Folder listing was limited for safe performance. Choose a smaller folder or use Open PDF for other files.'],
         backup:['PDF او سکنونه په JSON بیک‌اپ کې نه شاملېږي. مهم فایلونه د «فایل ساتل» له لارې جلا وساتئ؛ د اپ په پاکولو داخلي کاپۍ پاکېږي.','PDF و اسکن‌ها شامل پشتیبان JSON نیستند. فایل‌های مهم را جدا ذخیره کنید؛ با حذف برنامه نقل‌های داخلی پاک می‌شوند.','PDFs and scans are excluded from JSON backups. Save important copies separately; uninstalling removes app copies.'],
         error:['PDF پرانیستل نه شو؛ فایل، اجازه او د حافظې تش ځای وګورئ.','PDF باز نشد؛ فایل، اجازه و فضای خالی را بررسی کنید.','Unable to process PDF. Check the file, access permission and available storage.'],
+        scanSaved:['د سکن PDF جوړ او لاندې لېست کې خوندي شو.','PDF اسکن ساخته شد و در فهرست زیر ذخیره شد.','Scanned PDF created and saved in the list below.'],
+        scanSaveError:['عکسونه سکن شول، خو PDF په اپ کې خوندي نه شو. د موبایل تشه حافظه وګورئ او بیا هڅه وکړئ.','تصاویر اسکن شدند، اما PDF در برنامه ذخیره نشد. فضای خالی دستگاه را بررسی و دوباره تلاش کنید.','Pages were scanned, but the PDF could not be saved. Check available storage and try again.'],
+        scanEmpty:['سکنر PDF راونه لېږه. سکن بیا پرانیزئ او د پاڼو له تایید وروسته Next ووهئ.','اسکنر PDF برنگرداند. دوباره اسکن کنید و پس از تأیید صفحات Next را بزنید.','Scanner returned no PDF. Scan again and finish the pages with Next.'],
+        scanSavedRefresh:['PDF خوندي شو؛ د لېست د ښودلو لپاره قلف پرانیزئ او «تازه کول» ووهئ.','PDF ذخیره شد؛ برای نمایش فهرست قفل را باز کرده و «تازه‌سازی» را بزنید.','PDF was saved. Unlock the app and refresh the list to see it.'],
         scanError:['سکن چمتو نه شو. انټرنېټ او Google Play services تازه وګورئ؛ په ځینو وسیلو کې سکن نه ملاتړ کېږي.','اسکن آماده نشد. انترنت و Google Play services را بررسی کنید؛ برخی دستگاه‌ها پشتیبانی نمی‌شوند.','Scanner unavailable. Check internet and updated Google Play services; some devices are unsupported.'],
         limit:['د فایل اندازه یا د داخلي کتابتون حد پوره شوی. تر ۱۲۸ MB فایل، ۱۰۰ داخلي فایلونه او ټول ۵۱۲ MB ملاتړ کېږي.','اندازۀ فایل یا حد کتابخانۀ داخلی پر شده است. هر فایل تا ۱۲۸ MB، حداکثر ۱۰۰ فایل داخلی و مجموع ۵۱۲ MB.','File or library limit reached: 128 MB per file, 100 app copies and 512 MB total.'],locked:['لومړی د اپ قلف پرانیزئ.','ابتدا قفل برنامه را باز کنید.','Unlock the app first.']
     };const item=copy[key];return item?item[currentLang==='en'?2:currentLang==='dr'?1:0]:key;
@@ -3608,6 +3612,7 @@ function renderPdf(){
     document.getElementById('pdf-search').placeholder=pdfText('search');
     document.getElementById('pdf-availability').textContent=pdfText(pdfAvailable?'scannerInfo':'unavailable');
     document.getElementById('pdf-status').textContent=pdfLibraryBusy?pdfText('busy'):pdfMessage;
+    document.getElementById('pdf-status').hidden=!pdfLibraryBusy&&!pdfMessage;
     for(const id of ['pdf-pick','pdf-scan','pdf-folder','pdf-refresh'])document.getElementById(id).disabled=!pdfAvailable||pdfLibraryBusy;
     renderPdfList();
 }
@@ -3640,16 +3645,22 @@ async function pdfAction(action,id){
     if(!pdfAvailable||pdfLibraryBusy)return;
     if(['remove','forget'].includes(action)&&!confirm(pdfText(action==='forget'?'forgetConfirm':'confirm')))return;
     pdfLibraryBusy=true;pdfMessage='';renderPdf();
+    let scannedDocument=null;
     try{
         const method={pick:'pick',folder:'addFolder',scan:'scan',open:'open',save:'export',remove:'remove',share:'share',forget:'forgetFolder'}[action];
         if(!method)return;
         const result=(await pdfNative[method]({id,language:currentLang,dark:document.body.getAttribute('data-theme')==='dark'}))||{};
-        pdfMessage=result.skipped?pdfText('partial'):result.cancelled?pdfText('cancelled'):action==='share'?pdfText('shared'):action==='save'?pdfText('saved'):action==='remove'?pdfText('removed'):action==='open'?'':pdfText('added');
+        if(action==='scan'&&!result.cancelled&&result.document){
+            scannedDocument=result.document;
+            document.getElementById('pdf-search').value='';
+            pdfItems=[scannedDocument,...pdfItems.filter(item=>item.id!==scannedDocument.id)];
+        }
+        pdfMessage=result.skipped?pdfText('partial'):result.cancelled?pdfText('cancelled'):action==='share'?pdfText('shared'):action==='save'?pdfText('saved'):action==='remove'?pdfText('removed'):action==='open'?'':action==='scan'?pdfText('scanSaved'):pdfText('added');
         if(!result.cancelled&&['pick','folder','scan','remove','forget'].includes(action)){
             const list=await pdfNative.list();pdfItems=Array.isArray(list.items)?list.items:[];pdfFolders=Array.isArray(list.folders)?list.folders:[];if(list.limited)pdfMessage=pdfText('limited');
         }
-    }catch(error){pdfMessage=pdfText(error.code==='LOCKED'?'locked':error.code==='LIMIT'?'limit':action==='scan'?'scanError':'error');}
-    finally{pdfLibraryBusy=false;renderPdf();}
+    }catch(error){pdfMessage=pdfText(scannedDocument?'scanSavedRefresh':error.code==='LOCKED'?'locked':error.code==='LIMIT'?'limit':error.code==='SCAN_SAVE'?'scanSaveError':error.code==='SCAN_EMPTY'?'scanEmpty':action==='scan'?'scanError':'error');}
+    finally{pdfLibraryBusy=false;renderPdf();if(action==='scan'&&currentPage==='pdf')requestAnimationFrame(()=>document.getElementById(scannedDocument?'pdf-list':'pdf-status').scrollIntoView({block:'center'}));}
 }
 function setupPdfLibrary(){
     try{if(window.Capacitor&&window.Capacitor.isNativePlatform()){pdfNative=window.Capacitor.Plugins&&window.Capacitor.Plugins.PdfLibrary;if(!pdfNative&&window.Capacitor.registerPlugin)pdfNative=window.Capacitor.registerPlugin('PdfLibrary');}}catch(_){}
