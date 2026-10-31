@@ -1265,8 +1265,20 @@ jobs:
               @PluginMethod public void getCapabilities(PluginCall call){JSObject o=new JSObject();o.put("available",true);call.resolve(o);}
 
               /** App copies are durable offline; originals and cloud providers remain under user control. */
+              private void validateImportSource(Uri uri,String kind)throws Exception{
+                  if(uri==null)throw new java.io.IOException("Missing document source");
+                  if("content".equals(uri.getScheme()))return;
+                  // ML Kit also returns file:// URIs inside this app's scanner cache.
+                  // Only the native scanner result can use this path; JS and file pickers cannot.
+                  if("scan".equals(kind)&&"file".equals(uri.getScheme())&&uri.getPath()!=null&&(uri.getAuthority()==null||uri.getAuthority().isEmpty())){
+                      File file=new File(uri.getPath()).getCanonicalFile();
+                      File[] roots={getContext().getCacheDir(),getContext().getExternalCacheDir()};
+                      for(File root:roots)if(root!=null&&file.getPath().startsWith(root.getCanonicalPath()+File.separator)&&file.isFile())return;
+                  }
+                  throw new java.io.IOException("Invalid document source");
+              }
               private Entry importDocument(Uri uri,String suppliedName,String kind)throws Exception{
-                  if(uri==null||!"content".equals(uri.getScheme()))throw new java.io.IOException("Invalid document source");
+                  validateImportSource(uri,kind);
                   JSONArray entries=array("documents");
                   if(!"scan".equals(kind))for(int i=0;i<entries.length();i++){JSONObject old=entries.getJSONObject(i);if(uri.toString().equals(old.optString("source"))&&new File(directory(),old.getString("id")+".pdf").isFile())return fromJson(old);}
                   if(entries.length()>=MAX_FILES)throw new LimitException();
@@ -1360,8 +1372,8 @@ jobs:
                   PluginCall call=pendingScan;pendingScan=null;if(call==null){busy.set(false);return;}
                   if(result.getResultCode()!=Activity.RESULT_OK){busy.set(false);call.resolve(cancelled());return;}
                   GmsDocumentScanningResult scan;try{scan=GmsDocumentScanningResult.fromActivityResultIntent(result.getData());}catch(Exception error){fail(call,error);return;}
-                  if(scan==null||scan.getPdf()==null){fail(call,new java.io.IOException("Scanner returned no PDF"));return;}
-                  Uri uri=scan.getPdf().getUri();getBridge().execute(()->{try{String name="Scan-"+new java.text.SimpleDateFormat("yyyy-MM-dd-HHmmss",java.util.Locale.ROOT).format(new java.util.Date())+".pdf";Entry entry=importDocument(uri,name,"scan");busy.set(false);JSObject response=new JSObject();response.put("document",entry.json());call.resolve(response);}catch(Exception error){fail(call,error);}});
+                  if(scan==null||scan.getPdf()==null){busy.set(false);call.reject("Scanner returned no PDF","SCAN_EMPTY");return;}
+                  Uri uri=scan.getPdf().getUri();getBridge().execute(()->{try{String name="Scan-"+new java.text.SimpleDateFormat("yyyy-MM-dd-HHmmss",java.util.Locale.ROOT).format(new java.util.Date())+".pdf";Entry entry=importDocument(uri,name,"scan");busy.set(false);JSObject response=new JSObject();response.put("document",entry.json());call.resolve(response);}catch(Exception error){busy.set(false);call.reject("Cannot save scanned PDF",error instanceof LimitException?"LIMIT":"SCAN_SAVE",error);}});
               }
               @PluginMethod public void open(PluginCall call){
                   if(!begin(call))return;getBridge().execute(()->{try{
