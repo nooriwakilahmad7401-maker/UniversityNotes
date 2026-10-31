@@ -814,6 +814,31 @@
     .voice-item-actions .voice-delete { color:var(--danger); }
     #voice-player h3 { font-size:.92rem;overflow-wrap:anywhere; }
 
+    /* Wrap the editable expression; grow vertically so no digits are hidden. */
+    .calc-display-panel textarea.calc-screen { display:block;width:100%;box-sizing:border-box;margin:0;padding:18px 18px 6px;border:0;border-radius:0;background:var(--card-bg);color:var(--text-main);box-shadow:none;resize:none;overflow:hidden;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-all;line-height:1.35;font-family:inherit;text-align:right;direction:ltr;unicode-bidi:isolate;caret-color:var(--primary);min-height:76px; }
+    .schedule-table tr.schedule-today > td { background:rgba(99,102,241,.13) !important;border-top:2px solid var(--primary);border-bottom:2px solid var(--primary); }
+    .schedule-table tr.schedule-today .schedule-input { background:var(--card-bg);border-color:var(--primary); }
+    .schedule-today-badge[hidden] { display:none !important; }
+    .schedule-today-badge { display:block;margin-top:5px;color:var(--primary);font-size:.66rem;font-weight:700; }
+    #schedule-today-summary { margin:0 0 12px;padding:10px 12px;border:1px solid var(--border-color);border-inline-start:3px solid var(--primary);border-radius:10px;color:var(--text-main);background:var(--bg-color);font-size:.8rem;line-height:1.8;overflow-wrap:anywhere; }
+    .nav-item { width:16.6667%;min-height:48px; }
+    .pdf-tools { display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px; }
+    .pdf-tool { display:flex;flex-direction:column;align-items:flex-start;gap:10px;padding:18px 14px;text-align:start;background:var(--card-bg);color:var(--text-main);border:1px solid var(--border-color);border-radius:16px;box-shadow:var(--shadow);cursor:pointer;min-width:0; }
+    .pdf-tool svg { width:28px;height:28px;fill:none;stroke:var(--primary);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round; }
+    .pdf-tool strong { font-size:.92rem; }
+    .pdf-tool span { color:var(--text-sub);font-size:.75rem;line-height:1.7; }
+    .pdf-folder-actions { display:flex;gap:10px;flex-wrap:wrap;margin-top:14px; }
+    .pdf-folder-actions button { flex:1;min-height:44px;font-size:.78rem; }
+    #page-pdf button:disabled { opacity:.45;cursor:default; }
+    #pdf-status { color:var(--primary);font-size:.82rem;line-height:1.7;min-height:1.7em;margin:10px 0;overflow-wrap:anywhere; }
+    .pdf-card { margin-top:12px;padding:15px;background:var(--card-bg);border:1px solid var(--border-color);border-radius:15px; }
+    .pdf-card h4 { font-size:.9rem;overflow-wrap:anywhere;unicode-bidi:plaintext;text-align:start; }
+    .pdf-meta { color:var(--text-sub);font-size:.72rem;line-height:1.8;margin:7px 0 11px;overflow-wrap:anywhere; }
+    .pdf-actions { display:flex;gap:8px;flex-wrap:wrap; }
+    .pdf-actions button { min-height:44px;border:1px solid var(--border-color);border-radius:10px;padding:8px 12px;background:var(--bg-color);color:var(--text-main);font:inherit;font-size:.75rem;cursor:pointer; }
+    .pdf-actions button:first-child { background:var(--primary);color:white;flex:1; }
+    @media(max-width:350px){.pdf-tools{gap:8px}.pdf-tool{padding:14px 10px}.nav-item{font-size:.62rem}}
+
     </style>
 </head>
 <body>
@@ -953,7 +978,7 @@
     <div id="page-calc" class="page" style="padding: 16px;">
         <div class="section-title" style="margin-bottom: 12px;" id="txt-calc-title">پرمختللی ماشین حساب</div>
         <div class="calc-display-panel">
-        <input type="text" class="calc-screen" id="calc-display" value="0" inputmode="none" autocomplete="off" spellcheck="false" maxlength="512" dir="ltr" aria-label="Calculator expression">
+        <textarea class="calc-screen" id="calc-display" rows="1" wrap="soft" inputmode="none" autocomplete="off" spellcheck="false" maxlength="512" dir="ltr" aria-label="Calculator expression">0</textarea>
             <div id="calc-preview" class="calc-preview" aria-live="polite" aria-atomic="true"></div>
         </div>
         <div class="calc-grid">
@@ -1013,6 +1038,24 @@
             </button>
         </div>
         <div class="list-container" id="trash-list"></div>
+    </div>
+
+    <div id="page-pdf" class="page" style="padding:16px;">
+        <div class="section-title" id="pdf-title"></div>
+        <p class="settings-hint" id="pdf-description"></p>
+        <div class="pdf-tools">
+            <button type="button" class="pdf-tool" id="pdf-pick" onclick="pdfAction('pick')"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8zM14 2v6h6M8 13h8M8 17h5"/></svg><strong id="pdf-pick-label"></strong><span id="pdf-pick-hint"></span></button>
+            <button type="button" class="pdf-tool" id="pdf-scan" onclick="pdfAction('scan')"><svg viewBox="0 0 24 24"><path d="M4 8V4h4m8 0h4v4M4 16v4h4m8 0h4v-4M3 12h18M8 7h8v10H8z"/></svg><strong id="pdf-scan-label"></strong><span id="pdf-scan-hint"></span></button>
+        </div>
+        <div class="pdf-folder-actions"><button type="button" class="settings-button secondary" id="pdf-folder" onclick="pdfAction('folder')"></button><button type="button" class="settings-button secondary" id="pdf-refresh" onclick="refreshPdfLibrary()"></button></div>
+        <p class="settings-hint" id="pdf-access-hint"></p>
+        <p class="settings-hint" id="pdf-availability"></p>
+        <p id="pdf-status" role="status" aria-live="polite"></p>
+        <label for="pdf-search" id="pdf-search-label" class="voice-label"></label>
+        <input id="pdf-search" type="search" dir="auto" maxlength="120" oninput="renderPdfList()" autocomplete="off">
+        <div class="voice-list-heading"><h3 id="pdf-list-title"></h3><span id="pdf-count"></span></div>
+        <div id="pdf-list"></div>
+        <p class="settings-hint" id="pdf-backup-hint"></p>
     </div>
 
     <div id="page-recordings" class="page" style="padding:16px;">
@@ -1149,6 +1192,7 @@
                 <input type="text" id="sched-semester" placeholder="سمسټر">
             </div>
 
+            <p id="schedule-today-summary" role="status" aria-live="polite"></p>
             <div class="schedule-table-wrapper">
                 <table class="schedule-table">
                     <thead>
@@ -1190,6 +1234,10 @@
         <button class="nav-item" onclick="switchPage('calc')">
             <svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="16" y1="14" x2="16" y2="18"/><path d="M16 10h.01M12 10h.01M8 10h.01M12 14h.01M8 14h.01M12 18h.01M8 18h.01"/></svg>
             <span id="txt-nav-calc">حساب</span>
+        </button>
+        <button class="nav-item" onclick="switchPage('pdf')">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8zM14 2v6h6M8 13h8M8 17h5"/></svg>
+            <span id="txt-nav-pdf">PDF</span>
         </button>
         <button class="nav-item" onclick="switchPage('recordings')">
             <svg viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v2a7 7 0 0014 0v-2M12 19v3M8 22h8"/></svg>
@@ -1756,6 +1804,8 @@ function renderAll() {
     renderCalcHistory();
     updateCalcPreview();
     renderVoice();
+    renderPdf();
+    resizeCalcDisplay();
 }
 
 /** Renders the subject cards on both the Home and Subjects pages. */
@@ -2020,7 +2070,7 @@ let historyPending = false;
 let restoringHistory = false;
 let afterHistoryNavigation = null;
 let modalBaseline = '';
-const validPages = ['home','subjects','notes','attendance','calc','recordings','search','trash','about','privacy','settings','settings-language','settings-theme','settings-security','settings-backup'];
+const validPages = ['home','subjects','notes','attendance','calc','pdf','recordings','search','trash','about','privacy','settings','settings-language','settings-theme','settings-security','settings-backup'];
 function pageState(modalId) {
     return { universityNotes: true, page: currentPage, filter: selectedSubjectFilter,
         depth: navDepth, modal: modalId || null };
@@ -2049,13 +2099,14 @@ function switchPageInternal(pageId) {
     currentPage = validPages.includes(pageId) ? pageId : 'home';
     if (currentPage === 'settings' || currentPage === 'settings-security') refreshSecurity();
     document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.id === 'page-' + currentPage));
-    const navIndex = ['home','subjects','attendance','calc','recordings'].indexOf(currentPage);
+    const navIndex = ['home','subjects','attendance','calc','pdf','recordings'].indexOf(currentPage);
     document.querySelectorAll('.nav-item').forEach((item, index) => item.classList.toggle('active', index === navIndex));
     const sub = subjects.find(s => s.id === selectedSubjectFilter);
     document.getElementById('notes-page-subtitle').innerText = sub ? sub.title : t().allNotes;
     document.getElementById('pdf-export-btn').style.display = sub ? 'inline-flex' : 'none';
     renderAll();
     if (currentPage === 'recordings') void refreshVoice();
+    if (currentPage === 'pdf') void refreshPdfLibrary();
 }
 function editorSignature() {
     const modal = document.querySelector('.modal.active');
@@ -2496,10 +2547,12 @@ function renderScheduleEditor(data) {
     tbody.innerHTML = '';
     (defaultDays[currentLang] || defaultDays.ps).forEach((day, dayIndex) => {
         const tr = document.createElement('tr');
+        tr.dataset.dayIndex=String(dayIndex);
         const dayCell = document.createElement('td');
         dayCell.style.fontWeight = 'bold';
         dayCell.style.background = 'rgba(0,0,0,0.02)';
-        dayCell.textContent = day;
+        const dayLabel=document.createElement('span');dayLabel.textContent=day;dayCell.appendChild(dayLabel);
+        const today=document.createElement('span');today.className='schedule-today-badge';today.hidden=true;dayCell.appendChild(today);
         tr.appendChild(dayCell);
         for (let slot = 1; slot <= 4; slot++) {
             const key = 'day_' + dayIndex + '_slot_' + slot;
@@ -2516,8 +2569,24 @@ function renderScheduleEditor(data) {
         }
         tbody.appendChild(tr);
     });
+    highlightScheduleToday();
     scheduleEditorBaseline = JSON.stringify(readScheduleDraft());
     modalBaseline = editorSignature();
+}
+
+/** Native local date, including timezone changes; never re-render an unsaved timetable. */
+function highlightScheduleToday() {
+    const now=new Date(),index=(now.getDay()+1)%7;
+    const body=document.getElementById('schedule-tbody');if(!body)return;
+    let row=null;
+    for(const tr of body.querySelectorAll('tr[data-day-index]')){
+        const today=Number(tr.dataset.dayIndex)===index;tr.classList.toggle('schedule-today',today);
+        const badge=tr.querySelector('.schedule-today-badge');if(badge){badge.hidden=!today;badge.textContent=uiText('نن','امروز','Today');}
+        if(today){tr.setAttribute('aria-current','date');row=tr;}else tr.removeAttribute('aria-current');
+    }
+    const summary=document.getElementById('schedule-today-summary');if(!summary)return;
+    const slots=row?Array.from(row.querySelectorAll('input')).map((input,i)=>input.value.trim()?(t()['thS'+(i+1)]+': '+input.value.trim()):'').filter(Boolean):[];
+    summary.textContent=uiText('نن: ','امروز: ','Today: ')+daysOfWeek[currentLang][now.getDay()]+' — '+(slots.length?slots.join(' · '):uiText('د دې ورځې لپاره ساعتونه نه دي ثبت شوي.','برای این روز ساعت ثبت نشده است.','No classes entered for this day.'));
 }
 
 function openScheduleModal() {
@@ -2826,12 +2895,24 @@ function normalizeCalcText(value) {
     return out;
 }
 
+/** A bounded font size and an unbounded line count keep the entire expression visible. */
+function resizeCalcDisplay() {
+    const input=document.getElementById('calc-display');
+    if(!input||!input.clientWidth)return;
+    input.style.fontSize='36px';input.style.height='auto';
+    const lineCount=Math.max(1,Math.round((input.scrollHeight-24)/(36*1.35)));
+    const font=lineCount>6?20:lineCount>4?23:lineCount>2?28:36;
+    input.style.fontSize=font+'px';input.style.height='auto';
+    input.style.height=Math.max(76,input.scrollHeight+2)+'px';
+}
+
 function updateCalcDisplay(start, end) {
     const input = document.getElementById('calc-display');
     input.value = calcVal;
     const caret = start == null ? calcVal.length : Math.min(start, calcVal.length);
     input.setSelectionRange(caret, end == null ? caret : Math.min(end, calcVal.length));
     updateCalcPreview();
+    resizeCalcDisplay();
 }
 
 /** Insert at the caret or replace the selected range, retaining the existing keypad. */
@@ -2857,7 +2938,7 @@ function insertCalcText(text, isNumber) {
     // A newly entered operation replaces the pending operation to its right, too.
     if (/^[+\-×÷^]$/.test(inserted)) right = right.replace(/^[+\-×÷^]+/, '');
     const candidate = normalizeCalcText(prefix + right);
-    if (candidate == null) return;
+    if (candidate == null || candidate.length > 512) return;
     calcVal = candidate || '0';
     input.focus({ preventScroll: true });
     updateCalcDisplay(Math.min(prefix.length, calcVal.length));
@@ -3029,23 +3110,26 @@ function renderPrivacy() {
     document.getElementById('privacy-link').textContent = uiText('د محرمیت تګلاره', 'سیاست حریم خصوصی', 'Privacy policy');
     const contact = '<a href="https://wa.me/93704287401" target="_blank" rel="noopener noreferrer">WhatsApp: +93 704 287 401</a>';
     const policy = uiText(
-        `<h2>University Notes — د محرمیت تګلاره</h2><p>جوړوونکی: Wakil Ahmad Noori<br>وروستی بدلون: ۲۰۲۶/۱۰/۲۴</p>
-        <h3>معلومات او ساتنه</h3><p>نوټونه، مضمونونه، نمرې، حاضري، مهالوېش، ژبه، بڼه او د حساب تاریخچه یوازې د اپ په ځايي زېرمه کې ساتل کېږي. دا نسخه حساب جوړول، اعلانونه، څارنه او تحلیلي خدمات نه لري؛ جوړوونکی ستاسو نوټونو ته لاسرسی نه لري او اپ یې سرور ته نه لېږي.</p>
+        `<h2>University Notes — د محرمیت تګلاره</h2><p>جوړوونکی: Wakil Ahmad Noori<br>وروستی بدلون: ۲۰۲۶/۱۰/۳۱</p>
+        <h3>معلومات او ساتنه</h3><p>نوټونه، مضمونونه، نمرې، حاضري، مهالوېش، ژبه، بڼه او د حساب تاریخچه یوازې د اپ په ځايي زېرمه کې ساتل کېږي. دا نسخه حساب جوړول، اعلانونه او د جوړوونکي خپل تعقیبي خدمات نه لري؛ جوړوونکی ستاسو نوټونو ته لاسرسی نه لري او اپ یې سرور ته نه لېږي.</p>
         <h3>PDF او بهرنۍ اړیکې</h3><p>PDF په همدې وسیله، بې‌انټرنېټه جوړېږي. په Android کې د فایل ځای تاسو ټاکئ؛ د ټولې حافظې اجازې ته اړتیا نشته. که آنلاین زېرمه وټاکئ، فایل هماغه خدمت ته سپارئ. شریک شوی یا خوندي شوی PDF د اپ له پاکولو وروسته هم پاتې کېدای شي. د واټساپ او فېسبوک لینکونه یوازې ستاسو په غوښتنه پرانیستل کېږي او د هغوی خپل شرایط عملي کېږي؛ نوټونه ورسره په اتومات ډول نه شریکېږي.</p>
         <h3>پاکول او مسؤلیت</h3><p>نوټونه ترش ته انتقالېږي؛ له ترش څخه په تلپاتې پاکولو حذفېږي. د ټولو ځايي معلوماتو د پاکولو لپاره د Android د اپ معلوماتو برخه کې Clear storage وکاروئ یا اپ لرې کړئ. د پخوانۍ نسخې معلومات په خوندي ډول نوې زېرمې ته لېږدول کېږي او زاړه نقلونه له بریالي انتقال وروسته پاکېږي. اپ آنلاین همغږي نه لري. په تنظیماتو کې په خپله غوښتنه JSON بیک‌اپ جوړول او بېرته راوستلای شئ. فایل نوټونه، ترش، نمرې، حاضري، مهالوېشونه او د حساب تاریخچه لري؛ پټنوم نه لري. خوندي یې وساتئ او د اړتیا پر وخت یې جلا پاک کړئ. که آنلاین زېرمه وټاکئ، فایل هماغه خدمت ته لېږدول کېږي. بېرته راوستل ستاسو په تایید اوسني معلومات بدلوي. د Android اختیاري قلف د موبایل PIN/بڼې/پټنوم کاروي؛ اپ یې نه لولي او نه یې ساتي. قلف له اپه تر وتلو وروسته بیا فعالېږي. د سکرین‌شاټ بندول هم اختیاري دي؛ دا قلف د نوټونو یا بیک‌اپ د فایلونو کوډول نه دي. د امنیت تنظیمات په بیک‌اپ کې نه ساتل کېږي.</p>
         <h3>غږیز ریکارډونه</h3><p>د ریکارډ د پیل پر وخت ستاسو په اجازه مایکروفون کارول کېږي. غږیز ریکارډونه بې‌انټرنېټه یوازې د اپ په ځايي زېرمه کې ساتل او اورېدل کېږي؛ جوړوونکي یا سرور ته نه لېږل کېږي. د ریکارډ نوم بدلول، پاکول او ستاسو په ټاکلي ځای کې جلا M4A فایل ساتل شوني دي. له ریکارډ پاڼې یا اپه په وتلو، زنګ راتلو یا سکرین بندېدو ریکارډ درېږي او خوندي کېږي. غږیز ریکارډونه د JSON بیک‌اپ برخه نه دي او د بیک‌اپ په راوستلو نه بدلېږي. د اپ په پاکولو یا Clear storage سره ځايي ریکارډونه هم پاکېږي؛ مخکې یې جلا صادر کړئ. صادر شوي نقلونه تاسو پخپله اداره او پاکوئ. فایلونه جلا کوډ شوي نه دي. د نورو کسانو د غږ تر ثبتولو مخکې اجازه واخلئ.</p>
+        <h3>د PDF کتابتون، سکن او شریکول</h3><p>تاسو د Android د فایل ټاکلو کړکۍ له لارې PDF فایلونه یا فولډرونه غوره کوئ؛ اپ د ټولې حافظې اجازه نه غواړي. ټاکلي PDF فایلونه او سکنونه د اپ په شخصي زېرمه کې ساتل کېږي. د فولډر اجازه تر لرې کولو پورې پاتې کېږي؛ د فولډر د اجازې لرې کول اصلي فایلونه نه پاکوي. د PDF لوستل بې‌انټرنېټه په وسیله کې ترسره کېږي. سکن د Google ML Kit او Google Play services له لارې په وسیله کې پروسس کېږي؛ لومړی ځل د اړینو برخو ډاونلوډ لپاره انټرنېټ ته اړتیا لرلای شي. دا خدمت د خپل تشخیص او د استعمال د شننې لپاره د وسیلې او اپ تخنیکي معلومات، پېژندونکي، د فعالیت او تېروتنو معلومات راټولولای شي او په HTTPS یې ګوګل ته ولېږي. د پاڼو انځورونه او PDF جوړوونکي ته نه استول کېږي. د کمرې لاسرسی د Google Play services د سکن کړکۍ اداره کوي؛ دا اپ د کمرې پراخه اجازه نه غواړي. د شریکولو پر مهال یوازې ټاکلی فایل ستاسو غوره کړي اپ ته سپارل کېږي؛ د هغه خدمت خپل شرایط پلي کېږي. PDF او سکنونه په JSON بیک‌اپ کې نه شاملېږي. د اپ پاکول داخلي کاپۍ ړنګوي، خو اصلي او جلا صادر شوي فایلونه پاتې کېږي. مهم فایلونه جلا خوندي کړئ. PDF فایلونه جلا کوډ شوي نه دي.</p>
         <h3>اجازې او اړیکه</h3><p>دا نسخه د غږ ثبتولو لپاره د مایکروفون اختیاري اجازه غواړي؛ کامرې، اړیکو، موقعیت یا د ټولې حافظې اجازه نه غواړي. که راتلونکې نسخه اعلانونه یا نور خدمات زیات کړي، دا تګلاره او د Play Store معلومات باید هم ورسره بدل شي. د پوښتنو لپاره: ${contact}</p>`,
-        `<h2>University Notes — حریم خصوصی</h2><p>سازنده: Wakil Ahmad Noori<br>آخرین تغییر: 2026-10-24</p>
-        <h3>ذخیرۀ محلی</h3><p>یادداشت‌ها، مضمون‌ها، نمرات، حاضری، تقسیم اوقات، زبان، ظاهر و تاریخچۀ حساب فقط در ذخیرۀ محلی برنامه نگهداری می‌شوند. این نسخه حساب، تبلیغات، ردیابی یا تحلیل‌گر ندارد و یادداشت‌ها را به سرور نمی‌فرستد.</p>
+        `<h2>University Notes — حریم خصوصی</h2><p>سازنده: Wakil Ahmad Noori<br>آخرین تغییر: 2026-10-31</p>
+        <h3>ذخیرۀ محلی</h3><p>یادداشت‌ها، مضمون‌ها، نمرات، حاضری، تقسیم اوقات، زبان، ظاهر و تاریخچۀ حساب فقط در ذخیرۀ محلی برنامه نگهداری می‌شوند. این نسخه حساب، تبلیغات یا ردیابی مستقل سازنده ندارد و یادداشت‌ها را به سرور نمی‌فرستد.</p>
         <h3>PDF و لینک‌ها</h3><p>PDF بدون انترنت روی دستگاه ساخته می‌شود. در Android محل ذخیره را خودتان انتخاب می‌کنید؛ دسترسی عمومی به حافظه لازم نیست. انتخاب ذخیرۀ ابری فایل را به همان خدمت می‌سپارد. PDFهای ذخیره یا شریک‌شده ممکن است پس از حذف برنامه باقی بمانند. لینک‌های واتساپ و فیسبوک فقط با انتخاب شما باز می‌شوند؛ معلومات داخلی خودکار شریک نمی‌شوند و شرایط همان خدمات اعمال می‌شود.</p>
         <h3>حذف معلومات</h3><p>یادداشت‌ها را به زباله‌دان منتقل و سپس دایمی حذف کنید. برای پاک کردن همۀ معلومات و نقل‌های نسخۀ پیشین، در تنظیمات Android گزینه Clear storage را بزنید یا برنامه را حذف کنید. معلومات نسخۀ پیشین پس از انتقال موفق به ذخیرۀ جدید پاک می‌شوند. برنامه همگام‌سازی آنلاین ندارد. در تنظیمات می‌توانید دستی پشتیبان JSON بسازید و بازیابی کنید. فایل شامل یادداشت‌ها، زباله‌دان، نمرات، حاضری، تقسیم اوقات و تاریخچۀ حساب است و رمز ندارد؛ آن را محفوظ نگه دارید و جداگانه حذف کنید. انتخاب ذخیرۀ ابری فایل را به همان خدمت می‌سپارد. بازیابی با تأیید شما جایگزین معلومات فعلی می‌شود. قفل اختیاری Android از PIN/الگو/رمز دستگاه استفاده می‌کند؛ برنامه رمز را نمی‌خواند و ذخیره نمی‌کند. پس از ترک برنامه دوباره قفل می‌شود. مسدود کردن تصویر صفحه اختیاری است؛ این قفل فایل‌های یادداشت و پشتیبان را رمزگذاری نمی‌کند. تنظیمات امنیت داخل پشتیبان نیست.</p>
         <h3>ضبط‌های صوتی</h3><p>مایکروفون فقط با اجازۀ شما هنگام شروع ضبط استفاده می‌شود. صدا بدون انترنت در ذخیرۀ محلی برنامه نگهداری و پخش می‌شود و به سازنده یا سرور فرستاده نمی‌شود. می‌توانید نام را تغییر دهید، ضبط را حذف کنید یا فایل M4A را در محل انتخابی ذخیره کنید. ترک صفحۀ ضبط یا برنامه، تماس یا خاموشی صفحه ضبط را متوقف و ذخیره می‌کند. صدا داخل پشتیبان JSON نیست و بازیابی JSON آن را تغییر نمی‌دهد. با حذف برنامه یا Clear storage ضبط‌های محلی حذف می‌شوند؛ قبلاً جداگانه صادر کنید. مدیریت و حذف نقل‌های صادرشده با شماست. فایل‌ها جداگانه رمزگذاری نشده‌اند. پیش از ضبط صدای دیگران اجازۀ آنان را بگیرید.</p>
+        <h3>کتابخانۀ PDF، اسکن و اشتراک‌گذاری</h3><p>فایل‌ها یا پوشه‌های PDF را با انتخاب‌گر Android انتخاب می‌کنید؛ برنامه اجازۀ تمام حافظه را نمی‌خواهد. PDFهای انتخاب‌شده و اسکن‌ها در حافظۀ خصوصی برنامه نگهداری می‌شوند. اجازۀ پوشه تا زمان برداشتن آن می‌ماند؛ برداشتن اجازه فایل‌های اصلی را حذف نمی‌کند. خواندن PDF بدون انترنت روی دستگاه انجام می‌شود. اسکن با Google ML Kit و Google Play services روی دستگاه پردازش می‌شود؛ بار اول ممکن است برای دانلود اجزای لازم به انترنت نیاز باشد. این خدمت ممکن است معلومات فنی دستگاه و برنامه، شناسه‌ها، عملکرد و خطاها را برای تشخیص و تحلیل استفاده جمع‌آوری کرده و با HTTPS به Google بفرستد. تصاویر صفحات و PDF به سازندۀ برنامه فرستاده نمی‌شوند. دسترسی کمره را پنجرۀ اسکن Google Play services مدیریت می‌کند؛ این برنامه اجازۀ گستردۀ کمره نمی‌خواهد. هنگام اشتراک‌گذاری فقط فایل انتخاب‌شده به برنامۀ منتخب شما داده می‌شود و شرایط همان خدمت اجرا می‌شود. PDF و اسکن‌ها شامل پشتیبان JSON نیستند. حذف برنامه نقل‌های داخلی را حذف می‌کند، اما فایل‌های اصلی و نقل‌های صادرشده می‌مانند. فایل‌های مهم را جدا ذخیره کنید. PDFها جداگانه رمزگذاری نشده‌اند.</p>
         <h3>اجازه‌ها و تماس</h3><p>این نسخه برای ضبط صدا اجازۀ اختیاری مایکروفون می‌خواهد؛ اجازۀ کمره، موقعیت، مخاطبین یا همۀ حافظه را درخواست نمی‌کند. افزودن تبلیغات یا خدمات در آینده نیازمند به‌روزرسانی این تگ‌لاره و معلومات Play Store است. تماس: ${contact}</p>`,
-        `<h2>University Notes — Privacy policy</h2><p>Developer: Wakil Ahmad Noori<br>Updated: 2026-10-24</p>
-        <h3>Local data</h3><p>Notes, subjects, grades, attendance, schedule, language, theme and calculator history are stored locally in app storage. This version has no accounts, ads, analytics or tracking. The developer does not receive your notes; the app does not upload them to a server.</p>
+        `<h2>University Notes — Privacy policy</h2><p>Developer: Wakil Ahmad Noori<br>Updated: 2026-10-31</p>
+        <h3>Local data</h3><p>Notes, subjects, grades, attendance, schedule, language, theme and calculator history are stored locally in app storage. This version has no accounts, ads or developer-operated tracking. The developer does not receive your notes; the app does not upload them to a server.</p>
         <h3>PDF files and external links</h3><p>PDFs are generated offline on your device. Android asks you to choose the destination without broad storage permission. Choosing a cloud document provider sends the file to that provider. Exported or shared copies may remain after app deletion. WhatsApp and Facebook open only when selected and follow their own policies; your notes are not automatically sent to them.</p>
         <h3>Retention and deletion</h3><p>Move notes to Trash, then permanently delete them. To erase all local data, including retained migration copies, use Android Settings → Apps → University Notes → Storage → Clear storage, or uninstall the app. Legacy local records are removed after a successful migration save. There is no online sync. Settings offers manual JSON backup and restore, including notes, Trash, grades, attendance, timetables and calculator history. Backup files are not encrypted; keep them safe. Choosing a cloud provider sends the file to that provider. Restore replaces current data only after confirmation. Optional Android app lock uses your device PIN, pattern or password; the app never reads or stores that credential. It locks again when you leave the app. Screenshot protection is optional. App lock does not encrypt note or backup files. Security settings are device-only and excluded from backups. Exported files must be deleted separately.</p>
         <h3>Voice recordings</h3><p>The microphone is used with your permission when you start recording. Audio is recorded, stored and played offline in private app storage; it is not sent to the developer or a server. You can rename, delete or export M4A files to a location you choose. Leaving the Record page or app, calls or screen-off stop and save recording. Voice recordings are excluded from JSON backups and are unchanged by JSON restore. Uninstalling or clearing app storage deletes local recordings; export separate copies first. You manage and delete exported copies separately. Files are not separately encrypted. Obtain permission before recording other people.</p>
+        <h3>PDF library, scanning and sharing</h3><p>You choose PDFs or folders through Android's document picker; the app does not request all-files access. Imported PDFs and scans are kept in private app storage. Selected folder access persists until removed; removing access never deletes original files. PDF reading works offline on your device. Optional document scanning uses Google ML Kit and Google Play services for on-device processing; first use may require internet to download scanner components. The Google SDK may collect device and application information, identifiers, performance metrics and error events for diagnostics and usage analytics, transmitted to Google using HTTPS. Document images and PDFs are not sent to the app developer. Google Play services manages camera access in the scanner flow; the app requests no broad camera permission. Sharing sends only your selected file to the app you choose, under that service's own terms. PDFs and scans are excluded from JSON backups. Uninstalling or clearing app storage removes internal copies; original and separately exported files remain. Save important copies separately. PDF files are not separately encrypted.</p>
         <h3>Permissions and contact</h3><p>Microphone access is optional and requested to record voice notes. This version requests no camera, contacts, location or broad file access. If future versions add advertising or other services, this policy and the Play Store disclosures must be updated. Questions: ${contact}</p>`);
     document.getElementById('privacy-policy-content').innerHTML = policy;
 }
@@ -3263,7 +3347,7 @@ function renderSettings() {
         'security-screen-label': ['سکرین‌شاټ او د سکرین ثبت بندول','مسدود کردن تصویر و ضبط صفحه','Block screenshots and screen recording'],
         'security-lock-now': ['اوس قلف کول','همین حالا قفل شود','Lock now'],
         'backup-title': ['بیک‌اپ او بېرته راوستل','پشتیبان و بازیابی','Backup and restore'],
-        'backup-desc': ['مضمونونه، ټول نوټونه (د ترش په ګډون)، نمرې، حاضري، مهالوېشونه او د حساب تاریخچه په JSON فایل کې وساتئ. فایل پټنوم نه لري؛ خوندي ځای کې یې وساتئ. اپ یې په اتومات ډول انټرنېټ ته نه لېږي. غږیز ریکارډونه په دې بیک‌اپ کې نشته؛ د ریکارډ له پاڼې یې جلا خوندي کړئ.','مضمون‌ها، تمام یادداشت‌ها (با زباله‌دان)، نمرات، حاضری، تقسیم اوقات و تاریخچۀ حساب را در فایل JSON ذخیره کنید. فایل رمز ندارد؛ آن را محفوظ نگه دارید. برنامه آن را خودکار به انترنت نمی‌فرستد. ضبط‌های صوتی داخل این پشتیبان نیستند؛ از صفحۀ ضبط جداگانه ذخیره کنید.','Save subjects, all notes (including Trash), grades, attendance, timetables and calculator history to a JSON file. The file is not encrypted; keep it somewhere safe. The app never uploads it automatically. Voice recordings are not included; save separate copies from the Record page.'],
+        'backup-desc': ['مضمونونه، ټول نوټونه (د ترش په ګډون)، نمرې، حاضري، مهالوېشونه او د حساب تاریخچه په JSON فایل کې وساتئ. فایل پټنوم نه لري؛ خوندي ځای کې یې وساتئ. اپ یې په اتومات ډول انټرنېټ ته نه لېږي. غږیز ریکارډونه او PDF فایلونه په دې بیک‌اپ کې نشته؛ د ریکارډ له پاڼې یې جلا خوندي کړئ.','مضمون‌ها، تمام یادداشت‌ها (با زباله‌دان)، نمرات، حاضری، تقسیم اوقات و تاریخچۀ حساب را در فایل JSON ذخیره کنید. فایل رمز ندارد؛ آن را محفوظ نگه دارید. برنامه آن را خودکار به انترنت نمی‌فرستد. ضبط‌های صوتی و فایل‌های PDF داخل این پشتیبان نیستند؛ از صفحۀ ضبط جداگانه ذخیره کنید.','Save subjects, all notes (including Trash), grades, attendance, timetables and calculator history to a JSON file. The file is not encrypted; keep it somewhere safe. The app never uploads it automatically. Voice recordings and PDFs are not included; save separate copies from their pages.'],
         'backup-export': ['بیک‌اپ خوندي کول','ذخیرۀ پشتیبان','Save backup'],
         'backup-import': ['بیک‌اپ ټاکل','انتخاب پشتیبان','Choose backup'],
         'backup-restore': ['معلومات بېرته راوستل','بازیابی معلومات','Restore data'],
@@ -3469,6 +3553,7 @@ function updateCurrentDay() {
     if (key === lastRenderedDayKey) return;
     lastRenderedDayKey = key;
     document.getElementById('current-day-display').innerText = dayName;
+    highlightScheduleToday();
     const date = document.getElementById('current-date-display');
     const localISO = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
     date.dateTime = localISO;
@@ -3493,6 +3578,87 @@ function updateClock() {
     document.getElementById('clock').innerText = strHours + ':' + minutes + ':' + seconds + ' ' + ampm;
     updateCurrentDay();
 }
+
+/* Documents stay native: bridge messages carry metadata and IDs, never whole PDF files. */
+let pdfNative=null,pdfAvailable=false,pdfLibraryBusy=false,pdfItems=[],pdfFolders=[],pdfMessage='',pdfRefreshGeneration=0;
+function pdfText(key){
+    const copy={
+        title:['PDF او سکن','PDF و اسکن','PDF & scanner'],description:['خپل PDF فایلونه ولولئ او کاغذي پاڼې په PDF واړوئ.','فایل‌های PDF خود را بخوانید و صفحات کاغذی را به PDF تبدیل کنید.','Read your PDFs and turn paper documents into PDF files.'],
+        pick:['PDF پرانیستل','باز کردن PDF','Open PDF'],pickHint:['له موبایل یا ټاکلي ځایه فایل غوره کړئ.','از دستگاه یا محل دلخواه فایل انتخاب کنید.','Choose files from your device or a document provider.'],
+        scan:['پاڼې سکن کول','اسکن صفحات','Scan pages'],scanHint:['عکس، د څنډو سمول او څوپاڼیز PDF.','عکس، تنظیم حاشیه و PDF چندصفحه‌ای.','Capture, crop and create a multi-page PDF.'],
+        folder:['فولډر ورزیاتول','افزودن پوشه','Add folder'],refresh:['تازه کول','تازه‌سازی','Refresh'],
+        access:['اپ یوازې ټاکلي فایلونه او هغه فولډرونه لولي چې تاسو اجازه ورکړې وي. د ټول موبایل حافظه په پټه نه پلټي.','برنامه فقط فایل‌ها و پوشه‌هایی را می‌خواند که خودتان اجازه داده‌اید؛ تمام حافظه را پنهانی جستجو نمی‌کند.','Only files and folders you choose are accessed. The app does not silently scan your entire device.'],
+        scannerInfo:['د سکن لومړی استعمال ښايي انټرنېټ او Google Play services ته اړتیا ولري؛ له چمتو کېدو وروسته سکن په موبایل کې کېږي.','نخستین استفاده از اسکن ممکن است به انترنت و Google Play services نیاز داشته باشد؛ پس از آماده‌شدن اسکن روی دستگاه انجام می‌شود.','Scanner setup may need internet and Google Play services on first use; scanning then runs on your device.'],
+        unavailable:['د PDF کتابتون او سکن د Android په نوې نصب شوې نسخه کې کار کوي؛ دلته یې بڼه لیدلای شئ.','کتابخانۀ PDF و اسکن در نسخۀ جدید نصب‌شدۀ Android کار می‌کند؛ اینجا فقط پیش‌نمایش است.','PDF library and scanner require the updated Android app. This browser view is a preview.'],
+        search:['د PDF په نوم لټون','جستجوی نام PDF','Search PDF names'],list:['زما PDF فایلونه','فایل‌های PDF من','My PDF files'],empty:['تر اوسه PDF نشته؛ یو فایل یا فولډر غوره کړئ، یا پاڼې سکن کړئ.','هنوز PDF نیست؛ فایل یا پوشه انتخاب کنید یا صفحات را اسکن کنید.','No PDFs yet. Choose a file or folder, or scan pages.'],noMatch:['د دې نوم فایل پیدا نه شو.','فایلی با این نام پیدا نشد.','No matching files.'],
+        open:['لوستل','خواندن','Read'],share:['شریکول','اشتراک‌گذاری','Share'],forget:['د فولډر اجازه لرې کول','برداشتن اجازۀ پوشه','Remove folder access'],shared:['د شریکولو کړکۍ خلاصه شوه.','پنجرۀ اشتراک‌گذاری باز شد.','Share sheet opened.'],save:['فایل ساتل','ذخیرۀ فایل','Save file'],remove:['له لېسته ایستل','حذف از فهرست','Remove from list'],scanned:['سکن شوی','اسکن‌شده','Scanned'],imported:['ټاکل شوی فایل','فایل انتخاب‌شده','Imported copy'],folderFile:['له ټاکلي فولډره','از پوشۀ انتخاب‌شده','Selected folder'],
+        forgetConfirm:['د دې فولډر اجازه لرې کړئ؟ اصلي فایلونه نه پاکېږي.','اجازۀ این پوشه برداشته شود؟ فایل‌های اصلی حذف نمی‌شوند.','Remove access to this folder? Original files are kept.'],confirm:['دا فایل له لېسته وباسئ؟ د اپ دننه کاپي به پاکه شي؛ د اصلي فولډر او بهر ساتل شوي فایلونه نه پاکېږي.','این فایل از فهرست حذف شود؟ نقل داخل برنامه پاک می‌شود؛ فایل اصلی و نقل‌های صادرشده حذف نمی‌شوند.','Remove this file from the list? The app copy is deleted; original and exported files are kept.'],
+        busy:['مهرباني وکړئ انتظار وکړئ…','لطفاً منتظر بمانید…','Please wait…'],cancelled:['عمل لغوه شو.','عمل لغو شد.','Cancelled.'],added:['فایلونه ورزیات شول.','فایل‌ها اضافه شدند.','Files added.'],saved:['PDF په ټاکلي ځای کې خوندي شو.','PDF در محل انتخاب‌شده ذخیره شد.','PDF saved to your chosen location.'],removed:['له لېسته وایستل شو.','از فهرست حذف شد.','Removed from list.'],
+        partial:['ځینې فایلونه ورزیات شول؛ ځینې نور PDF معتبر نه وو، لاسرسی یې نه کېده یا د اندازې حد یې پوره کاوه.','بعضی فایل‌ها اضافه شدند؛ بعضی دیگر معتبر یا قابل دسترسی نبودند یا از حد اندازه بیشتر بودند.','Some files were added; others were invalid, inaccessible or exceeded the size limit.'],limited:['د فولډر لېست د خوندي کار لپاره محدود شو؛ د نورو فایلونو لپاره کوچنی فولډر یا «PDF پرانیستل» وکاروئ.','فهرست پوشه برای کارکرد ایمن محدود شد؛ پوشۀ کوچک‌تر یا «باز کردن PDF» را انتخاب کنید.','Folder listing was limited for safe performance. Choose a smaller folder or use Open PDF for other files.'],
+        backup:['PDF او سکنونه په JSON بیک‌اپ کې نه شاملېږي. مهم فایلونه د «فایل ساتل» له لارې جلا وساتئ؛ د اپ په پاکولو داخلي کاپۍ پاکېږي.','PDF و اسکن‌ها شامل پشتیبان JSON نیستند. فایل‌های مهم را جدا ذخیره کنید؛ با حذف برنامه نقل‌های داخلی پاک می‌شوند.','PDFs and scans are excluded from JSON backups. Save important copies separately; uninstalling removes app copies.'],
+        error:['PDF پرانیستل نه شو؛ فایل، اجازه او د حافظې تش ځای وګورئ.','PDF باز نشد؛ فایل، اجازه و فضای خالی را بررسی کنید.','Unable to process PDF. Check the file, access permission and available storage.'],
+        scanError:['سکن چمتو نه شو. انټرنېټ او Google Play services تازه وګورئ؛ په ځینو وسیلو کې سکن نه ملاتړ کېږي.','اسکن آماده نشد. انترنت و Google Play services را بررسی کنید؛ برخی دستگاه‌ها پشتیبانی نمی‌شوند.','Scanner unavailable. Check internet and updated Google Play services; some devices are unsupported.'],
+        limit:['د فایل اندازه یا د داخلي کتابتون حد پوره شوی. تر ۱۲۸ MB فایل، ۱۰۰ داخلي فایلونه او ټول ۵۱۲ MB ملاتړ کېږي.','اندازۀ فایل یا حد کتابخانۀ داخلی پر شده است. هر فایل تا ۱۲۸ MB، حداکثر ۱۰۰ فایل داخلی و مجموع ۵۱۲ MB.','File or library limit reached: 128 MB per file, 100 app copies and 512 MB total.'],locked:['لومړی د اپ قلف پرانیزئ.','ابتدا قفل برنامه را باز کنید.','Unlock the app first.']
+    };const item=copy[key];return item?item[currentLang==='en'?2:currentLang==='dr'?1:0]:key;
+}
+function renderPdf(){
+    const map={'pdf-title':'title','pdf-description':'description','pdf-pick-label':'pick','pdf-pick-hint':'pickHint','pdf-scan-label':'scan','pdf-scan-hint':'scanHint','pdf-folder':'folder','pdf-refresh':'refresh','pdf-access-hint':'access','pdf-search-label':'search','pdf-list-title':'list','pdf-backup-hint':'backup'};
+    for(const [id,key] of Object.entries(map))document.getElementById(id).textContent=pdfText(key);
+    document.getElementById('txt-nav-pdf').textContent='PDF';
+    document.getElementById('pdf-search').placeholder=pdfText('search');
+    document.getElementById('pdf-availability').textContent=pdfText(pdfAvailable?'scannerInfo':'unavailable');
+    document.getElementById('pdf-status').textContent=pdfLibraryBusy?pdfText('busy'):pdfMessage;
+    for(const id of ['pdf-pick','pdf-scan','pdf-folder','pdf-refresh'])document.getElementById(id).disabled=!pdfAvailable||pdfLibraryBusy;
+    renderPdfList();
+}
+function renderPdfList(){
+    const q=document.getElementById('pdf-search').value.trim().toLocaleLowerCase();
+    const visible=pdfItems.filter(item=>String(item.name||'').toLocaleLowerCase().includes(q));
+    document.getElementById('pdf-count').textContent=String(pdfItems.length);
+    const list=document.getElementById('pdf-list');list.replaceChildren();
+    for(const folder of pdfFolders){const row=document.createElement('div');row.className='pdf-card';const name=document.createElement('p');name.className='pdf-meta';name.textContent=folder.name;row.appendChild(name);const button=document.createElement('button');button.type='button';button.className='settings-button secondary';button.dataset.pdfId=folder.id;button.dataset.pdfAction='forget';button.textContent=pdfText('forget');button.disabled=pdfLibraryBusy;row.appendChild(button);list.appendChild(row);}
+    if(!visible.length){const p=document.createElement('p');p.className='settings-hint';p.textContent=pdfText(q?'noMatch':'empty');list.appendChild(p);return;}
+    for(const item of visible){
+        const card=document.createElement('article');card.className='pdf-card';
+        const title=document.createElement('h4');title.dir='auto';title.textContent=item.name;card.appendChild(title);
+        const meta=document.createElement('p');meta.className='pdf-meta';
+        const size=Number(item.size)>0?' · '+(Number(item.size)/1048576).toFixed(2)+' MB':'';
+        meta.textContent=pdfText(item.kind==='scan'?'scanned':item.kind==='folder'?'folderFile':'imported')+size+(item.folder?' · '+item.folder:'');card.appendChild(meta);
+        const actions=document.createElement('div');actions.className='pdf-actions';
+        for(const action of ['open','share','save',...(item.kind==='folder'?[]:['remove'])]){const button=document.createElement('button');button.type='button';button.dataset.pdfId=item.id;button.dataset.pdfAction=action;button.textContent=pdfText(action);button.disabled=pdfLibraryBusy;actions.appendChild(button);}
+        card.appendChild(actions);list.appendChild(card);
+    }
+}
+async function refreshPdfLibrary(){
+    if(!pdfAvailable||pdfLibraryBusy)return;
+    const generation=++pdfRefreshGeneration;pdfLibraryBusy=true;renderPdf();
+    try{const result=await pdfNative.list();if(generation===pdfRefreshGeneration){pdfItems=Array.isArray(result.items)?result.items:[];pdfFolders=Array.isArray(result.folders)?result.folders:[];pdfMessage=result.limited?pdfText('limited'):'';}}
+    catch(error){pdfMessage=pdfText(error.code==='LOCKED'?'locked':'error');}
+    finally{pdfLibraryBusy=false;renderPdf();}
+}
+async function pdfAction(action,id){
+    if(!pdfAvailable||pdfLibraryBusy)return;
+    if(['remove','forget'].includes(action)&&!confirm(pdfText(action==='forget'?'forgetConfirm':'confirm')))return;
+    pdfLibraryBusy=true;pdfMessage='';renderPdf();
+    try{
+        const method={pick:'pick',folder:'addFolder',scan:'scan',open:'open',save:'export',remove:'remove',share:'share',forget:'forgetFolder'}[action];
+        if(!method)return;
+        const result=(await pdfNative[method]({id,language:currentLang,dark:document.body.getAttribute('data-theme')==='dark'}))||{};
+        pdfMessage=result.skipped?pdfText('partial'):result.cancelled?pdfText('cancelled'):action==='share'?pdfText('shared'):action==='save'?pdfText('saved'):action==='remove'?pdfText('removed'):action==='open'?'':pdfText('added');
+        if(!result.cancelled&&['pick','folder','scan','remove','forget'].includes(action)){
+            const list=await pdfNative.list();pdfItems=Array.isArray(list.items)?list.items:[];pdfFolders=Array.isArray(list.folders)?list.folders:[];if(list.limited)pdfMessage=pdfText('limited');
+        }
+    }catch(error){pdfMessage=pdfText(error.code==='LOCKED'?'locked':error.code==='LIMIT'?'limit':action==='scan'?'scanError':'error');}
+    finally{pdfLibraryBusy=false;renderPdf();}
+}
+function setupPdfLibrary(){
+    try{if(window.Capacitor&&window.Capacitor.isNativePlatform()){pdfNative=window.Capacitor.Plugins&&window.Capacitor.Plugins.PdfLibrary;if(!pdfNative&&window.Capacitor.registerPlugin)pdfNative=window.Capacitor.registerPlugin('PdfLibrary');}}catch(_){}
+    document.getElementById('pdf-list').addEventListener('click',event=>{const b=event.target.closest('button[data-pdf-action]');if(b)void pdfAction(b.dataset.pdfAction,b.dataset.pdfId);});
+    if(pdfNative)pdfNative.getCapabilities().then(result=>{pdfAvailable=result.available===true;renderPdf();if(currentPage==='pdf')void refreshPdfLibrary();}).catch(()=>{pdfAvailable=false;renderPdf();});
+    document.addEventListener('visibilitychange',()=>{if(!document.hidden&&currentPage==='pdf')void refreshPdfLibrary();});
+    renderPdf();
+}
+
 
 /* Standalone voice recorder. Native Android keeps audio out of localStorage and bridge JSON. */
 let voiceNative=null,voiceAvailable=false,voiceBusy=false,voiceLoading=false,voicePollBusy=false;
@@ -3663,6 +3829,10 @@ document.querySelectorAll('input[placeholder],textarea[placeholder]').forEach(in
 
 setupCalculator();
 setupVoice();
+setupPdfLibrary();
+window.addEventListener('resize',resizeCalcDisplay);
+document.getElementById('schedule-tbody').addEventListener('input',highlightScheduleToday);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){lastRenderedDayKey='';updateCurrentDay();resizeCalcDisplay();}});
 
 /* Initial paint + start the clock. */
 applyLanguage();
