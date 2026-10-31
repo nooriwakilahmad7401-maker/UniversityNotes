@@ -21,7 +21,7 @@ on:
       version_name:
         description: 'Visible app version'
         type: string
-        default: '1.1.2'
+        default: '1.1.3'
 
 permissions:
   contents: read
@@ -218,13 +218,22 @@ jobs:
           java_dir.mkdir(parents=True, exist_ok=True)
 
           (java_dir / 'MainActivity.java').write_text(r'''package com.noori.universitynotes;
-          
+
           import android.os.Bundle;
           import android.webkit.WebView;
           import androidx.activity.OnBackPressedCallback;
           import com.getcapacitor.BridgeActivity;
-          
+
           public class MainActivity extends BridgeActivity {
+              private final androidx.activity.result.ActivityResultLauncher<androidx.activity.result.IntentSenderRequest> documentScannerLauncher =
+                  registerForActivityResult(new androidx.activity.result.contract.ActivityResultContracts.StartIntentSenderForResult(), result -> {
+                      if(getBridge()==null)return;
+                      com.getcapacitor.PluginHandle handle=getBridge().getPlugin("PdfLibrary");
+                      if(handle!=null && handle.getInstance() instanceof PdfLibraryPlugin)((PdfLibraryPlugin)handle.getInstance()).scannerResult(result);
+                  });
+              void launchDocumentScanner(android.content.IntentSender sender) {
+                  documentScannerLauncher.launch(new androidx.activity.result.IntentSenderRequest.Builder(sender).build());
+              }
               private boolean checkingBack = false;
               // Device authentication is handled by Android; no credential enters JavaScript.
               private volatile boolean locked = false;
@@ -245,14 +254,14 @@ jobs:
                       if (success) {
                           locked = false; showLockCover(false);
                           if (getBridge() != null && getBridge().getWebView() != null)
-                              getBridge().getWebView().evaluateJavascript("if(typeof refreshSecurity==='function')refreshSecurity();", null);
+                              getBridge().getWebView().evaluateJavascript("if(typeof refreshSecurity==='function')refreshSecurity();if(typeof refreshPdfLibrary==='function'&&currentPage==='pdf')refreshPdfLibrary();", null);
                       }
                       updateSecureWindow();
                       java.util.function.Consumer<Boolean> completion = securityCompletion;
                       securityCompletion = null;
                       if (completion != null) completion.accept(success);
                   });
-          
+
               android.content.SharedPreferences securityPrefs() {
                   return getSharedPreferences("university_security", MODE_PRIVATE);
               }
@@ -338,18 +347,19 @@ jobs:
                   }
                   super.onPause();
               }
-          
-          
+
+
               @Override
               public void onCreate(Bundle savedInstanceState) {
                   locked = securityPrefs().getBoolean("appLock",false);
                   updateSecureWindow();
                   registerPlugin(UniversityNativePlugin.class);
                   registerPlugin(VoiceNotesPlugin.class);
+                  registerPlugin(PdfLibraryPlugin.class);
                   super.onCreate(savedInstanceState);
                   if (getBridge() == null) return;
                   if (locked) showLockCover(true);
-          
+
                   getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
                       @Override
                       public void handleOnBackPressed() {
@@ -376,7 +386,7 @@ jobs:
           ''', encoding='utf-8')
 
           (java_dir / 'UniversityNativePlugin.java').write_text(r'''package com.noori.universitynotes;
-          
+
           import android.app.Activity;
           import android.content.Intent;
           import android.net.Uri;
@@ -391,7 +401,7 @@ jobs:
           import java.io.OutputStream;
           import java.nio.charset.StandardCharsets;
           import java.util.concurrent.atomic.AtomicBoolean;
-          
+
           @CapacitorPlugin(name = "UniversityNative")
           public class UniversityNativePlugin extends Plugin {
               private final AtomicBoolean saving = new AtomicBoolean(false);
@@ -506,7 +516,7 @@ jobs:
                       finally {backupActive.set(false);}
                   });
               }
-          
+
               // A PDF crosses the WebView bridge in bounded chunks, never as one giant JSON string.
               private static final long MAX_PDF_BYTES = 72L * 1024 * 1024;
               private final Object pdfMutex = new Object();
@@ -659,7 +669,7 @@ jobs:
               }
 
               private static final int MAX_BASE64_LENGTH = 35 * 1024 * 1024;
-          
+
               @PluginMethod
               public void savePdf(PluginCall call) {
                   if (!requireUnlocked(call)) return;
@@ -672,16 +682,16 @@ jobs:
                       call.reject("Another save is active");
                       return;
                   }
-          
+
                   String name = call.getString("fileName", "University-Notes.pdf")
                       .replaceAll("[\\\\/:*?\"<>|\\p{Cntrl}]", "_");
                   if (!name.endsWith(".pdf")) name += ".pdf";
-          
+
                   Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
                   intent.addCategory(Intent.CATEGORY_OPENABLE);
                   intent.setType("application/pdf");
                   intent.putExtra(Intent.EXTRA_TITLE, name);
-          
+
                   try {
                       startActivityForResult(call, intent, "pdfDestinationChosen");
                   } catch (Exception error) {
@@ -689,7 +699,7 @@ jobs:
                       call.reject("Cannot open document picker", error);
                   }
               }
-          
+
               @ActivityCallback
               private void pdfDestinationChosen(PluginCall call, ActivityResult result) {
                   if (call == null) {
@@ -705,9 +715,9 @@ jobs:
                       call.resolve(response);
                       return;
                   }
-          
+
                   final Uri uri = result.getData().getData();
-          
+
                   // Write large PDFs outside the Android UI thread.
                   getBridge().execute(() -> {
                       try {
@@ -720,7 +730,7 @@ jobs:
                               || !new String(bytes, 0, 5, StandardCharsets.US_ASCII).equals("%PDF-")) {
                               throw new IllegalArgumentException("Invalid PDF");
                           }
-          
+
                           try (OutputStream output =
                               getContext().getContentResolver().openOutputStream(uri, "wt")) {
                               if (output == null) {
@@ -729,7 +739,7 @@ jobs:
                               output.write(bytes);
                               output.flush();
                           }
-          
+
                           JSObject response = new JSObject();
                           response.put("saved", true);
                           call.resolve(response);
@@ -740,7 +750,7 @@ jobs:
                       }
                   });
               }
-          
+
               @PluginMethod
               public void openExternal(PluginCall call) {
                   if (!requireUnlocked(call)) return;
@@ -1095,7 +1105,7 @@ jobs:
           if not 1 <= version_code <= 2100000000:
               raise ValueError('Invalid versionCode')
 
-          version_name = os.environ.get('APP_VERSION_NAME') or '1.1.2'
+          version_name = os.environ.get('APP_VERSION_NAME') or '1.1.3'
           if not re.fullmatch(r'[0-9]+(?:\.[0-9]+){1,3}', version_name):
               raise ValueError('Use a numeric version name, e.g. 1.1.1')
 
@@ -1112,6 +1122,7 @@ jobs:
           }
           dependencies {
               implementation platform('org.jetbrains.kotlin:kotlin-bom:2.2.20')
+              implementation 'com.google.android.gms:play-services-mlkit-document-scanner:16.0.0'
           }
           android {
               compileOptions {
@@ -1174,6 +1185,345 @@ jobs:
           activity.set('{' + android_ns + '}windowSoftInputMode', 'adjustResize')
           tree.write(manifest, encoding='utf-8', xml_declaration=True)
           print(f'Prepared University Notes {version_name} ({version_code}), target API 36')
+          (java_dir / 'PdfLibraryPlugin.java').write_text(r'''package com.noori.universitynotes;
+
+          import android.app.Activity;
+          import android.content.ClipData;
+          import android.content.Intent;
+          import android.database.Cursor;
+          import android.net.Uri;
+          import android.os.SystemClock;
+          import android.provider.DocumentsContract;
+          import android.provider.OpenableColumns;
+          import androidx.activity.result.ActivityResult;
+          import com.getcapacitor.JSArray;
+          import com.getcapacitor.JSObject;
+          import com.getcapacitor.Plugin;
+          import com.getcapacitor.PluginCall;
+          import com.getcapacitor.PluginMethod;
+          import com.getcapacitor.annotation.ActivityCallback;
+          import com.getcapacitor.annotation.CapacitorPlugin;
+          import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions;
+          import com.google.mlkit.vision.documentscanner.GmsDocumentScanning;
+          import com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult;
+          import java.io.File;
+          import java.io.FileInputStream;
+          import java.io.FileOutputStream;
+          import java.io.InputStream;
+          import java.io.OutputStream;
+          import java.nio.charset.StandardCharsets;
+          import java.util.ArrayDeque;
+          import java.util.ArrayList;
+          import java.util.HashMap;
+          import java.util.HashSet;
+          import java.util.List;
+          import java.util.Map;
+          import java.util.Set;
+          import java.util.UUID;
+          import java.util.concurrent.atomic.AtomicBoolean;
+          import org.json.JSONArray;
+          import org.json.JSONObject;
+
+          /** User-selected documents only. No broad storage, camera, or media permission. */
+          @CapacitorPlugin(name="PdfLibrary")
+          public class PdfLibraryPlugin extends Plugin {
+              private static final long MAX_FILE=128L*1024*1024, MAX_LIBRARY=512L*1024*1024;
+              private static final int MAX_FILES=100, MAX_FOLDER_FILES=500, MAX_FOLDERS=8;
+              private final AtomicBoolean busy=new AtomicBoolean(false);
+              private final Map<String,Entry> folderEntries=new HashMap<>();
+              private volatile PluginCall pendingScan;
+              private volatile boolean destroyed;
+              private static final class Entry {
+                  final String id,name,kind,folder; final Uri uri; final long size;
+                  Entry(String id,String name,String kind,String folder,Uri uri,long size){this.id=id;this.name=name;this.kind=kind;this.folder=folder;this.uri=uri;this.size=size;}
+                  JSObject json(){JSObject o=new JSObject();o.put("id",id);o.put("name",name);o.put("kind",kind);o.put("folder",folder);o.put("size",size);return o;}
+              }
+              private android.content.SharedPreferences prefs(){return getContext().getSharedPreferences("university_pdf_library",0);}
+              private File directory(){File dir=new File(getContext().getFilesDir(),"pdf-library");if(!dir.isDirectory()&&!dir.mkdirs())throw new IllegalStateException("Storage unavailable");return dir;}
+              private boolean unlocked(PluginCall call){if(((MainActivity)getActivity()).isAppLocked()){call.reject("App locked","LOCKED");return false;}return true;}
+              private boolean begin(PluginCall call){if(!unlocked(call))return false;if(!busy.compareAndSet(false,true)){call.reject("Another PDF action is active","BUSY");return false;}return true;}
+              private JSONArray array(String key){try{return new JSONArray(prefs().getString(key,"[]"));}catch(Exception e){return new JSONArray();}}
+              private void commit(String key,JSONArray entries)throws Exception{if(!prefs().edit().putString(key,entries.toString()).commit())throw new java.io.IOException("Cannot save document library");}
+              private String validId(String id){if(id==null||!id.matches("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"))throw new IllegalArgumentException("Invalid document");return id;}
+              private String safeName(String name){String n=name==null?"Document.pdf":name.replaceAll("[\\\\/:*?\"<>|\\p{Cntrl}]","_").trim();if(n.length()>160)n=n.substring(0,160);if(n.isEmpty())n="Document";return n.toLowerCase(java.util.Locale.ROOT).endsWith(".pdf")?n:n+".pdf";}
+              private long privateBytes(){long total=0;File[] files=directory().listFiles();if(files!=null)for(File f:files)if(f.getName().endsWith(".pdf"))total+=f.length();return total;}
+              private String documentName(Uri uri){try(Cursor c=getContext().getContentResolver().query(uri,new String[]{OpenableColumns.DISPLAY_NAME},null,null,null)){if(c!=null&&c.moveToFirst())return safeName(c.getString(0));}catch(Exception ignored){}return "Document.pdf";}
+              private long copy(Uri uri,File target,long limit)throws Exception{
+                  long total=0;boolean success=false;
+                  try(InputStream in=getContext().getContentResolver().openInputStream(uri);FileOutputStream out=new FileOutputStream(target)){
+                      if(in==null)throw new java.io.IOException("Source unavailable");
+                      byte[] buffer=new byte[32768];int count;while((count=in.read(buffer))!=-1){if(destroyed||Thread.currentThread().isInterrupted())throw new java.io.IOException("Cancelled");total+=count;if(total>limit)throw new LimitException();out.write(buffer,0,count);}out.flush();out.getFD().sync();success=true;
+                  }finally{if(!success)target.delete();}
+                  if(total<8){target.delete();throw new java.io.IOException("Empty PDF");}
+                  try(FileInputStream input=new FileInputStream(target)){byte[] header=new byte[5];if(input.read(header)!=5||!"%PDF-".equals(new String(header,StandardCharsets.US_ASCII))){target.delete();throw new java.io.IOException("Not a PDF");}}
+                  return total;
+              }
+              private static final class LimitException extends java.io.IOException {LimitException(){super("PDF size or library limit reached");}}
+              private void fail(PluginCall call,Exception error){busy.set(false);call.reject("PDF operation failed",error instanceof LimitException?"LIMIT":"PDF",error);}
+              private JSObject cancelled(){JSObject o=new JSObject();o.put("cancelled",true);return o;}
+              private boolean wasCancelled(PluginCall call,ActivityResult result){if(call==null){busy.set(false);return true;}if(result.getResultCode()!=Activity.RESULT_OK||result.getData()==null){busy.set(false);call.resolve(cancelled());return true;}return false;}
+              @PluginMethod public void getCapabilities(PluginCall call){JSObject o=new JSObject();o.put("available",true);call.resolve(o);}
+
+              /** App copies are durable offline; originals and cloud providers remain under user control. */
+              private Entry importDocument(Uri uri,String suppliedName,String kind)throws Exception{
+                  if(uri==null||!"content".equals(uri.getScheme()))throw new java.io.IOException("Invalid document source");
+                  JSONArray entries=array("documents");
+                  if(!"scan".equals(kind))for(int i=0;i<entries.length();i++){JSONObject old=entries.getJSONObject(i);if(uri.toString().equals(old.optString("source"))&&new File(directory(),old.getString("id")+".pdf").isFile())return fromJson(old);}
+                  if(entries.length()>=MAX_FILES)throw new LimitException();
+                  long room=MAX_LIBRARY-privateBytes();if(room<8)throw new LimitException();
+                  String id=UUID.randomUUID().toString(),name=safeName(suppliedName==null?documentName(uri):suppliedName);
+                  File temp=new File(directory(),id+".pending"),dest=new File(directory(),id+".pdf");
+                  try{
+                      long size=copy(uri,temp,Math.min(MAX_FILE,room));
+                      if(!temp.renameTo(dest))throw new java.io.IOException("Cannot finalize PDF");
+                      JSONObject item=new JSONObject();item.put("id",id);item.put("name",name);item.put("kind",kind);item.put("size",size);item.put("created",System.currentTimeMillis());item.put("source","scan".equals(kind)?"":uri.toString());
+                      entries.put(item);commit("documents",entries);return fromJson(item);
+                  }catch(Exception error){temp.delete();dest.delete();throw error;}
+              }
+              private Entry fromJson(JSONObject item)throws Exception{String id=validId(item.getString("id"));File file=new File(directory(),id+".pdf");return new Entry(id,safeName(item.optString("name")),item.optString("kind","import"),"",Uri.fromFile(file),file.length());}
+              private Entry find(String id)throws Exception{
+                  validId(id);JSONArray entries=array("documents");for(int i=0;i<entries.length();i++){JSONObject item=entries.getJSONObject(i);if(id.equals(item.getString("id")))return fromJson(item);}
+                  synchronized(folderEntries){Entry e=folderEntries.get(id);if(e!=null)return e;}
+                  throw new java.io.IOException("Document unavailable; refresh the list");
+              }
+              private Uri readableUri(Entry e){return e.uri;}
+              @PluginMethod public void pick(PluginCall call){
+                  if(!begin(call))return;Intent intent=new Intent(Intent.ACTION_OPEN_DOCUMENT);intent.addCategory(Intent.CATEGORY_OPENABLE);intent.setType("application/pdf");intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE,true);intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                  try{startActivityForResult(call,intent,"documentsChosen");}catch(Exception error){fail(call,error);}
+              }
+              @ActivityCallback private void documentsChosen(PluginCall call,ActivityResult result){
+                  if(wasCancelled(call,result))return;Intent data=result.getData();List<Uri> uris=new ArrayList<>();Set<String> seen=new HashSet<>();
+                  ClipData clips=data.getClipData();if(clips!=null){for(int i=0;i<clips.getItemCount()&&i<MAX_FILES;i++){Uri uri=clips.getItemAt(i).getUri();if(uri!=null&&seen.add(uri.toString()))uris.add(uri);}}else if(data.getData()!=null)uris.add(data.getData());
+                  getBridge().execute(()->{try{if(uris.isEmpty())throw new java.io.IOException("No PDF selected");int added=0,skipped=0;Exception first=null;for(Uri uri:uris){try{importDocument(uri,null,"import");added++;}catch(Exception error){skipped++;if(first==null)first=error;}}if(added==0&&first!=null)throw first;busy.set(false);JSObject response=new JSObject();response.put("added",added);response.put("skipped",skipped);call.resolve(response);}catch(Exception error){fail(call,error);}});
+              }
+              @PluginMethod public void addFolder(PluginCall call){
+                  if(!begin(call))return;if(array("folders").length()>=MAX_FOLDERS){busy.set(false);call.reject("Folder limit reached","LIMIT");return;}
+                  Intent intent=new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION|Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
+                  try{startActivityForResult(call,intent,"folderChosen");}catch(Exception error){fail(call,error);}
+              }
+              @ActivityCallback private void folderChosen(PluginCall call,ActivityResult result){
+                  if(wasCancelled(call,result))return;Uri uri=result.getData().getData();if(uri==null){busy.set(false);call.resolve(cancelled());return;}
+                  getBridge().execute(()->{try{
+                      if(!"content".equals(uri.getScheme())||!DocumentsContract.isTreeUri(uri))throw new java.io.IOException("Invalid folder");
+                      JSONArray folders=array("folders");for(int i=0;i<folders.length();i++)if(uri.toString().equals(folders.getJSONObject(i).getString("uri"))){busy.set(false);call.resolve();return;}
+                      getContext().getContentResolver().takePersistableUriPermission(uri,Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                      JSONObject f=new JSONObject();f.put("uri",uri.toString());f.put("id",UUID.randomUUID().toString());f.put("name",folderName(uri));folders.put(f);
+                      try{commit("folders",folders);}catch(Exception error){getContext().getContentResolver().releasePersistableUriPermission(uri,Intent.FLAG_GRANT_READ_URI_PERMISSION);throw error;}
+                      busy.set(false);call.resolve();
+                  }catch(Exception error){fail(call,error);}});
+              }
+              private String folderName(Uri tree){try{Uri doc=DocumentsContract.buildDocumentUriUsingTree(tree,DocumentsContract.getTreeDocumentId(tree));try(Cursor c=getContext().getContentResolver().query(doc,new String[]{DocumentsContract.Document.COLUMN_DISPLAY_NAME},null,null,null)){if(c!=null&&c.moveToFirst())return c.getString(0);}}catch(Exception ignored){}return "PDF folder";}
+              @PluginMethod public void forgetFolder(PluginCall call){
+                  if(!begin(call))return;try{String id=validId(call.getString("id"));JSONArray current=array("folders"),next=new JSONArray();Uri removed=null;for(int i=0;i<current.length();i++){JSONObject f=current.getJSONObject(i);if(id.equals(f.getString("id")))removed=Uri.parse(f.getString("uri"));else next.put(f);}commit("folders",next);if(removed!=null)try{getContext().getContentResolver().releasePersistableUriPermission(removed,Intent.FLAG_GRANT_READ_URI_PERMISSION);}catch(Exception ignored){}synchronized(folderEntries){folderEntries.clear();}busy.set(false);call.resolve();}catch(Exception error){fail(call,error);}
+              }
+              @PluginMethod public void list(PluginCall call){
+                  if(!begin(call))return;getBridge().execute(()->{try{
+                      JSArray result=new JSArray(),folderResult=new JSArray();JSONArray docs=array("documents");
+                      for(int i=docs.length()-1;i>=0;i--){try{Entry entry=fromJson(docs.getJSONObject(i));if(entry.size>0)result.put(entry.json());}catch(Exception ignored){}}
+                      Map<String,Entry> discovered=new HashMap<>();JSONArray folders=array("folders");boolean limited=false;int nodes=0;long deadline=SystemClock.elapsedRealtime()+12000;
+                      for(int f=0;f<folders.length();f++){
+                          JSONObject folder=folders.getJSONObject(f);String name=folder.optString("name","PDF folder");Uri tree=Uri.parse(folder.getString("uri"));
+                          JSObject folderRow=new JSObject();folderRow.put("id",folder.getString("id"));folderRow.put("name",name);folderResult.put(folderRow);
+                          ArrayDeque<String> queue=new ArrayDeque<>();Set<String> visited=new HashSet<>();queue.add(DocumentsContract.getTreeDocumentId(tree));
+                          while(!queue.isEmpty()){
+                              if(destroyed||nodes>=2000||discovered.size()>=MAX_FOLDER_FILES||SystemClock.elapsedRealtime()>deadline){limited=true;break;}
+                              String parent=queue.removeFirst();if(!visited.add(parent))continue;
+                              Uri children=DocumentsContract.buildChildDocumentsUriUsingTree(tree,parent);
+                              try(Cursor c=getContext().getContentResolver().query(children,new String[]{DocumentsContract.Document.COLUMN_DOCUMENT_ID,DocumentsContract.Document.COLUMN_DISPLAY_NAME,DocumentsContract.Document.COLUMN_MIME_TYPE,DocumentsContract.Document.COLUMN_SIZE},null,null,null)){
+                                  if(c==null)continue;
+                                  while(c.moveToNext()){
+                                      if(++nodes>2000||discovered.size()>=MAX_FOLDER_FILES||SystemClock.elapsedRealtime()>deadline){limited=true;break;}
+                                      String documentId=c.getString(0),fileName=c.getString(1),type=c.getString(2);
+                                      if(DocumentsContract.Document.MIME_TYPE_DIR.equals(type)){if(queue.size()<2000)queue.addLast(documentId);}
+                                      else if("application/pdf".equals(type)||(fileName!=null&&fileName.toLowerCase(java.util.Locale.ROOT).endsWith(".pdf"))){Uri uri=DocumentsContract.buildDocumentUriUsingTree(tree,documentId);String id=UUID.nameUUIDFromBytes(uri.toString().getBytes(StandardCharsets.UTF_8)).toString();if(!discovered.containsKey(id)){Entry entry=new Entry(id,safeName(fileName),"folder",name,uri,c.isNull(3)?0:c.getLong(3));discovered.put(id,entry);result.put(entry.json());}}
+                                  }
+                              }catch(SecurityException revoked){folderRow.put("unavailable",true);break;}catch(Exception unavailable){folderRow.put("unavailable",true);break;}
+                          }
+                      }
+                      synchronized(folderEntries){folderEntries.clear();folderEntries.putAll(discovered);}
+                      JSObject response=new JSObject();response.put("items",result);response.put("folders",folderResult);response.put("limited",limited);busy.set(false);if(!unlocked(call))return;call.resolve(response);
+                  }catch(Exception error){fail(call,error);}});
+              }
+              @PluginMethod public void scan(PluginCall call){
+                  if(!begin(call))return;pendingScan=call;
+                  getActivity().runOnUiThread(()->{
+                      if(destroyed||!unlocked(call)){pendingScan=null;busy.set(false);return;}
+                      GmsDocumentScannerOptions options=new GmsDocumentScannerOptions.Builder().setGalleryImportAllowed(true).setPageLimit(30).setResultFormats(GmsDocumentScannerOptions.RESULT_FORMAT_PDF).setScannerMode(GmsDocumentScannerOptions.SCANNER_MODE_FULL).build();
+                      GmsDocumentScanning.getClient(options).getStartScanIntent(getActivity()).addOnSuccessListener(sender->{
+                          if(destroyed||pendingScan!=call)return;
+                          if(!unlocked(call)){pendingScan=null;busy.set(false);return;}
+                          try{((MainActivity)getActivity()).launchDocumentScanner(sender);}catch(Exception error){pendingScan=null;fail(call,error);}
+                      }).addOnFailureListener(error->{if(pendingScan==call){pendingScan=null;fail(call,error);}});
+                  });
+              }
+              void scannerResult(ActivityResult result){
+                  PluginCall call=pendingScan;pendingScan=null;if(call==null){busy.set(false);return;}
+                  if(result.getResultCode()!=Activity.RESULT_OK){busy.set(false);call.resolve(cancelled());return;}
+                  GmsDocumentScanningResult scan;try{scan=GmsDocumentScanningResult.fromActivityResultIntent(result.getData());}catch(Exception error){fail(call,error);return;}
+                  if(scan==null||scan.getPdf()==null){fail(call,new java.io.IOException("Scanner returned no PDF"));return;}
+                  Uri uri=scan.getPdf().getUri();getBridge().execute(()->{try{String name="Scan-"+new java.text.SimpleDateFormat("yyyy-MM-dd-HHmmss",java.util.Locale.ROOT).format(new java.util.Date())+".pdf";Entry entry=importDocument(uri,name,"scan");busy.set(false);JSObject response=new JSObject();response.put("document",entry.json());call.resolve(response);}catch(Exception error){fail(call,error);}});
+              }
+              @PluginMethod public void open(PluginCall call){
+                  if(!begin(call))return;getBridge().execute(()->{try{
+                      Entry entry=find(call.getString("id"));File readerDir=new File(getContext().getCacheDir(),"pdf-reader");if(!readerDir.isDirectory()&&!readerDir.mkdirs())throw new java.io.IOException("No reader storage");
+                      cleanCache(readerDir);File path=new File(readerDir,entry.id+".pdf");
+                      if("folder".equals(entry.kind)){copy(entry.uri,path,MAX_FILE);}else{path=new File(directory(),entry.id+".pdf");if(!path.isFile())throw new java.io.IOException("Missing PDF");}
+                      final File document=path;
+                      getActivity().runOnUiThread(()->{busy.set(false);if(!unlocked(call))return;try{Intent intent=new Intent(getContext(),PdfReaderActivity.class);intent.putExtra("path",document.getAbsolutePath());intent.putExtra("title",entry.name);intent.putExtra("language",call.getString("language","ps"));intent.putExtra("dark",Boolean.TRUE.equals(call.getBoolean("dark",false)));getActivity().startActivity(intent);call.resolve();}catch(Exception error){fail(call,error);}});
+                  }catch(Exception error){fail(call,error);}});
+              }
+              private void cleanCache(File directory){File[] files=directory.listFiles();if(files!=null)for(File f:files)if(f.isFile()&&System.currentTimeMillis()-f.lastModified()>86400000L)f.delete();}
+              @PluginMethod public void share(PluginCall call){
+                  if(!begin(call))return;getBridge().execute(()->{try{
+                      Entry entry=find(call.getString("id"));File shareDir=new File(getContext().getCacheDir(),"pdf-share");if(!shareDir.isDirectory()&&!shareDir.mkdirs())throw new java.io.IOException("No sharing storage");cleanCache(shareDir);
+                      File target=new File(shareDir,entry.id+".pdf"),temporary=new File(shareDir,entry.id+".pending");
+                      try{copy(entry.uri,temporary,MAX_FILE);if(!temporary.renameTo(target))throw new java.io.IOException("Cannot prepare sharing");}finally{temporary.delete();}
+                      Uri uri=androidx.core.content.FileProvider.getUriForFile(getContext(),getContext().getPackageName()+".pdf.share",target,entry.name);
+                      getActivity().runOnUiThread(()->{busy.set(false);if(!unlocked(call))return;try{Intent send=new Intent(Intent.ACTION_SEND);send.setType("application/pdf");send.putExtra(Intent.EXTRA_STREAM,uri);send.setClipData(ClipData.newRawUri(entry.name,uri));send.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);Intent chooser=Intent.createChooser(send,entry.name);chooser.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);getActivity().startActivity(chooser);JSObject response=new JSObject();response.put("opened",true);call.resolve(response);}catch(Exception error){fail(call,error);}});
+                  }catch(Exception error){fail(call,error);}});
+              }
+              @PluginMethod public void export(PluginCall call){
+                  if(!begin(call))return;try{Entry entry=find(call.getString("id"));Intent intent=new Intent(Intent.ACTION_CREATE_DOCUMENT);intent.addCategory(Intent.CATEGORY_OPENABLE);intent.setType("application/pdf");intent.putExtra(Intent.EXTRA_TITLE,entry.name);startActivityForResult(call,intent,"exportDestinationChosen");}catch(Exception error){fail(call,error);}
+              }
+              @ActivityCallback private void exportDestinationChosen(PluginCall call,ActivityResult result){
+                  if(wasCancelled(call,result))return;Uri destination=result.getData().getData();if(destination==null){busy.set(false);call.resolve(cancelled());return;}
+                  getBridge().execute(()->{boolean success=false,cleanup=false;try{
+                      Entry entry=find(call.getString("id"));if(destination.equals(entry.uri))throw new java.io.IOException("Choose a different destination");cleanup=true;
+                      try(InputStream in=getContext().getContentResolver().openInputStream(readableUri(entry));OutputStream out=getContext().getContentResolver().openOutputStream(destination,"wt")){
+                          if(in==null||out==null)throw new java.io.IOException("File unavailable");byte[] buffer=new byte[32768];int n;long total=0;while((n=in.read(buffer))!=-1){total+=n;if(total>MAX_FILE)throw new LimitException();out.write(buffer,0,n);}if(total<8)throw new java.io.IOException("Empty PDF");out.flush();
+                      }
+                      success=true;busy.set(false);JSObject response=new JSObject();response.put("saved",true);call.resolve(response);
+                  }catch(Exception error){fail(call,error);}finally{if(!success&&cleanup)try{DocumentsContract.deleteDocument(getContext().getContentResolver(),destination);}catch(Exception ignored){}}});
+              }
+              @PluginMethod public void remove(PluginCall call){
+                  if(!begin(call))return;try{String id=validId(call.getString("id"));JSONArray docs=array("documents"),next=new JSONArray();for(int i=0;i<docs.length();i++){JSONObject item=docs.getJSONObject(i);if(!id.equals(item.getString("id")))next.put(item);}commit("documents",next);new File(directory(),id+".pdf").delete();busy.set(false);call.resolve();}catch(Exception error){fail(call,error);}
+              }
+              @Override protected void handleOnDestroy(){destroyed=true;PluginCall scan=pendingScan;pendingScan=null;if(scan!=null)scan.reject("Scanner cancelled","CANCELLED");busy.set(false);}
+          }
+          ''', encoding='utf-8')
+
+          (java_dir / 'PdfReaderActivity.java').write_text(r'''package com.noori.universitynotes;
+
+          import android.app.Activity;
+          import android.app.AlertDialog;
+          import android.graphics.Bitmap;
+          import android.graphics.Color;
+          import android.graphics.Matrix;
+          import android.graphics.pdf.PdfRenderer;
+          import android.os.Bundle;
+          import android.os.ParcelFileDescriptor;
+          import android.text.InputType;
+          import android.view.Gravity;
+          import android.view.View;
+          import android.view.ViewGroup;
+          import android.widget.Button;
+          import android.widget.EditText;
+          import android.widget.HorizontalScrollView;
+          import android.widget.ImageView;
+          import android.widget.LinearLayout;
+          import android.widget.ScrollView;
+          import android.widget.TextView;
+          import java.io.File;
+          import java.util.concurrent.ExecutorService;
+          import java.util.concurrent.Executors;
+          import java.util.concurrent.atomic.AtomicInteger;
+
+          /** Offline, one-page-at-a-time reader. It never loads PDF JavaScript or URLs. */
+          public class PdfReaderActivity extends Activity {
+              private final ExecutorService worker=Executors.newSingleThreadExecutor();
+              private final AtomicInteger generation=new AtomicInteger();
+              private PdfRenderer renderer;
+              private volatile boolean closed;
+              private int pageIndex,pageCount;
+              private float zoom=1;
+              private Bitmap bitmap;
+              private ImageView image;
+              private TextView status;
+              private Button previous,next,page,minus,plus;
+              private ScrollView vertical;
+              private String language;
+              private boolean dark;
+              private int ink;
+              private String text(String ps,String dr,String en){return "en".equals(language)?en:"dr".equals(language)?dr:ps;}
+              private int dp(int n){return Math.round(n*getResources().getDisplayMetrics().density);}
+              private Button button(String label,LinearLayout row,Runnable action){
+                  Button button=new Button(this);button.setText(label);button.setTextColor(ink);button.setTextSize(14);button.setMinWidth(dp(44));button.setMinimumWidth(dp(44));button.setAllCaps(false);button.setOnClickListener(v->action.run());row.addView(button,new LinearLayout.LayoutParams(0,dp(52),1));return button;
+              }
+              @Override public void onCreate(Bundle state){
+                  super.onCreate(state);language=getIntent().getStringExtra("language");dark=getIntent().getBooleanExtra("dark",false);ink=dark?Color.WHITE:Color.rgb(30,41,59);
+                  android.content.SharedPreferences security=getSharedPreferences("university_security",0);
+                  if(security.getBoolean("appLock",false)||security.getBoolean("hideScreen",false))getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE);
+                  if(state!=null){pageIndex=Math.max(0,state.getInt("page",0));zoom=Math.max(1,Math.min(3,state.getFloat("zoom",1)));}
+                  LinearLayout root=new LinearLayout(this);root.setOrientation(LinearLayout.VERTICAL);root.setBackgroundColor(dark?Color.rgb(15,23,42):Color.rgb(245,245,250));root.setPadding(0,0,0,0);root.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);
+                  if(android.os.Build.VERSION.SDK_INT>=30){root.setOnApplyWindowInsetsListener((v,insets)->{android.graphics.Insets bars=insets.getInsets(android.view.WindowInsets.Type.systemBars());v.setPadding(bars.left,bars.top,bars.right,bars.bottom);return insets;});}
+                  LinearLayout heading=new LinearLayout(this);heading.setGravity(Gravity.CENTER_VERTICAL);heading.setPadding(dp(8),dp(4),dp(8),dp(4));
+                  Button back=new Button(this);back.setText("‹");back.setContentDescription(text("شاته","بازگشت","Back"));back.setTextColor(ink);back.setMinWidth(dp(48));back.setOnClickListener(v->finish());heading.addView(back,new LinearLayout.LayoutParams(dp(54),dp(52)));
+                  TextView title=new TextView(this);title.setText(getIntent().getStringExtra("title"));title.setTextSize(17);title.setTextColor(ink);title.setMaxLines(2);title.setEllipsize(android.text.TextUtils.TruncateAt.END);heading.addView(title,new LinearLayout.LayoutParams(0,-2,1));root.addView(heading);
+                  status=new TextView(this);status.setTextColor(ink);status.setTextSize(14);status.setGravity(Gravity.CENTER);status.setPadding(dp(12),dp(8),dp(12),dp(8));status.setText(text("PDF پرانیستل کېږي…","PDF باز می‌شود…","Opening PDF…"));root.addView(status);
+                  vertical=new ScrollView(this);HorizontalScrollView horizontal=new HorizontalScrollView(this);image=new ImageView(this);image.setScaleType(ImageView.ScaleType.FIT_XY);image.setContentDescription(text("د PDF پاڼه","صفحۀ PDF","PDF page"));horizontal.addView(image,new ViewGroup.LayoutParams(1,1));vertical.addView(horizontal);root.addView(vertical,new LinearLayout.LayoutParams(-1,0,1));
+                  LinearLayout controls=new LinearLayout(this);controls.setGravity(Gravity.CENTER_VERTICAL);
+                  previous=button("‹",controls,()->{if(pageIndex>0){pageIndex--;render();}});previous.setContentDescription(text("مخکینۍ پاڼه","صفحۀ قبلی","Previous page"));
+                  minus=button("−",controls,()->{zoom=Math.max(1,zoom-.5f);render();});minus.setContentDescription(text("کوچنی کول","کوچک کردن","Zoom out"));
+                  page=button("—",controls,this::jump);page.setContentDescription(text("پاڼه غوره کول","انتخاب صفحه","Go to page"));
+                  plus=button("+",controls,()->{zoom=Math.min(3,zoom+.5f);render();});plus.setContentDescription(text("لوی کول","بزرگ کردن","Zoom in"));
+                  next=button("›",controls,()->{if(pageIndex+1<pageCount){pageIndex++;render();}});next.setContentDescription(text("بله پاڼه","صفحۀ بعدی","Next page"));root.addView(controls);setContentView(root);controls(false);
+                  String raw=getIntent().getStringExtra("path");
+                  worker.execute(()->{
+                      ParcelFileDescriptor descriptor=null;
+                      try{
+                          if(raw==null)throw new java.io.IOException("Missing file");File file=new File(raw).getCanonicalFile();
+                          String own=new File(getFilesDir(),"pdf-library").getCanonicalPath()+File.separator,cache=new File(getCacheDir(),"pdf-reader").getCanonicalPath()+File.separator;
+                          if(!(file.getPath().startsWith(own)||file.getPath().startsWith(cache))||!file.getName().matches("[0-9a-f-]{36}\\.pdf")||file.length()>128L*1024*1024)throw new java.io.IOException("Invalid PDF path");
+                          descriptor=ParcelFileDescriptor.open(file,ParcelFileDescriptor.MODE_READ_ONLY);
+                          renderer=new PdfRenderer(descriptor);descriptor=null;int count=renderer.getPageCount();if(count<1)throw new java.io.IOException("Empty PDF");
+                          runOnUiThread(()->{if(closed)return;pageCount=count;pageIndex=Math.min(pageIndex,count-1);render();});
+                      }catch(Exception|OutOfMemoryError error){if(descriptor!=null)try{descriptor.close();}catch(Exception ignored){}showError();}
+                  });
+              }
+              private void controls(boolean enabled){previous.setEnabled(enabled&&pageIndex>0);next.setEnabled(enabled&&pageIndex+1<pageCount);minus.setEnabled(enabled&&zoom>1);plus.setEnabled(enabled&&zoom<3);page.setEnabled(enabled);page.setText(pageCount>0?(pageIndex+1)+" / "+pageCount:"—");}
+              private void jump(){if(pageCount<1)return;EditText input=new EditText(this);input.setInputType(InputType.TYPE_CLASS_NUMBER);input.setText(String.valueOf(pageIndex+1));input.setSelectAllOnFocus(true);
+                  AlertDialog dialog=new AlertDialog.Builder(this).setTitle(text("د پاڼې شمېره","شمارۀ صفحه","Page number")).setView(input).setNegativeButton(text("بندول","بستن","Cancel"),null).setPositiveButton(text("پرانیستل","باز کردن","Go"),null).create();
+                  dialog.setOnShowListener(ignored->dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v->{try{int chosen=Integer.parseInt(input.getText().toString());if(chosen<1||chosen>pageCount)throw new NumberFormatException();pageIndex=chosen-1;dialog.dismiss();render();}catch(NumberFormatException error){input.setError("1 – "+pageCount);}}));dialog.show();
+              }
+              private void render(){
+                  if(closed||pageCount<1)return;int request=generation.incrementAndGet(),chosen=pageIndex;float chosenZoom=zoom;
+                  int viewport=Math.max(240,getResources().getDisplayMetrics().widthPixels-dp(12));controls(false);status.setText(text("پاڼه چمتو کېږي…","صفحه آماده می‌شود…","Rendering page…"));
+                  worker.execute(()->{
+                      if(closed||request!=generation.get()||renderer==null)return;Bitmap rendered=null;
+                      try(PdfRenderer.Page pdf=renderer.openPage(chosen)){
+                          double ratio=(double)pdf.getHeight()/Math.max(1,pdf.getWidth());
+                          if(!Double.isFinite(ratio)||ratio<=0)throw new java.io.IOException("Invalid page dimensions");
+                          int width=Math.max(1,Math.min(2400,Math.round(viewport*chosenZoom))),height=Math.max(1,(int)Math.min(Integer.MAX_VALUE,Math.round(width*ratio)));
+                          if(height>12000){double factor=12000.0/height;width=Math.max(1,(int)(width*factor));height=12000;}
+                          if((long)width*height>4000000){double factor=Math.sqrt(4000000.0/((long)width*height));width=Math.max(1,(int)(width*factor));height=Math.max(1,(int)(height*factor));}
+                          rendered=Bitmap.createBitmap(width,height,Bitmap.Config.ARGB_8888);rendered.eraseColor(Color.WHITE);Matrix matrix=new Matrix();matrix.setScale((float)width/pdf.getWidth(),(float)height/pdf.getHeight());pdf.render(rendered,null,matrix,PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY);
+                          final Bitmap ready=rendered;rendered=null;
+                          runOnUiThread(()->{if(closed||request!=generation.get()){ready.recycle();return;}Bitmap old=bitmap;bitmap=ready;image.setImageBitmap(ready);image.setLayoutParams(new android.widget.FrameLayout.LayoutParams(ready.getWidth(),ready.getHeight()));vertical.scrollTo(0,0);if(old!=null&&!old.isRecycled())old.recycle();status.setText(text("پاڼه ","صفحه ","Page ")+(chosen+1)+" / "+pageCount);controls(true);});
+                      }catch(Exception|OutOfMemoryError error){if(rendered!=null)rendered.recycle();showError();}
+                  });
+              }
+              private void showError(){runOnUiThread(()->{if(closed)return;status.setText(text("دا PDF نه پرانیستل کېږي. ښايي خراب، ډېر غټ یا په پټنوم تړلی وي.","این PDF باز نمی‌شود؛ ممکن است خراب، بسیار بزرگ یا رمزدار باشد.","Unable to read this PDF. It may be damaged, too large or password protected."));controls(pageCount>0);});}
+              @Override protected void onSaveInstanceState(Bundle state){state.putInt("page",pageIndex);state.putFloat("zoom",zoom);super.onSaveInstanceState(state);}
+              @Override protected void onStop(){super.onStop();if(!isChangingConfigurations()&&getSharedPreferences("university_security",0).getBoolean("appLock",false))finish();}
+              @Override protected void onDestroy(){closed=true;generation.incrementAndGet();image.setImageDrawable(null);if(bitmap!=null&&!bitmap.isRecycled())bitmap.recycle();worker.execute(()->{if(renderer!=null){try{renderer.close();}catch(Exception ignored){}renderer=null;}});worker.shutdown();super.onDestroy();}
+          }
+          ''', encoding='utf-8')
+
+          # A private reader activity and a narrowly scoped sharing provider expose no raw file paths.
+          reader = ET.SubElement(application, 'activity')
+          reader.set('{' + android_ns + '}name', '.PdfReaderActivity')
+          reader.set('{' + android_ns + '}exported', 'false')
+          reader.set('{' + android_ns + '}process', ':pdf_reader')
+          provider = ET.SubElement(application, 'provider')
+          provider.set('{' + android_ns + '}name', 'androidx.core.content.FileProvider')
+          provider.set('{' + android_ns + '}authorities', 'com.noori.universitynotes.pdf.share')
+          provider.set('{' + android_ns + '}exported', 'false')
+          provider.set('{' + android_ns + '}grantUriPermissions', 'true')
+          meta = ET.SubElement(provider, 'meta-data')
+          meta.set('{' + android_ns + '}name', 'android.support.FILE_PROVIDER_PATHS')
+          meta.set('{' + android_ns + '}resource', '@xml/pdf_share_paths')
+          (xml_dir / 'pdf_share_paths.xml').write_text('<?xml version="1.0" encoding="utf-8"?><paths><cache-path name="pdf_shared" path="pdf-share/"/></paths>')
+          tree.write(manifest, encoding='utf-8', xml_declaration=True)
           PYNATIVE
 
       - name: Load your existing Play upload key
