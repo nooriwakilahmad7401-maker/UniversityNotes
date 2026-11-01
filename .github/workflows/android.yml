@@ -21,7 +21,7 @@ on:
       version_name:
         description: 'Visible app version'
         type: string
-        default: '1.1.3'
+        default: '1.1.5'
 
 permissions:
   contents: read
@@ -1105,7 +1105,7 @@ jobs:
           if not 1 <= version_code <= 2100000000:
               raise ValueError('Invalid versionCode')
 
-          version_name = os.environ.get('APP_VERSION_NAME') or '1.1.3'
+          version_name = os.environ.get('APP_VERSION_NAME') or '1.1.5'
           if not re.fullmatch(r'[0-9]+(?:\.[0-9]+){1,3}', version_name):
               raise ValueError('Use a numeric version name, e.g. 1.1.1')
 
@@ -1306,10 +1306,10 @@ jobs:
               @ActivityCallback private void documentsChosen(PluginCall call,ActivityResult result){
                   if(wasCancelled(call,result))return;Intent data=result.getData();List<Uri> uris=new ArrayList<>();Set<String> seen=new HashSet<>();
                   ClipData clips=data.getClipData();if(clips!=null){for(int i=0;i<clips.getItemCount()&&i<MAX_FILES;i++){Uri uri=clips.getItemAt(i).getUri();if(uri!=null&&seen.add(uri.toString()))uris.add(uri);}}else if(data.getData()!=null)uris.add(data.getData());
-                  getBridge().execute(()->{try{if(uris.isEmpty())throw new java.io.IOException("No PDF selected");int added=0,skipped=0;Exception first=null;for(Uri uri:uris){try{importDocument(uri,null,"import");added++;}catch(Exception error){skipped++;if(first==null)first=error;}}if(added==0&&first!=null)throw first;busy.set(false);JSObject response=new JSObject();response.put("added",added);response.put("skipped",skipped);call.resolve(response);}catch(Exception error){fail(call,error);}});
+                  getBridge().execute(()->{try{if(uris.isEmpty())throw new java.io.IOException("No PDF selected");int added=0,skipped=0;Entry selected=null;Exception first=null;for(Uri uri:uris){try{Entry entry=importDocument(uri,null,"import");if(selected==null)selected=entry;added++;}catch(Exception error){skipped++;if(first==null)first=error;}}if(added==0&&first!=null)throw first;busy.set(false);JSObject response=new JSObject();response.put("added",added);response.put("skipped",skipped);if(uris.size()==1&&selected!=null)response.put("document",selected.json());call.resolve(response);}catch(Exception error){fail(call,error);}});
               }
               @PluginMethod public void addFolder(PluginCall call){
-                  if(!begin(call))return;if(array("folders").length()>=MAX_FOLDERS){busy.set(false);call.reject("Folder limit reached","LIMIT");return;}
+                  if(!begin(call))return;
                   Intent intent=new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION|Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
                   try{startActivityForResult(call,intent,"folderChosen");}catch(Exception error){fail(call,error);}
               }
@@ -1317,7 +1317,9 @@ jobs:
                   if(wasCancelled(call,result))return;Uri uri=result.getData().getData();if(uri==null){busy.set(false);call.resolve(cancelled());return;}
                   getBridge().execute(()->{try{
                       if(!"content".equals(uri.getScheme())||!DocumentsContract.isTreeUri(uri))throw new java.io.IOException("Invalid folder");
-                      JSONArray folders=array("folders");for(int i=0;i<folders.length();i++)if(uri.toString().equals(folders.getJSONObject(i).getString("uri"))){busy.set(false);call.resolve();return;}
+                      // Reconnecting an already-known folder must renew a revoked grant.
+                      JSONArray folders=array("folders");for(int i=0;i<folders.length();i++)if(uri.toString().equals(folders.getJSONObject(i).getString("uri"))){getContext().getContentResolver().takePersistableUriPermission(uri,Intent.FLAG_GRANT_READ_URI_PERMISSION);busy.set(false);call.resolve();return;}
+                      if(folders.length()>=MAX_FOLDERS)throw new LimitException();
                       getContext().getContentResolver().takePersistableUriPermission(uri,Intent.FLAG_GRANT_READ_URI_PERMISSION);
                       JSONObject f=new JSONObject();f.put("uri",uri.toString());f.put("id",UUID.randomUUID().toString());f.put("name",folderName(uri));folders.put(f);
                       try{commit("folders",folders);}catch(Exception error){getContext().getContentResolver().releasePersistableUriPermission(uri,Intent.FLAG_GRANT_READ_URI_PERMISSION);throw error;}
@@ -1381,18 +1383,42 @@ jobs:
                       cleanCache(readerDir);File path=new File(readerDir,entry.id+".pdf");
                       if("folder".equals(entry.kind)){copy(entry.uri,path,MAX_FILE);}else{path=new File(directory(),entry.id+".pdf");if(!path.isFile())throw new java.io.IOException("Missing PDF");}
                       final File document=path;
-                      getActivity().runOnUiThread(()->{busy.set(false);if(!unlocked(call))return;try{Intent intent=new Intent(getContext(),PdfReaderActivity.class);intent.putExtra("path",document.getAbsolutePath());intent.putExtra("title",entry.name);intent.putExtra("language",call.getString("language","ps"));intent.putExtra("dark",Boolean.TRUE.equals(call.getBoolean("dark",false)));getActivity().startActivity(intent);call.resolve();}catch(Exception error){fail(call,error);}});
+                      getActivity().runOnUiThread(()->{busy.set(false);if(!unlocked(call))return;try{Intent intent=new Intent(getContext(),PdfReaderActivity.class);intent.putExtra("path",document.getAbsolutePath());intent.putExtra("title",entry.name);intent.putExtra("language",call.getString("language","ps"));intent.putExtra("dark",Boolean.TRUE.equals(call.getBoolean("dark",false)));getActivity().startActivity(intent);JSObject response=new JSObject();response.put("opened",true);response.put("reader","internal");call.resolve(response);}catch(Exception error){fail(call,error);}});
                   }catch(Exception error){fail(call,error);}});
               }
               private void cleanCache(File directory){File[] files=directory.listFiles();if(files!=null)for(File f:files)if(f.isFile()&&System.currentTimeMillis()-f.lastModified()>86400000L)f.delete();}
+              private File prepareShare(Entry entry)throws Exception{
+                  File shareDir=new File(getContext().getCacheDir(),"pdf-share");
+                  if(!shareDir.isDirectory()&&!shareDir.mkdirs())throw new java.io.IOException("No sharing storage");
+                  cleanCache(shareDir);
+                  long used=0;File[] files=shareDir.listFiles();if(files!=null)for(File f:files)if(f.isFile())used+=f.length();
+                  long room=MAX_LIBRARY-used;if(room<8)throw new LimitException();
+                  // Each handoff gets an immutable snapshot. Another share must never replace
+                  // bytes that WhatsApp (or any other chosen app) is still reading.
+                  String token=UUID.randomUUID().toString();
+                  File target=new File(shareDir,token+".pdf"),temporary=new File(shareDir,token+".pending");
+                  try{
+                      copy(entry.uri,temporary,Math.min(MAX_FILE,room));
+                      if(!temporary.renameTo(target))throw new java.io.IOException("Cannot prepare sharing");
+                      return target;
+                  }finally{temporary.delete();}
+              }
               @PluginMethod public void share(PluginCall call){
                   if(!begin(call))return;getBridge().execute(()->{try{
-                      Entry entry=find(call.getString("id"));File shareDir=new File(getContext().getCacheDir(),"pdf-share");if(!shareDir.isDirectory()&&!shareDir.mkdirs())throw new java.io.IOException("No sharing storage");cleanCache(shareDir);
-                      File target=new File(shareDir,entry.id+".pdf"),temporary=new File(shareDir,entry.id+".pending");
-                      try{copy(entry.uri,temporary,MAX_FILE);if(!temporary.renameTo(target))throw new java.io.IOException("Cannot prepare sharing");}finally{temporary.delete();}
+                      Entry entry=find(call.getString("id"));File target=prepareShare(entry);
                       Uri uri=androidx.core.content.FileProvider.getUriForFile(getContext(),getContext().getPackageName()+".pdf.share",target,entry.name);
-                      getActivity().runOnUiThread(()->{busy.set(false);if(!unlocked(call))return;try{Intent send=new Intent(Intent.ACTION_SEND);send.setType("application/pdf");send.putExtra(Intent.EXTRA_STREAM,uri);send.setClipData(ClipData.newRawUri(entry.name,uri));send.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);Intent chooser=Intent.createChooser(send,entry.name);chooser.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);getActivity().startActivity(chooser);JSObject response=new JSObject();response.put("opened",true);call.resolve(response);}catch(Exception error){fail(call,error);}});
-                  }catch(Exception error){fail(call,error);}});
+                      // Verify the exact provider URI before offering it to another app.
+                      try(android.os.ParcelFileDescriptor descriptor=getContext().getContentResolver().openFileDescriptor(uri,"r")){
+                          if(descriptor==null||descriptor.getStatSize()<8)throw new java.io.IOException("Shared PDF unavailable");
+                      }
+                      getActivity().runOnUiThread(()->{busy.set(false);if(!unlocked(call))return;try{
+                          Intent send=new Intent(Intent.ACTION_SEND);send.setType("application/pdf");send.putExtra(Intent.EXTRA_STREAM,uri);send.putExtra(Intent.EXTRA_TITLE,entry.name);
+                          ClipData clip=ClipData.newUri(getContext().getContentResolver(),entry.name,uri);send.setClipData(clip);send.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                          Intent chooser=Intent.createChooser(send,entry.name);chooser.setClipData(clip);chooser.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                          getActivity().startActivity(chooser);JSObject response=new JSObject();response.put("opened",true);call.resolve(response);
+                      }catch(android.content.ActivityNotFoundException error){call.reject("No sharing app available","SHARE_UNAVAILABLE",error);}
+                       catch(Exception error){call.reject("Cannot open sharing chooser","SHARE_FILE",error);}});
+                  }catch(Exception error){busy.set(false);call.reject("Cannot prepare PDF sharing",error instanceof LimitException?"LIMIT":"SHARE_FILE",error);}});
               }
               @PluginMethod public void export(PluginCall call){
                   if(!begin(call))return;try{Entry entry=find(call.getString("id"));Intent intent=new Intent(Intent.ACTION_CREATE_DOCUMENT);intent.addCategory(Intent.CATEGORY_OPENABLE);intent.setType("application/pdf");intent.putExtra(Intent.EXTRA_TITLE,entry.name);startActivityForResult(call,intent,"exportDestinationChosen");}catch(Exception error){fail(call,error);}
@@ -1454,6 +1480,8 @@ jobs:
               private Button previous,next,page,minus,plus;
               private ScrollView vertical;
               private String language;
+              private String documentPath;
+              private AlertDialog passwordDialog;
               private boolean dark;
               private int ink;
               private String text(String ps,String dr,String en){return "en".equals(language)?en:"dr".equals(language)?dr:ps;}
@@ -1479,19 +1507,39 @@ jobs:
                   page=button("—",controls,this::jump);page.setContentDescription(text("پاڼه غوره کول","انتخاب صفحه","Go to page"));
                   plus=button("+",controls,()->{zoom=Math.min(3,zoom+.5f);render();});plus.setContentDescription(text("لوی کول","بزرگ کردن","Zoom in"));
                   next=button("›",controls,()->{if(pageIndex+1<pageCount){pageIndex++;render();}});next.setContentDescription(text("بله پاڼه","صفحۀ بعدی","Next page"));root.addView(controls);setContentView(root);controls(false);
-                  String raw=getIntent().getStringExtra("path");
+                  documentPath=getIntent().getStringExtra("path");openDocument(null);
+              }
+              private void openDocument(String password){
+                  if(closed)return;controls(false);status.setText(text("PDF پرانیستل کېږي…","PDF باز می‌شود…","Opening PDF…"));
                   worker.execute(()->{
                       ParcelFileDescriptor descriptor=null;
                       try{
-                          if(raw==null)throw new java.io.IOException("Missing file");File file=new File(raw).getCanonicalFile();
+                          if(documentPath==null)throw new java.io.IOException("Missing file");File file=new File(documentPath).getCanonicalFile();
                           String own=new File(getFilesDir(),"pdf-library").getCanonicalPath()+File.separator,cache=new File(getCacheDir(),"pdf-reader").getCanonicalPath()+File.separator;
                           if(!(file.getPath().startsWith(own)||file.getPath().startsWith(cache))||!file.getName().matches("[0-9a-f-]{36}\\.pdf")||file.length()>128L*1024*1024)throw new java.io.IOException("Invalid PDF path");
                           descriptor=ParcelFileDescriptor.open(file,ParcelFileDescriptor.MODE_READ_ONLY);
-                          renderer=new PdfRenderer(descriptor);descriptor=null;int count=renderer.getPageCount();if(count<1)throw new java.io.IOException("Empty PDF");
+                          renderer=password!=null&&android.os.Build.VERSION.SDK_INT>=35?Api35.open(descriptor,password):new PdfRenderer(descriptor);descriptor=null;int count=renderer.getPageCount();if(count<1)throw new java.io.IOException("Empty PDF");
                           runOnUiThread(()->{if(closed)return;pageCount=count;pageIndex=Math.min(pageIndex,count-1);render();});
-                      }catch(Exception|OutOfMemoryError error){if(descriptor!=null)try{descriptor.close();}catch(Exception ignored){}showError();}
+                      }catch(SecurityException error){if(descriptor!=null)try{descriptor.close();}catch(Exception ignored){}requestPassword(password!=null);}
+                       catch(Exception|OutOfMemoryError error){if(descriptor!=null)try{descriptor.close();}catch(Exception ignored){}showError();}
                   });
               }
+              /** Keep newer framework types out of the reader's API-24 execution path. */
+              private static final class Api35 {
+                  static PdfRenderer open(ParcelFileDescriptor descriptor,String password)throws java.io.IOException{
+                      return new PdfRenderer(descriptor,new android.graphics.pdf.LoadParams.Builder().setPassword(password).build());
+                  }
+              }
+              private void requestPassword(boolean retry){runOnUiThread(()->{
+                  if(closed)return;controls(false);
+                  if(android.os.Build.VERSION.SDK_INT<35){status.setText(text("دا PDF پټنوم غواړي یا یې د قلف ډول نه ملاتړ کېږي. په دې Android نسخه کې د پټنوم لرونکي PDF لوستل نشته.","این PDF رمز می‌خواهد یا نوع قفل پشتیبانی نمی‌شود. این نسخۀ Android خواندن PDF رمزدار را پشتیبانی نمی‌کند.","This PDF is password protected or uses unsupported encryption. Password-protected PDFs are not supported on this Android version."));return;}
+                  if(passwordDialog!=null&&passwordDialog.isShowing())return;
+                  status.setText(text("د PDF پټنوم ولیکئ.","رمز PDF را وارد کنید.","Enter the PDF password."));
+                  EditText input=new EditText(this);input.setInputType(InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_VARIATION_PASSWORD);input.setSingleLine(true);input.setSaveEnabled(false);
+                  if(android.os.Build.VERSION.SDK_INT>=26)input.setImportantForAutofill(View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS);
+                  passwordDialog=new AlertDialog.Builder(this).setTitle(text("د PDF پټنوم","رمز PDF","PDF password")).setMessage(retry?text("پټنوم سم نه و یا د قلف ډول نه ملاتړ کېږي. بیا هڅه وکړئ.","رمز درست نبود یا نوع قفل پشتیبانی نمی‌شود. دوباره تلاش کنید.","Incorrect password or unsupported encryption. Try again."):text("پټنوم یوازې د دې فایل د پرانیستلو لپاره کارېږي؛ نه ساتل کېږي.","رمز فقط برای باز کردن این فایل استفاده می‌شود و ذخیره نمی‌شود.","The password is used only to open this file and is not saved.")).setView(input).setNegativeButton(text("بندول","بستن","Cancel"),(d,w)->{}).setPositiveButton(text("پرانیستل","باز کردن","Open"),(d,w)->{String value=input.getText().toString();input.getText().clear();openDocument(value);}).create();
+                  passwordDialog.setOnDismissListener(d->{input.getText().clear();passwordDialog=null;});passwordDialog.show();
+              });}
               private void controls(boolean enabled){previous.setEnabled(enabled&&pageIndex>0);next.setEnabled(enabled&&pageIndex+1<pageCount);minus.setEnabled(enabled&&zoom>1);plus.setEnabled(enabled&&zoom<3);page.setEnabled(enabled);page.setText(pageCount>0?(pageIndex+1)+" / "+pageCount:"—");}
               private void jump(){if(pageCount<1)return;EditText input=new EditText(this);input.setInputType(InputType.TYPE_CLASS_NUMBER);input.setText(String.valueOf(pageIndex+1));input.setSelectAllOnFocus(true);
                   AlertDialog dialog=new AlertDialog.Builder(this).setTitle(text("د پاڼې شمېره","شمارۀ صفحه","Page number")).setView(input).setNegativeButton(text("بندول","بستن","Cancel"),null).setPositiveButton(text("پرانیستل","باز کردن","Go"),null).create();
@@ -1517,7 +1565,15 @@ jobs:
               private void showError(){runOnUiThread(()->{if(closed)return;status.setText(text("دا PDF نه پرانیستل کېږي. ښايي خراب، ډېر غټ یا په پټنوم تړلی وي.","این PDF باز نمی‌شود؛ ممکن است خراب، بسیار بزرگ یا رمزدار باشد.","Unable to read this PDF. It may be damaged, too large or password protected."));controls(pageCount>0);});}
               @Override protected void onSaveInstanceState(Bundle state){state.putInt("page",pageIndex);state.putFloat("zoom",zoom);super.onSaveInstanceState(state);}
               @Override protected void onStop(){super.onStop();if(!isChangingConfigurations()&&getSharedPreferences("university_security",0).getBoolean("appLock",false))finish();}
-              @Override protected void onDestroy(){closed=true;generation.incrementAndGet();image.setImageDrawable(null);if(bitmap!=null&&!bitmap.isRecycled())bitmap.recycle();worker.execute(()->{if(renderer!=null){try{renderer.close();}catch(Exception ignored){}renderer=null;}});worker.shutdown();super.onDestroy();}
+              @Override protected void onDestroy(){closed=true;generation.incrementAndGet();if(passwordDialog!=null)passwordDialog.dismiss();image.setImageDrawable(null);if(bitmap!=null&&!bitmap.isRecycled())bitmap.recycle();worker.execute(()->{if(renderer!=null){try{renderer.close();}catch(Exception ignored){}renderer=null;}});worker.shutdown();super.onDestroy();}
+          }
+          ''', encoding='utf-8')
+
+          (java_dir / 'PdfShareProvider.java').write_text(r'''package com.noori.universitynotes;
+
+          /** Separate component identity avoids collisions with Capacitor's FileProvider. */
+          public final class PdfShareProvider extends androidx.core.content.FileProvider {
+              public PdfShareProvider() { super(); }
           }
           ''', encoding='utf-8')
 
@@ -1527,10 +1583,11 @@ jobs:
           reader.set('{' + android_ns + '}exported', 'false')
           reader.set('{' + android_ns + '}process', ':pdf_reader')
           provider = ET.SubElement(application, 'provider')
-          provider.set('{' + android_ns + '}name', 'androidx.core.content.FileProvider')
+          provider.set('{' + android_ns + '}name', '.PdfShareProvider')
           provider.set('{' + android_ns + '}authorities', 'com.noori.universitynotes.pdf.share')
           provider.set('{' + android_ns + '}exported', 'false')
           provider.set('{' + android_ns + '}grantUriPermissions', 'true')
+          provider.set('{' + android_ns + '}process', ':pdf_share')
           meta = ET.SubElement(provider, 'meta-data')
           meta.set('{' + android_ns + '}name', 'android.support.FILE_PROVIDER_PATHS')
           meta.set('{' + android_ns + '}resource', '@xml/pdf_share_paths')
