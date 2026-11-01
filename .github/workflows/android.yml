@@ -1527,6 +1527,7 @@ jobs:
               /** Keep newer framework types out of the reader's API-24 execution path. */
               private static final class Api35 {
                   static PdfRenderer open(ParcelFileDescriptor descriptor,String password)throws java.io.IOException{
+                      if(android.os.Build.VERSION.SDK_INT<35)throw new UnsupportedOperationException("PDF password requires Android 15");
                       return new PdfRenderer(descriptor,new android.graphics.pdf.LoadParams.Builder().setPassword(password).build());
                   }
               }
