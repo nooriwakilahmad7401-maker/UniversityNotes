@@ -908,6 +908,10 @@
     .schedule-time-range span { white-space:nowrap; }
     .schedule-time-range span + span::before { content:"–";margin-inline:2px; }
     .schedule-week-view .schedule-time-range span { display:inline-block; }
+    @media(max-width:360px) {
+        .schedule-week-view .schedule-time-range span { display:block; }
+        .schedule-week-view .schedule-time-range span + span::before { content:none; }
+    }
     @media(max-width:460px) {
         .schedule-week-view .schedule-table { font-size:.66rem; }
         .schedule-week-view .schedule-table th { overflow-wrap:anywhere; }
@@ -4683,14 +4687,20 @@ function makeLessonTimeRange(slot) {
     range.append(document.createElement('span'),document.createElement('span'));
     return range;
 }
+// Display only: input, storage, backups and reminders keep their HH:mm values.
+function formatScheduleDisplayTime(value) {
+    const [hours,minutes]=value.split(':');
+    const hour=Number(hours);
+    return (hour%12||12)+':'+minutes+(hour<12?' AM':' PM');
+}
 function updateScheduleTimeRanges() {
     const ranges=Array.from({length:4},(_,i)=>['start','end'].map(part=>byId('schedule-slot_'+(i+1)+'_'+part)?.value||''));
     for(const range of byId('schedule-tbody').querySelectorAll('.schedule-time-range')){
         const [start,end]=ranges[Number(range.dataset.slot)-1];
         const label=range.previousElementSibling.value;
         range.hidden=!(hasScheduledClass(label)&&validScheduleRange(start,end));
-        range.children[0].textContent=range.hidden?'':start;
-        range.children[1].textContent=range.hidden?'':end;
+        range.children[0].textContent=range.hidden?'':formatScheduleDisplayTime(start);
+        range.children[1].textContent=range.hidden?'':formatScheduleDisplayTime(end);
     }
 }
 let lessonAlarms = null;
