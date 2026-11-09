@@ -127,6 +127,45 @@ jobs:
           npx cap add android
           npx cap sync android
 
+      - name: Prepare Gradle 8.14.3
+        timeout-minutes: 9
+        run: |
+          set -euo pipefail
+          cd "$WORK_DIR/android"
+          python3 - <<'PYGRADLE'
+          from pathlib import Path
+
+          wrapper = Path('gradle/wrapper/gradle-wrapper.properties')
+          lines = wrapper.read_text(encoding='utf-8').splitlines()
+          properties = {
+              line.split('=', 1)[0].strip(): line.split('=', 1)[1].strip()
+              for line in lines if '=' in line and not line.lstrip().startswith(('#', '!'))
+          }
+          distribution = properties.get('distributionUrl', '').replace(r'\:', ':')
+          expected_base = 'https://services.gradle.org/distributions/gradle-8.14.3'
+          if distribution not in {expected_base + '-all.zip', expected_base + '-bin.zip'}:
+              raise SystemExit(f'Unexpected Gradle distribution: {distribution}. Check the pinned Capacitor template.')
+          settings = {
+              'distributionUrl': r'https\://services.gradle.org/distributions/gradle-8.14.3-bin.zip',
+              'distributionSha256Sum': 'bd71102213493060956ec229d946beee57158dbd89d0e62b91bca0fa2c5f3531',
+              'networkTimeout': '120000',
+          }
+          kept = [line for line in lines if line.split('=', 1)[0].strip() not in settings]
+          wrapper.write_text('\n'.join(kept + [f'{key}={value}' for key, value in settings.items()]) + '\n', encoding='utf-8')
+          PYGRADLE
+          chmod +x gradlew
+          for attempt in 1 2 3; do
+            if ./gradlew --version; then
+              exit 0
+            fi
+            if [ "$attempt" -eq 3 ]; then
+              echo "::error::Gradle download or startup failed after three attempts."
+              exit 1
+            fi
+            echo "::warning::Gradle did not start on attempt $attempt; retrying."
+            sleep "$((attempt * 5))"
+          done
+
       - name: Generate University Notes launcher icons
         run: |
           set -euo pipefail
