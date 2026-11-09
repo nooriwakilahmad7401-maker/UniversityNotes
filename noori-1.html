@@ -878,25 +878,31 @@
     #schedule-modal .schedule-body { padding:clamp(12px,3vw,22px);overflow:auto;overscroll-behavior:contain;min-height:0; }
     #schedule-modal .schedule-footer { display:flex;justify-content:flex-end;gap:8px;padding:9px clamp(12px,3vw,22px);border-top:1px solid var(--border-color);background:var(--card-bg); }
     .schedule-footer .settings-button { min-width:78px; }
-    .schedule-day-picker { display:flex;align-items:center;gap:8px;margin-block:8px; }
-    .schedule-day-picker label { flex:0 0 auto;font-size:.85rem;font-weight:700; }
-    .schedule-day-picker select { margin:0;min-width:0; }
     .schedule-reminders { display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin:8px 0; }
     #schedule-modal .schedule-meta-grid { margin-bottom:5px; }
     #schedule-modal .schedule-meta-grid input { margin:0;padding-block:8px; }
     .schedule-reminders .settings-hint { flex:1 1 110px;margin:0;line-height:1.5; }
     .schedule-reminders .settings-button { min-height:36px;padding:7px 10px; }
     #schedule-today-summary { margin:10px 0;padding:8px 10px;border:1px solid var(--border-color);border-inline-start:3px solid var(--primary);border-radius:10px;color:var(--text-main);background:var(--bg-color);font-size:.77rem;line-height:1.5; }
-    .schedule-overview-hint { font-size:.73rem;margin:7px 1px; }
+    .schedule-time-heading { font-size:.88rem; }
+    .schedule-time-panel { padding:9px 10px;margin:8px 0;border:1px solid var(--border-color);border-radius:12px;background:var(--bg-color); }
+    .schedule-time-panel summary { cursor:pointer;min-height:30px;align-content:center;font-weight:750; }
+    .schedule-time-panel .settings-hint { margin:5px 0 8px;line-height:1.5;font-size:.76rem; }
+    .schedule-time-list { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px; }
+    .schedule-time-slot { min-width:0;padding:7px;border:1px solid var(--border-color);border-radius:9px;background:var(--card-bg); }
+    .schedule-time-slot legend { font-weight:750;font-size:.73rem;padding-inline:3px; }
+    .schedule-alarm-panel { border:1px solid var(--border-color);border-radius:10px;background:var(--bg-color);padding:10px;margin:6px 0; }
+    .schedule-alarm-panel p { font-size:.77rem;line-height:1.55;margin-bottom:7px; }
+    .schedule-alarm-actions { display:flex;gap:6px;flex-wrap:wrap; }
+    .schedule-alarm-actions button { font-size:.73rem;min-height:35px;padding:6px 8px; }
+    @media(max-width:600px) { .schedule-time-list { grid-template-columns:minmax(0,1fr); } }
     .schedule-table-wrapper { margin:8px 0 0; }
     .schedule-table tr.schedule-today > :is(th,td) { background:rgba(99,102,241,.11); }
     .schedule-table tbody th { background:var(--bg-color); }
     .schedule-table tbody td { background:var(--card-bg); }
-    .schedule-table .schedule-week-day { width:100%;min-height:38px;padding:3px;border:0;border-radius:7px;background:transparent;color:var(--text-main);font:inherit;font-weight:700;cursor:pointer;overflow-wrap:anywhere; }
-    .schedule-week-day:focus-visible { outline:2px solid var(--primary);outline-offset:-2px; }
+    .schedule-table tbody th { padding:5px 2px;color:var(--text-main);overflow-wrap:anywhere; }
     .schedule-today-badge { display:inline-block;padding:2px 8px;border-radius:999px;background:rgba(99,102,241,.16);color:var(--text-main);font-size:.7rem;font-weight:750; }
-    .schedule-week-day .schedule-today-badge { display:block;width:max-content;margin:3px auto 0;padding:1px 6px; }
-    .schedule-day-heading,.schedule-cell-label,.schedule-time-fields { display:none; }
+    .schedule-table .schedule-today-badge { display:block;width:max-content;margin:3px auto 0;padding:1px 6px; }
     .schedule-table .schedule-subject { margin:0;border-radius:6px;min-height:32px;padding:4px 3px; }
     .schedule-time-range { display:block;margin:2px 0;color:var(--text-sub);font-size:.66rem;line-height:1.25;direction:ltr; }
     .schedule-time-range span { white-space:nowrap; }
@@ -909,25 +915,11 @@
         .schedule-week-view .schedule-subject { font-size:.69rem; }
     }
 
-    /* Each day uses the same compact lesson cards, with a badge for today. */
-    .schedule-day-view .schedule-table-wrapper { border:0;border-radius:0;overflow:visible; }
-    .schedule-day-view .schedule-table,.schedule-day-view .schedule-table tbody { display:block; }
-    .schedule-day-view .schedule-table thead { position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap; }
-    .schedule-day-view .schedule-table tr { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px; }
-    .schedule-day-view .schedule-table tbody :is(th,td) { display:block;min-width:0;text-align:start;background:var(--bg-color);border:1px solid var(--border-color);border-radius:12px; }
-    .schedule-day-view .schedule-table tbody th { grid-column:1/-1;padding:0; }
-    .schedule-day-view .schedule-table tbody td { padding:8px; }
-    .schedule-day-view .schedule-table tr.schedule-today > th { border-color:var(--primary);background:rgba(99,102,241,.11); }
-    .schedule-day-view .schedule-table tr.schedule-today > td { background:var(--bg-color); }
-    .schedule-day-view .schedule-week-day,.schedule-day-view .schedule-time-range { display:none; }
-    .schedule-day-view .schedule-day-heading { display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;color:var(--text-main);font-size:.88rem; }
-    .schedule-day-view .schedule-cell-label { display:block;margin-bottom:4px;color:var(--text-main);font-size:.74rem;font-weight:750; }
-    .schedule-day-view .schedule-subject,.schedule-day-view .schedule-time-fields input { border:1px solid var(--border-color);background:var(--card-bg);text-align:start;color:var(--text-main);min-height:35px;padding:5px 7px;border-radius:8px; }
-    .schedule-day-view .schedule-input:focus { outline:2px solid var(--primary);outline-offset:-1px; }
-    .schedule-day-view .schedule-time-fields { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:6px; }
-    .schedule-time-fields label { min-width:0;font-size:.7rem;color:var(--text-sub); }
-    .schedule-time-control { display:block;position:relative;margin-top:2px; }
-    .schedule-day-view .schedule-time-fields input { display:block;width:100%;margin:0;font-size:.77rem; }
+    .schedule-time-fields { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px; }
+    .schedule-time-fields label { min-width:0;font-size:.73rem;color:var(--text-sub); }
+    .schedule-time-control { display:block;position:relative;margin-top:3px; }
+    .schedule-time-fields input { display:block;width:100%;margin:0;font-size:.78rem;min-height:37px;padding:5px 7px;border:1px solid var(--border-color);border-radius:8px;background:var(--bg-color);text-align:start; }
+    .schedule-time-fields input:focus { outline:2px solid var(--primary);outline-offset:-1px; }
     .schedule-time-control[data-empty="true"] input,
     .schedule-time-control[data-empty="true"] input::-webkit-datetime-edit { color:transparent; }
     .schedule-time-placeholder { display:none;pointer-events:none;position:absolute;top:50%;left:8px;transform:translateY(-50%);color:var(--text-sub);direction:ltr; }
@@ -935,7 +927,6 @@
     .schedule-time-control[data-empty="true"]:focus-within input,
     .schedule-time-control[data-empty="true"]:focus-within input::-webkit-datetime-edit { color:var(--text-main); }
     [data-theme="dark"] .schedule-time-control input { color-scheme:dark; }
-    @media(max-width:540px) { .schedule-day-view .schedule-table tr { grid-template-columns:minmax(0,1fr); } }
     @media(max-width:410px) { header { padding-inline:9px;gap:5px; } .header-left,.header-right { gap:4px; } header .btn-icon { width:33px;height:36px; } .header-right .user-brand { font-size:.67rem;padding:4px; } }
     @media(max-width:350px) { header .btn-icon,header .header-left .btn-icon { width:29px;height:33px; } }
     @media(max-width:319px) { .header-right .user-brand { display:none; } }
@@ -1345,11 +1336,23 @@
                 <input type="text" id="sched-semester" placeholder="سمسټر">
             </div>
 
-            <div class="schedule-reminders"><p id="schedule-reminder-hint" class="settings-hint"></p><button type="button" id="schedule-reminder-settings" class="settings-button secondary" onclick="configureLessonAlarms()"></button></div>
-            <p id="schedule-time-status" class="field-error" role="alert"></p>
-            <div class="schedule-day-picker"><label for="schedule-day-filter" id="schedule-day-label"></label><select id="schedule-day-filter" onchange="showScheduleDay(this.value)"></select></div>
+            <div class="schedule-reminders"><p id="schedule-reminder-hint" class="settings-hint"></p><button type="button" id="schedule-reminder-settings" class="settings-button secondary" onclick="toggleLessonAlarmPanel()" aria-expanded="false" aria-controls="schedule-alarm-panel"></button></div>
+            <section id="schedule-alarm-panel" class="schedule-alarm-panel" hidden>
+                <p id="schedule-alarm-status" role="status"></p>
+                <div class="schedule-alarm-actions" id="schedule-alarm-actions">
+                    <button type="button" id="schedule-alarm-notifications" class="settings-button secondary" onclick="configureLessonAlarms('notifications')"></button>
+                    <button type="button" id="schedule-alarm-exact" class="settings-button secondary" onclick="configureLessonAlarms('exact')"></button>
+                    <button type="button" id="schedule-alarm-test" class="settings-button secondary" onclick="sendLessonAlarmTest()"></button>
+                </div>
+                <p id="schedule-alarm-feedback" role="status" style="margin:6px 0 0" hidden></p>
+            </section>
+            <details id="schedule-slot-settings" class="schedule-time-panel">
+                <summary id="schedule-slot-summary" class="schedule-time-heading"></summary>
+                <p id="schedule-slot-hint" class="settings-hint"></p>
+                <div id="schedule-slot-times" class="schedule-time-list"></div>
+                <p id="schedule-time-status" class="field-error" role="alert"></p>
+            </details>
             <p id="schedule-today-summary" role="status" aria-live="polite"></p>
-            <p id="schedule-overview-hint" class="settings-hint schedule-overview-hint"></p>
             <div class="schedule-table-wrapper">
                 <table class="schedule-table">
                     <thead>
@@ -1864,11 +1867,27 @@ function sanitizeSchedule(raw) {
             'day_' + Math.floor(i / 4) + '_slot_' + (i % 4 + 1))).forEach(key => {
             if (typeof data[key] === 'string' || typeof data[key] === 'number') out[key] = String(data[key]);
         });
-        for (const key of Object.keys(out)) {
-            if (!/^day_[0-5]_slot_[1-4]$/.test(key) || !out[key].trim()) continue;
-            const start = data[key + '_start'], end = data[key + '_end'];
-            if (validLessonTime(start) && validLessonTime(end) && start < end) {
-                out[key + '_start'] = start; out[key + '_end'] = end;
+        for (let slot=1;slot<=4;slot++) {
+            const key='slot_'+slot;
+            let start=data[key+'_start'],end=data[key+'_end'];
+            // Existing per-day times migrate to one pair per column. Keep the
+            // most used pair; equal counts keep the first day in table order.
+            if (!validScheduleRange(start,end)) {
+                const choices=new Map();
+                for(let day=0;day<6;day++){
+                    const old='day_'+day+'_'+key;
+                    const first=data[old+'_start'],last=data[old+'_end'];
+                    if(!hasScheduledClass(out[old])||!validScheduleRange(first,last))continue;
+                    const pair=first+'|'+last;
+                    choices.set(pair,(choices.get(pair)||0)+1);
+                }
+                let highest=0;
+                for(const [pair,count] of choices) if(count>highest){
+                    [start,end]=pair.split('|');highest=count;
+                }
+            }
+            if(validScheduleRange(start,end)){
+                out[key+'_start']=start;out[key+'_end']=end;
             }
         }
         return out;
@@ -2278,7 +2297,7 @@ function switchPageInternal(pageId) {
 }
 function editorSignature() {
     const modal = document.querySelector('.modal.active');
-    return modal ? Array.from(modal.querySelectorAll('input,select:not(#schedule-day-filter),textarea')).map(el => el.value).join('\u0000') : '';
+    return modal ? Array.from(modal.querySelectorAll('input,select,textarea')).map(el => el.value).join('\u0000') : '';
 }
 function mayDiscardEditor() {
     return editorSignature() === modalBaseline || confirm(uiText(
@@ -2669,7 +2688,7 @@ function readScheduleDraft() {
     };
     document.querySelectorAll('#schedule-modal .schedule-input').forEach(input => {
         const key = input.getAttribute('data-key');
-        if (/^day_[0-5]_slot_[1-4](?:_start|_end)?$/.test(key) && input.value.trim()) data[key] = input.value.trim();
+        if (/^(?:day_[0-5]_slot_[1-4]|slot_[1-4]_(?:start|end))$/.test(key) && input.value.trim()) data[key] = input.value.trim();
     });
     return data;
 }
@@ -2718,27 +2737,13 @@ function renderScheduleEditor(data) {
         tr.dataset.dayIndex=String(dayIndex);
         const dayCell = document.createElement('th');
         dayCell.scope='row';
-        const weekButton = document.createElement('button');
-        weekButton.type='button'; weekButton.className='schedule-week-day';
-        weekButton.addEventListener('click',()=>{
-            showScheduleDay(String(dayIndex));
-            byId('schedule-day-filter').focus({preventScroll:true});
-            byId('schedule-day-filter').scrollIntoView({block:'nearest'});
-        });
-        const heading=document.createElement('div'); heading.className='schedule-day-heading';
-        for(const view of [weekButton,heading]) {
-            const label=document.createElement('span');label.textContent=day;
-            const today=document.createElement('span');today.className='schedule-today-badge';today.hidden=true;
-            view.append(label,today);
-        }
-        dayCell.append(weekButton,heading);
+        const label=document.createElement('span');label.textContent=day;
+        const today=document.createElement('span');today.className='schedule-today-badge';today.hidden=true;
+        dayCell.append(label,today);
         tr.appendChild(dayCell);
         for (let slot = 1; slot <= 4; slot++) {
             const key = 'day_' + dayIndex + '_slot_' + slot;
             const td = document.createElement('td');
-            const slotLabel=document.createElement('span'); slotLabel.className='schedule-cell-label';
-            slotLabel.textContent=t()['thS'+slot]; slotLabel.setAttribute('aria-hidden','true');
-            td.append(slotLabel);
             const input = document.createElement('input');
             input.className = 'schedule-input schedule-subject';
             input.dir = 'auto';
@@ -2747,17 +2752,23 @@ function renderScheduleEditor(data) {
             input.setAttribute('aria-label', day + ' — ' + (t()['thS' + slot] || slot));
             input.value = data[key] || '';
             input.placeholder = '—';
-            td.append(input,makeLessonTimes(key,data,day,slot),makeLessonTimeRange());
-            updateLessonCell(td);
+            td.append(input,makeLessonTimeRange(slot));
             tr.appendChild(td);
         }
         tbody.appendChild(tr);
     });
-    renderScheduleDayPicker();
+    renderSharedScheduleTimes(data);
+    updateScheduleTimeRanges();
     highlightScheduleToday();
     document.getElementById('schedule-time-status').textContent = '';
     document.getElementById('schedule-reminder-hint').textContent = uiText('د خوندي شوي فعال مهالوېش د هر درس په پای کې خبرتیا.', 'در پایان هر درسِ تقسیم اوقات فعال، اعلان دریافت کنید.', 'Get a reminder at the end of each class in the active timetable.');
-    document.getElementById('schedule-reminder-settings').textContent = uiText('د زنګ تنظیمات','تنظیم اعلان','Reminder settings');
+    setCopy('schedule-reminder-settings','د زنګ تنظیمات','تنظیم اعلان','Reminder settings');
+    setCopy('schedule-alarm-notifications','د خبرتیا تنظیمات','تنظیمات اعلان','Notifications');
+    setCopy('schedule-alarm-exact','د پر وخت زنګ اجازه','اجازۀ اعلان دقیق','Exact alarm permission');
+    setCopy('schedule-alarm-test','ازمایښتي زنګ','اعلان آزمایشی','Test reminder');
+    byId('schedule-alarm-feedback').hidden=true;
+    byId('schedule-alarm-panel').hidden=true;
+    byId('schedule-reminder-settings').setAttribute('aria-expanded','false');
     scheduleEditorBaseline = JSON.stringify(readScheduleDraft());
     modalBaseline = editorSignature();
 }
@@ -2776,7 +2787,7 @@ function highlightScheduleToday() {
         if(today){tr.setAttribute('aria-current','date');row=tr;}else tr.removeAttribute('aria-current');
     }
     const summary=document.getElementById('schedule-today-summary');if(!summary)return;
-    const slots=row?Array.from(row.querySelectorAll('input:not([data-time])')).map((input,i)=>input.value.trim()?(t()['thS'+(i+1)]+': '+input.value.trim()):'').filter(Boolean):[];
+    const slots=row?Array.from(row.querySelectorAll('input:not([data-time])')).map((input,i)=>hasScheduledClass(input.value)?(t()['thS'+(i+1)]+': '+input.value.trim()):'').filter(Boolean):[];
     summary.textContent=uiText('نن: ','امروز: ','Today: ')+daysOfWeek[currentLang][now.getDay()]+' — '+(slots.length?slots.join(' · '):uiText('د دې ورځې لپاره ساعتونه نه دي ثبت شوي.','برای این روز ساعت ثبت نشده است.','No classes entered for this day.'));
 }
 
@@ -2784,8 +2795,6 @@ function openScheduleModal() {
     const active = scheduleData.items.find(item => item.id === scheduleData.activeId) || scheduleData.items[0];
     scheduleIsNew = !active;
     scheduleEditingId = active ? active.id : String(generateId());
-    const index = (new Date().getDay()+1)%7;
-    scheduleDayFilter = window.innerWidth <= 760 && index < 6 ? String(index) : 'all';
     renderScheduleEditor(active ? active.data : {});
     showModal('schedule-modal');
     byId('schedule-modal').querySelector('.schedule-body').scrollTop=0;
@@ -2831,13 +2840,12 @@ function saveSchedule() {
     const data = readScheduleDraft();
     const status = document.getElementById('schedule-time-status');
     status.textContent = '';
-    for (const startInput of document.querySelectorAll('#schedule-tbody input[data-time="start"]')) {
-        const key = startInput.dataset.key.slice(0, -6);
-        const start = data[key + '_start'], end = data[key + '_end'];
-        if ((start || end) && (!data[key] || !validLessonTime(start) || !validLessonTime(end) || start >= end)) {
-            status.textContent = uiText('د درس نوم، د پیل وخت او تر هغه وروسته د پای وخت ولیکئ.', 'نام درس، زمان شروع و زمان پایان پس از شروع را وارد کنید.', 'Enter a class name and both times. End must be later than start.');
-            showScheduleDay(startInput.closest('tr').dataset.dayIndex);
-            startInput.focus();
+    for(let slot=1;slot<=4;slot++){
+        const key='slot_'+slot, start=data[key+'_start'],end=data[key+'_end'];
+        if((start||end)&&!validScheduleRange(start,end)){
+            status.textContent=uiText('د هر ساعت د پای وخت باید تر پیل وروسته وي. دواړه وختونه وټاکئ یا دواړه تش پرېږدئ.','زمان پایان هر ساعت باید بعد از آغاز باشد. هر دو زمان را تعیین کنید یا هر دو را خالی بگذارید.','End must be after start. Set both times or leave both blank.');
+            byId('schedule-slot-settings').open=true;
+            byId('schedule-'+key+(!start ? '_start' : '_end')).focus();
             return;
         }
     }
@@ -2868,6 +2876,16 @@ function saveSchedule() {
    ============================================================================ */
 
 function validLessonTime(value) { return typeof value === 'string' && /^(?:[01]\d|2[0-3]):[0-5]\d$/.test(value); }
+
+function validScheduleRange(start,end) {
+    return validLessonTime(start)&&validLessonTime(end)&&start<end;
+}
+function hasScheduledClass(value) {
+    if (typeof value!=='string') return false;
+    const name=value.normalize('NFKC').trim().toLowerCase()
+        .replace(/[يې]/g,'ی').replace(/[‌‍]/g,'').replace(/[\s.،,;؛:!?؟-]+$/g,'');
+    return Boolean(name)&&!/^[–—―−_]+$/.test(name)&&!['خالی','تش','empty','vacant','free','no class'].includes(name);
+}
 
 const CALC_FUNCTIONS = ['sin', 'cos', 'tan', 'log', 'ln', 'sqrt', 'abs'];
 
@@ -3676,13 +3694,18 @@ function validateBackup(text) {
     const schedule = s.schedule;
     if (!object(schedule) || schedule.version !== 2 || !Array.isArray(schedule.items)) bad();
     const lessonKeys = Array.from({length:24},(_,i) => 'day_' + Math.floor(i/4) + '_slot_' + (i%4+1));
-    const keys = new Set(['faculty','semester', ...lessonKeys.flatMap(key => [key, key+'_start', key+'_end'])]);
+    const sharedKeys=Array.from({length:4},(_,i)=>'slot_'+(i+1));
+    const keys = new Set(['faculty','semester', ...lessonKeys.flatMap(key => [key, key+'_start', key+'_end']), ...sharedKeys.flatMap(key=>[key+'_start',key+'_end'])]);
     schedule.items.forEach(v => {
         if (!object(v) || !string(v.id) || !v.id || scheduleIds.has(v.id) || !object(v.data) || !Object.keys(v.data).every(key => keys.has(key) && string(v.data[key]))) bad();
         for (const key of lessonKeys) {
             const start = v.data[key+'_start'], end = v.data[key+'_end'];
             if ((start !== undefined || end !== undefined) &&
                 (!v.data[key]?.trim() || !validLessonTime(start) || !validLessonTime(end) || start >= end)) bad();
+        }
+        for(const key of sharedKeys){
+            const start=v.data[key+'_start'],end=v.data[key+'_end'];
+            if((start!==undefined||end!==undefined)&&!validScheduleRange(start,end))bad();
         }
         scheduleIds.add(v.id);
     });
@@ -4629,59 +4652,46 @@ function renderStudyPages() {
     if(currentPage==='shortcuts'||currentPage==='shortcut-detail')renderShortcuts();
 }
 
-let scheduleDayFilter = 'all';
-function showScheduleDay(value) {
-    const isWeek = value === 'all';
-    scheduleDayFilter = value;
-    byId('schedule-day-filter').value=value;
-    const frame=byId('schedule-modal').querySelector('.modal-content');
-    frame.classList.toggle('schedule-week-view',isWeek);
-    frame.classList.toggle('schedule-day-view',!isWeek);
-    byId('schedule-today-summary').hidden=!isWeek;
-    byId('schedule-overview-hint').hidden=!isWeek;
-    for(const row of byId('schedule-tbody').rows)
-        row.hidden=!isWeek&&row.dataset.dayIndex!==value;
-}
-function renderScheduleDayPicker() {
-    setCopy('schedule-day-label','ورځ','روز','Day');
-    setCopy('schedule-overview-hint','د پیل او پای وخت سمولو لپاره د ورځې نوم ووهئ.','برای تنظیم زمان شروع و پایان، نام روز را بزنید.','Tap a day name to edit start and end times.');
-    const select=byId('schedule-day-filter');
-    select.replaceChildren();
-    const all=document.createElement('option');
-    all.value='all';all.textContent=uiText('ټولې ورځې','همۀ روزها','All days');select.add(all);
-    defaultDays[currentLang].forEach((day,index)=>{
-        const option=document.createElement('option');
-        option.value=String(index);option.textContent=day;select.add(option);
-    });
-    showScheduleDay(scheduleDayFilter);
-}
-function makeLessonTimes(key,data,day,slot) {
-    const group=document.createElement('div'); group.className='schedule-time-fields';
-    for(const [part,copy] of [['start',['پیل','شروع','Start']],['end',['پای','پایان','End']]]){
-        const label=document.createElement('label'); label.textContent=uiText(...copy);
-        const control=document.createElement('span'); control.className='schedule-time-control';
-        const input=document.createElement('input'); input.type='time'; input.dir='ltr';
-        input.className='schedule-input'; input.dataset.key=key+'_'+part; input.dataset.time=part;
-        input.value=data[input.dataset.key]||'';
-        input.setAttribute('aria-label',day+' — '+t()['thS'+slot]+' — '+uiText(...copy));
-        const empty=document.createElement('span');empty.className='schedule-time-placeholder';
-        empty.textContent='--:--';empty.setAttribute('aria-hidden','true');
-        control.append(input,empty);label.append(control);group.append(label);
+function renderSharedScheduleTimes(data) {
+    setCopy('schedule-slot-summary','د ساعتونو د پیل او پای وختونه','زمان شروع و پایان ساعت‌ها','Class start and end times');
+    setCopy('schedule-slot-hint','د هر ساعت وخت یو ځل وټاکئ؛ د ټولو ورځو هماغه ساعت ته کارېږي.','زمان هر ساعت را یک بار تعیین کنید؛ برای همان ساعت در تمام روزها به کار می‌رود.','Set each period once. The same times apply on all days.');
+    const fields=byId('schedule-slot-times');
+    fields.replaceChildren();
+    byId('schedule-slot-settings').open=false;
+    for(let slot=1;slot<=4;slot++){
+        const card=document.createElement('fieldset');card.className='schedule-time-slot';
+        const title=document.createElement('legend');title.textContent=t()['thS'+slot];
+        const group=document.createElement('div');group.className='schedule-time-fields';
+        for(const [part,copy] of [['start',['پیل','شروع','Start']],['end',['پای','پایان','End']]]){
+            const label=document.createElement('label');label.textContent=uiText(...copy);
+            const control=document.createElement('span');control.className='schedule-time-control';
+            const key='slot_'+slot+'_'+part;
+            const input=document.createElement('input');input.type='time';input.dir='ltr';
+            input.id='schedule-'+key;input.className='schedule-input';input.dataset.key=key;
+            input.value=data[key]||'';control.dataset.empty=String(!input.value);
+            input.setAttribute('aria-label',title.textContent+' — '+uiText(...copy));
+            const empty=document.createElement('span');empty.className='schedule-time-placeholder';
+            empty.textContent='--:--';empty.setAttribute('aria-hidden','true');
+            control.append(input,empty);label.append(control);group.append(label);
+        }
+        card.append(title,group);fields.append(card);
     }
-    return group;
 }
-function makeLessonTimeRange() {
+function makeLessonTimeRange(slot) {
     const range=document.createElement('div');range.className='schedule-time-range';range.hidden=true;
+    range.dataset.slot=String(slot);
     range.append(document.createElement('span'),document.createElement('span'));
     return range;
 }
-function updateLessonCell(cell) {
-    const start=cell.querySelector('[data-time="start"]'),end=cell.querySelector('[data-time="end"]');
-    for(const time of [start,end]) time.parentElement.dataset.empty=String(!time.value);
-    const range=cell.querySelector('.schedule-time-range');
-    range.hidden=!(validLessonTime(start.value)&&validLessonTime(end.value)&&start.value<end.value);
-    range.children[0].textContent=start.value;
-    range.children[1].textContent=end.value;
+function updateScheduleTimeRanges() {
+    const ranges=Array.from({length:4},(_,i)=>['start','end'].map(part=>byId('schedule-slot_'+(i+1)+'_'+part)?.value||''));
+    for(const range of byId('schedule-tbody').querySelectorAll('.schedule-time-range')){
+        const [start,end]=ranges[Number(range.dataset.slot)-1];
+        const label=range.previousElementSibling.value;
+        range.hidden=!(hasScheduledClass(label)&&validScheduleRange(start,end));
+        range.children[0].textContent=range.hidden?'':start;
+        range.children[1].textContent=range.hidden?'':end;
+    }
 }
 let lessonAlarms = null;
 let alarmQueue = Promise.resolve();
@@ -4691,8 +4701,8 @@ function lessonReminderPlan() {
     if(!active)return events;
     for(let day=0;day<6;day++)for(let slot=1;slot<=4;slot++){
         const key='day_'+day+'_slot_'+slot;
-        const {data}=active, label=data[key], start=data[key+'_start'], end=data[key+'_end'];
-        if(label&&validLessonTime(start)&&validLessonTime(end)&&start<end)events.push({day:(day+6)%7,end,label:String(label).slice(0,120)});
+        const {data}=active, label=data[key], start=data['slot_'+slot+'_start'], end=data['slot_'+slot+'_end'];
+        if(hasScheduledClass(label)&&validScheduleRange(start,end))events.push({day:(day+6)%7,end,label:String(label).slice(0,120)});
     }
     return events;
 }
@@ -4714,13 +4724,62 @@ function syncLessonAlarms(interactive) {
     });
     return alarmQueue;
 }
-async function configureLessonAlarms() {
-    if(!lessonAlarms){showStatus(uiText('زنګ د Android نوې نسخه غواړي.','اعلان به نسخۀ جدید Android نیاز دارد.','Reminders require the updated Android app.'));return;}
-    try {
-        const result=await lessonAlarms.openSettings();
-        if(result.enabled&&result.exact)showStatus(uiText('پر وخت زنګ فعال دی.','اعلان دقیق فعال است.','Precise class reminders are enabled.'));
+function setAlarmFeedback(message) {
+    const status=byId('schedule-alarm-feedback');
+    status.textContent=message;
+    status.hidden=!message;
+}
+async function refreshLessonAlarmPanel() {
+    const panel=byId('schedule-alarm-panel');
+    if(panel.hidden)return;
+    const actions=byId('schedule-alarm-actions');
+    if(!lessonAlarms){
+        actions.hidden=true;
+        setCopy('schedule-alarm-status','زنګ د اندروېډ په نوې نسخه کې کار کوي.','اعلان در نسخۀ جدید اندروید کار می‌کند.','Reminders are available in the updated Android app.');
+        return;
     }
-    catch(error){showStatus(uiText('تنظیمات خلاص نه شول.','تنظیمات باز نشد.','Could not open reminder settings.'));}
+    actions.hidden=true;
+    try {
+        const status=await lessonAlarms.getStatus();
+        if(panel.hidden)return;
+        actions.hidden=false;
+        byId('schedule-alarm-exact').hidden=status.exactSettingAvailable===false;
+        byId('schedule-alarm-test').disabled=!status.enabled;
+        if(!status.enabled)setCopy('schedule-alarm-status','خبرتیاوې بندې دي. د زنګ لپاره یې فعالې کړئ.','اعلان‌ها خاموش‌اند. برای زنگ آن‌ها را فعال کنید.','Notifications are off. Enable them for class reminders.');
+        else if(!status.exact)setCopy('schedule-alarm-status','خبرتیاوې فعالې دي. د پر وخت زنګ لپاره اجازه ورکړئ.','اعلان‌ها فعال‌اند. برای زنگ دقیق اجازه بدهید.','Notifications are on. Allow exact alarms for precise timing.');
+        else if(!status.sound)setCopy('schedule-alarm-status','خبرتیاوې فعالې دي، خو د زنګ غږ بند دی.','اعلان‌ها فعال‌اند اما صدای زنگ خاموش است.','Notifications are on, but the reminder sound is muted.');
+        else setCopy('schedule-alarm-status','پر وخت زنګ فعال دی. لاندې یې غږ وازمویئ یا تنظیمات بدل کړئ.','اعلان دقیق فعال است. صدا را آزمایش کنید یا تنظیمات را تغییر دهید.','Precise reminders are on. Test the sound or change the settings below.');
+    }catch(error){
+        setCopy('schedule-alarm-status','د زنګ د نوو تنظیماتو لپاره اپ تازه کړئ.','برای تنظیمات جدید اعلان برنامه را به‌روزرسانی کنید.','Update the Android app for the new reminder settings.');
+    }
+}
+function toggleLessonAlarmPanel() {
+    const panel=byId('schedule-alarm-panel');
+    panel.hidden=!panel.hidden;
+    byId('schedule-reminder-settings').setAttribute('aria-expanded',String(!panel.hidden));
+    if(!panel.hidden){
+        setAlarmFeedback('');
+        setCopy('schedule-alarm-status','د زنګ حالت کتل کېږي…','وضعیت اعلان بررسی می‌شود…','Checking reminder settings…');
+        void refreshLessonAlarmPanel();
+    }
+}
+async function configureLessonAlarms(destination) {
+    setAlarmFeedback('');
+    try { await lessonAlarms.openSettings({destination,language:currentLang}); }
+    catch(error){setAlarmFeedback(uiText('تنظیمات خلاص نه شول.','تنظیمات باز نشد.','Could not open reminder settings.'));}
+}
+async function sendLessonAlarmTest() {
+    const button=byId('schedule-alarm-test');
+    button.disabled=true;
+    try {
+        await lessonAlarms.testReminder({
+            title:uiText('ازمایښتي زنګ','اعلان آزمایشی','Test reminder'),
+            message:uiText('د درس د پای د زنګ ازموینه.','آزمایش اعلان پایان درس.','This is a test of the class end reminder.'),
+            language:currentLang
+        });
+        setAlarmFeedback(uiText('ازمایښتي خبرتیا ولېږل شوه.','اعلان آزمایشی ارسال شد.','Test notification sent.'));
+    }catch(error){setAlarmFeedback(uiText('ازمایښتي خبرتیا ونه لېږل شوه. د خبرتیا اجازه وګورئ.','اعلان آزمایشی ارسال نشد. مجوز اعلان را بررسی کنید.','Test notification could not be sent. Check notification permission.'));}
+    finally {await refreshLessonAlarmPanel();}
 }
 function setupLessonAlarms() {
     try {
@@ -4729,7 +4788,7 @@ function setupLessonAlarms() {
             lessonAlarms=bridge.Plugins?.LessonAlarms || bridge.registerPlugin('LessonAlarms');
     } catch(error){ /* browser and older releases have no Android reminder service */ }
     void syncLessonAlarms(false);
-    document.addEventListener('visibilitychange',()=>{if(!document.hidden)void syncLessonAlarms(false);});
+    document.addEventListener('visibilitychange',()=>{if(!document.hidden){void syncLessonAlarms(false);void refreshLessonAlarmPanel();}});
 }
 
 
@@ -4737,9 +4796,15 @@ setupCalculator();
 setupVoice();
 setupPdfLibrary();
 window.addEventListener('resize',resizeCalcDisplay);
-byId('schedule-tbody').addEventListener('input',event=>{
-    if(event.target.matches('[data-time]')) updateLessonCell(event.target.closest('td'));
-    else highlightScheduleToday();
+byId('schedule-tbody').addEventListener('input',()=>{
+    updateScheduleTimeRanges();
+    highlightScheduleToday();
+});
+byId('schedule-slot-times').addEventListener('input',event=>{
+    if(!event.target.matches('input[type="time"]'))return;
+    event.target.parentElement.dataset.empty=String(!event.target.value);
+    byId('schedule-time-status').textContent='';
+    updateScheduleTimeRanges();
 });
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){lastRenderedDayKey='';updateCurrentDay();resizeCalcDisplay();}});
 
