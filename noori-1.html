@@ -745,10 +745,7 @@
     .settings-chevron { width:17px;height:17px;flex-shrink:0;color:var(--text-sub); }
     .settings-page svg { fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round; }
     html[dir="ltr"] .settings-chevron,html[dir="rtl"] .settings-back svg { transform:rotate(180deg); }
-    .theme-segments { display:flex;padding:5px;gap:5px;border:1px solid var(--border-color);border-radius:15px;background:var(--card-bg);margin-top:18px; }
-    .theme-segments button { display:flex;align-items:center;justify-content:center;gap:8px;flex:1;min-height:44px;border:0;border-radius:11px;background:transparent;color:var(--text-sub);font-size:.85rem;cursor:pointer; }
-    .theme-segments svg { width:20px;height:20px; }
-    .theme-segments button[aria-pressed="true"] { background:var(--primary);color:white; }
+
     .settings-detail .settings-card h3 { margin-bottom:12px; }
     .settings-detail .settings-card > label:not(.settings-check) { font-weight:500;color:var(--text-sub); }
     #note-title-input,#note-content-input { text-align:start;unicode-bidi:plaintext; }
@@ -816,11 +813,6 @@
 
     /* Wrap the editable expression; grow vertically so no digits are hidden. */
     .calc-display-panel textarea.calc-screen { display:block;width:100%;box-sizing:border-box;margin:0;padding:18px 18px 6px;border:0;border-radius:0;background:var(--card-bg);color:var(--text-main);box-shadow:none;resize:none;overflow:hidden;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-all;line-height:1.35;font-family:inherit;text-align:right;direction:ltr;unicode-bidi:isolate;caret-color:var(--primary);min-height:76px; }
-    .schedule-table tr.schedule-today > td { background:rgba(99,102,241,.13) !important;border-top:2px solid var(--primary);border-bottom:2px solid var(--primary); }
-    .schedule-table tr.schedule-today .schedule-input { background:var(--card-bg);border-color:var(--primary); }
-    .schedule-today-badge[hidden] { display:none !important; }
-    .schedule-today-badge { display:block;margin-top:5px;color:var(--primary);font-size:.66rem;font-weight:700; }
-    #schedule-today-summary { margin:0 0 12px;padding:10px 12px;border:1px solid var(--border-color);border-inline-start:3px solid var(--primary);border-radius:10px;color:var(--text-main);background:var(--bg-color);font-size:.8rem;line-height:1.8;overflow-wrap:anywhere; }
     .nav-item { width:16.6667%;min-height:48px; }
     .pdf-tools { display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px; }
     .pdf-tool { display:flex;flex-direction:column;align-items:flex-start;gap:10px;padding:18px 14px;text-align:start;background:var(--card-bg);color:var(--text-main);border:1px solid var(--border-color);border-radius:16px;box-shadow:var(--shadow);cursor:pointer;min-width:0; }
@@ -841,7 +833,113 @@
     .pdf-actions button:first-child { background:var(--primary);color:white;flex:1; }
     @media(max-width:350px){.pdf-tools{gap:8px}.pdf-tool{padding:14px 10px}.nav-item{font-size:.62rem}}
 
-    </style>
+        /* Study tools, shared with Settings and the existing app themes. */
+    [hidden] { display:none !important; }
+    header .btn-icon { flex-shrink:0; }
+    .header-right { justify-content:flex-end; }
+    .settings-row:is(a) { text-decoration:none; color:inherit; }
+    .language-toggle,.language-options button { display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:48px;padding:10px 14px;border:1px solid var(--border-color);border-radius:12px;background:var(--bg-color);color:var(--text-main);font:inherit;cursor:pointer; }
+    .language-toggle[aria-expanded="true"] { border-color:var(--primary); }
+    .language-options { display:grid;gap:6px;margin-top:8px; }
+    .language-options button[aria-pressed="true"] { background:var(--card-bg);border-color:var(--primary); }
+    .language-check { color:var(--primary);font-weight:800;visibility:hidden; }
+    [aria-pressed="true"] .language-check { visibility:visible; }
+    .study-page { max-width:720px;margin-inline:auto; }
+    .study-stack { display:grid;gap:9px; }
+    .study-category,.shortcut-entry,.classmate-card { border:1px solid var(--border-color);border-radius:14px;background:var(--card-bg);color:var(--text-main);padding:12px 14px;overflow-wrap:anywhere; }
+    .study-category { display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;text-align:start;font:inherit;cursor:pointer;min-height:55px; }
+    .study-badge { display:grid;place-items:center;min-width:37px;height:33px;border-radius:8px;background:var(--bg-color);color:var(--primary);font-weight:800;font-size:.75rem; }
+    .study-chevron { color:var(--text-sub); }
+    [dir="rtl"] .study-chevron,[dir="rtl"] .calendar-toolbar button { transform:scaleX(-1); }
+    .shortcut-entry { display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px; }
+    .shortcut-entry kbd { direction:ltr;unicode-bidi:isolate;border:1px solid var(--border-color);border-radius:7px;padding:3px 8px;background:var(--bg-color);font-size:.85rem; }
+    .shortcut-entry span { flex:1 1 140px;font-size:.88rem; }
+    .shortcut-source { display:inline-flex;align-items:center;text-decoration:none;margin-top:14px; }
+    .study-calendar { padding:clamp(12px,4vw,24px); }
+    .calendar-modes { display:flex;gap:6px;padding:5px;border-radius:13px;background:var(--bg-color); }
+    .calendar-modes button { flex:1;min-height:41px;border:1px solid transparent;border-radius:9px;background:transparent;color:var(--text-main);font:inherit;font-size:.83rem;cursor:pointer; }
+    .calendar-modes [aria-pressed="true"] { border-color:var(--primary);background:var(--card-bg);font-weight:bold; }
+    .calendar-toolbar,.calendar-footer { display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:15px; }
+    .calendar-toolbar h3 { margin:0;text-align:center; }
+    .calendar-toolbar button { font-size:1.5rem; }
+    .calendar-grid { display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin:12px 0 0;text-align:center; }
+    .calendar-grid span { display:grid;min-height:36px;place-items:center;border-radius:8px;font-variant-numeric:tabular-nums; }
+    .calendar-weekday,.calendar-outside,.calendar-footer time { color:var(--text-sub);font-size:.76rem; }
+    .calendar-grid .calendar-today { background:var(--primary);color:white;font-weight:800; }
+    .calendar-footer { border-top:1px solid var(--border-color);padding-top:12px; }
+    .classmate-fields { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px; }
+    .classmate-fields label:last-child { grid-column:1/-1; }
+    .classmate-fields input { margin-top:5px; }
+    .classmate-card p { color:var(--text-sub);margin:5px 0 10px;user-select:text; }
+    .classmate-card bdi { user-select:text; }
+    #classmate-form-status:not(:empty),.field-error:not(:empty) { color:var(--danger);font-size:.85rem;margin:8px 0; }
+    /* The weekly overview uses the original six-row timetable. */
+    #schedule-modal .modal-content { max-width:900px;padding:0;display:flex;flex-direction:column;overflow:hidden; }
+    #schedule-modal .schedule-body { padding:clamp(12px,3vw,22px);overflow:auto;overscroll-behavior:contain;min-height:0; }
+    #schedule-modal .schedule-footer { display:flex;justify-content:flex-end;gap:8px;padding:9px clamp(12px,3vw,22px);border-top:1px solid var(--border-color);background:var(--card-bg); }
+    .schedule-footer .settings-button { min-width:78px; }
+    .schedule-day-picker { display:flex;align-items:center;gap:8px;margin-block:8px; }
+    .schedule-day-picker label { flex:0 0 auto;font-size:.85rem;font-weight:700; }
+    .schedule-day-picker select { margin:0;min-width:0; }
+    .schedule-reminders { display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin:8px 0; }
+    #schedule-modal .schedule-meta-grid { margin-bottom:5px; }
+    #schedule-modal .schedule-meta-grid input { margin:0;padding-block:8px; }
+    .schedule-reminders .settings-hint { flex:1 1 110px;margin:0;line-height:1.5; }
+    .schedule-reminders .settings-button { min-height:36px;padding:7px 10px; }
+    #schedule-today-summary { margin:10px 0;padding:8px 10px;border:1px solid var(--border-color);border-inline-start:3px solid var(--primary);border-radius:10px;color:var(--text-main);background:var(--bg-color);font-size:.77rem;line-height:1.5; }
+    .schedule-overview-hint { font-size:.73rem;margin:7px 1px; }
+    .schedule-table-wrapper { margin:8px 0 0; }
+    .schedule-table tr.schedule-today > :is(th,td) { background:rgba(99,102,241,.11); }
+    .schedule-table tbody th { background:var(--bg-color); }
+    .schedule-table tbody td { background:var(--card-bg); }
+    .schedule-table .schedule-week-day { width:100%;min-height:38px;padding:3px;border:0;border-radius:7px;background:transparent;color:var(--text-main);font:inherit;font-weight:700;cursor:pointer;overflow-wrap:anywhere; }
+    .schedule-week-day:focus-visible { outline:2px solid var(--primary);outline-offset:-2px; }
+    .schedule-today-badge { display:inline-block;padding:2px 8px;border-radius:999px;background:rgba(99,102,241,.16);color:var(--text-main);font-size:.7rem;font-weight:750; }
+    .schedule-week-day .schedule-today-badge { display:block;width:max-content;margin:3px auto 0;padding:1px 6px; }
+    .schedule-day-heading,.schedule-cell-label,.schedule-time-fields { display:none; }
+    .schedule-table .schedule-subject { margin:0;border-radius:6px;min-height:32px;padding:4px 3px; }
+    .schedule-time-range { display:block;margin:2px 0;color:var(--text-sub);font-size:.66rem;line-height:1.25;direction:ltr; }
+    .schedule-time-range span { white-space:nowrap; }
+    .schedule-time-range span + span::before { content:"–";margin-inline:2px; }
+    .schedule-week-view .schedule-time-range span { display:inline-block; }
+    @media(max-width:460px) {
+        .schedule-week-view .schedule-table { font-size:.66rem; }
+        .schedule-week-view .schedule-table th { overflow-wrap:anywhere; }
+        .schedule-week-view .schedule-table th,.schedule-week-view .schedule-table td { padding:3px 1px; }
+        .schedule-week-view .schedule-subject { font-size:.69rem; }
+    }
+
+    /* Each day uses the same compact lesson cards, with a badge for today. */
+    .schedule-day-view .schedule-table-wrapper { border:0;border-radius:0;overflow:visible; }
+    .schedule-day-view .schedule-table,.schedule-day-view .schedule-table tbody { display:block; }
+    .schedule-day-view .schedule-table thead { position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap; }
+    .schedule-day-view .schedule-table tr { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px; }
+    .schedule-day-view .schedule-table tbody :is(th,td) { display:block;min-width:0;text-align:start;background:var(--bg-color);border:1px solid var(--border-color);border-radius:12px; }
+    .schedule-day-view .schedule-table tbody th { grid-column:1/-1;padding:0; }
+    .schedule-day-view .schedule-table tbody td { padding:8px; }
+    .schedule-day-view .schedule-table tr.schedule-today > th { border-color:var(--primary);background:rgba(99,102,241,.11); }
+    .schedule-day-view .schedule-table tr.schedule-today > td { background:var(--bg-color); }
+    .schedule-day-view .schedule-week-day,.schedule-day-view .schedule-time-range { display:none; }
+    .schedule-day-view .schedule-day-heading { display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;color:var(--text-main);font-size:.88rem; }
+    .schedule-day-view .schedule-cell-label { display:block;margin-bottom:4px;color:var(--text-main);font-size:.74rem;font-weight:750; }
+    .schedule-day-view .schedule-subject,.schedule-day-view .schedule-time-fields input { border:1px solid var(--border-color);background:var(--card-bg);text-align:start;color:var(--text-main);min-height:35px;padding:5px 7px;border-radius:8px; }
+    .schedule-day-view .schedule-input:focus { outline:2px solid var(--primary);outline-offset:-1px; }
+    .schedule-day-view .schedule-time-fields { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:6px; }
+    .schedule-time-fields label { min-width:0;font-size:.7rem;color:var(--text-sub); }
+    .schedule-time-control { display:block;position:relative;margin-top:2px; }
+    .schedule-day-view .schedule-time-fields input { display:block;width:100%;margin:0;font-size:.77rem; }
+    .schedule-time-control[data-empty="true"] input,
+    .schedule-time-control[data-empty="true"] input::-webkit-datetime-edit { color:transparent; }
+    .schedule-time-placeholder { display:none;pointer-events:none;position:absolute;top:50%;left:8px;transform:translateY(-50%);color:var(--text-sub);direction:ltr; }
+    .schedule-time-control[data-empty="true"]:not(:focus-within) .schedule-time-placeholder { display:block; }
+    .schedule-time-control[data-empty="true"]:focus-within input,
+    .schedule-time-control[data-empty="true"]:focus-within input::-webkit-datetime-edit { color:var(--text-main); }
+    [data-theme="dark"] .schedule-time-control input { color-scheme:dark; }
+    @media(max-width:540px) { .schedule-day-view .schedule-table tr { grid-template-columns:minmax(0,1fr); } }
+    @media(max-width:410px) { header { padding-inline:9px;gap:5px; } .header-left,.header-right { gap:4px; } header .btn-icon { width:33px;height:36px; } .header-right .user-brand { font-size:.67rem;padding:4px; } }
+    @media(max-width:350px) { header .btn-icon,header .header-left .btn-icon { width:29px;height:33px; } }
+    @media(max-width:319px) { .header-right .user-brand { display:none; } }
+</style>
 </head>
 <body>
 
@@ -850,19 +948,19 @@
          ====================================================================== -->
     <header>
         <div class="header-left">
-            <button class="btn-icon" onclick="switchPage('search')" title="Search">
-                <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-            </button>
-            <button class="btn-icon" onclick="toggleTheme()" id="theme-quick-button" title="Theme"><svg aria-hidden="true" class="" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></svg></button>
-            <button class="btn-icon" onclick="openScheduleModal()" title="د پوهنتون مهالوېش">
-                <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01"/></svg>
-            </button>
             <button class="btn-icon" onclick="switchPage('settings')" id="settings-open" title="تنظیمات">
                 <svg viewBox="0 0 24 24"><path d="M9 3l-.5 2a8 8 0 00-2 1L4.5 5.5l-2 3.5L4 10.5a8 8 0 000 3L2.5 15l2 3.5 2-.5a8 8 0 002 1L9 21h4l.5-2a8 8 0 002-1l2 .5 2-3.5-1.5-1.5a8 8 0 000-3L19.5 9l-2-3.5-2 .5a8 8 0 00-2-1L13 3z"/><circle cx="11" cy="12" r="3"/></svg>
+            </button>
+            <button class="btn-icon" onclick="openScheduleModal()" id="schedule-open" title="د پوهنتون مهالوېش">
+                <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01"/></svg>
+            </button>
+            <button class="btn-icon" onclick="switchPage('search')" id="search-open" title="Search">
+                <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
             </button>
         </div>
 
         <div class="header-right">
+            <button type="button" class="btn-icon" id="calendar-open" onclick="openCalendar()"><svg aria-hidden="true" class="" viewBox="0 0 24 24"><path d="M4 5h16v16H4zM8 3v4m8-4v4M4 9h16m-11 5h.01m3 0h.01m3 0h.01m-6 3h.01m3 0h.01"/></svg></button><button type="button" class="btn-icon" id="shortcuts-open" onclick="openShortcuts()"><svg aria-hidden="true" class="" viewBox="0 0 24 24"><path d="M3 6h18v12H3zM7 10h.01m3 0h.01m4 0h.01m3 0h.01M7 14h.01m3 0h4m3 0h.01"/></svg></button>
             <div class="header-time"><div class="live-clock" id="clock">00:00:00 AM</div><time id="current-date-display" class="header-date"></time></div>
             <div class="user-brand" id="current-day-display">ورځ</div>
         </div>
@@ -1051,13 +1149,13 @@
             <button type="button" class="pdf-tool" id="pdf-scan" onclick="pdfAction('scan')"><svg viewBox="0 0 24 24"><path d="M4 8V4h4m8 0h4v4M4 16v4h4m8 0h4v-4M3 12h18M8 7h8v10H8z"/></svg><strong id="pdf-scan-label"></strong><span id="pdf-scan-hint"></span></button>
         </div>
         <div class="pdf-folder-actions"><button type="button" class="settings-button secondary" id="pdf-pick" onclick="pdfAction('pick')"></button><button type="button" class="settings-button secondary" id="pdf-refresh" onclick="refreshPdfLibrary()"></button></div>
-        <p class="settings-hint" id="pdf-access-hint"></p>
+
         <p class="settings-hint" id="pdf-availability"></p>
         <label for="pdf-search" id="pdf-search-label" class="voice-label"></label>
         <input id="pdf-search" type="search" dir="auto" maxlength="120" oninput="renderPdfList()" autocomplete="off">
         <div class="voice-list-heading"><h3 id="pdf-list-title"></h3><span id="pdf-count"></span></div>
         <div id="pdf-list"></div>
-        <p class="settings-hint" id="pdf-backup-hint"></p>
+
     </div>
 
     <div id="page-recordings" class="page" style="padding:16px;">
@@ -1073,7 +1171,7 @@
                 <button type="button" class="settings-button secondary" id="voice-pause" onclick="toggleVoicePause()" hidden></button>
                 <button type="button" class="settings-button" id="voice-save" onclick="stopVoiceRecording()" hidden></button>
             </div>
-            <p class="settings-hint" id="voice-lifecycle-hint"></p>
+
             <p class="settings-hint" id="voice-availability"></p>
         </section>
         <section class="voice-panel" id="voice-player" hidden>
@@ -1084,7 +1182,7 @@
         </section>
         <div class="voice-list-heading"><h3 id="voice-list-title"></h3><span id="voice-count"></span></div>
         <div id="voice-list"></div>
-        <p class="settings-hint" id="voice-backup-hint"></p>
+
     </div>
 
     <!-- ======================================================================
@@ -1110,15 +1208,67 @@
     <div id="page-settings" class="page settings-page">
 <div class="settings-heading"><button class="btn-icon settings-back" onclick="handleAppBack()" id="settings-back"><svg aria-hidden="true" class="" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button><h2 id="settings-title"></h2></div>
         <div class="settings-brand"><span class="settings-brand-icon"><svg aria-hidden="true" class="" viewBox="0 0 24 24"><path d="M12 6c-3-3-7-3-10-2v15c3-1 7-1 10 2 3-3 7-3 10-2V4c-3-1-7-1-10 2zm0 0v15"/></svg></span><div><strong>University Notes</strong><p id="settings-subtitle"></p></div></div>
-        <div class="settings-menu"><button class="settings-row" id="settings-row-language" onclick="switchPage('settings-language')"><svg aria-hidden="true" class="settings-row-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a17 17 0 010 18 17 17 0 010-18z"/></svg><span class="settings-row-copy"><span id="settings-menu-language" class="settings-row-title"></span><span id="settings-summary-language" class="settings-row-summary"></span></span><svg aria-hidden="true" class="settings-chevron" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button><button class="settings-row" id="settings-row-theme" onclick="switchPage('settings-theme')"><svg aria-hidden="true" class="settings-row-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></svg><span class="settings-row-copy"><span id="settings-menu-theme" class="settings-row-title"></span><span id="settings-summary-theme" class="settings-row-summary"></span></span><svg aria-hidden="true" class="settings-chevron" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button><button class="settings-row" id="settings-row-security" onclick="switchPage('settings-security')"><svg aria-hidden="true" class="settings-row-icon" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-8 9-8 9s-8-4-8-9V6z"/><rect x="9" y="10" width="6" height="6" rx="1"/><path d="M10 10V8a2 2 0 014 0v2"/></svg><span class="settings-row-copy"><span id="settings-menu-security" class="settings-row-title"></span><span id="settings-summary-security" class="settings-row-summary"></span></span><svg aria-hidden="true" class="settings-chevron" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button><button class="settings-row" id="settings-row-backup" onclick="switchPage('settings-backup')"><svg aria-hidden="true" class="settings-row-icon" viewBox="0 0 24 24"><path d="M4 16v4h16v-4M12 16V4m-4 4l4-4 4 4"/><path d="M5 12H3m18 0h-2"/></svg><span class="settings-row-copy"><span id="settings-menu-backup" class="settings-row-title"></span><span id="settings-summary-backup" class="settings-row-summary"></span></span><svg aria-hidden="true" class="settings-chevron" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button><button class="settings-row" id="settings-row-privacy" onclick="switchPage('privacy')"><svg aria-hidden="true" class="settings-row-icon" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-8 9-8 9s-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg><span class="settings-row-copy"><span id="settings-menu-privacy" class="settings-row-title"></span><span id="settings-summary-privacy" class="settings-row-summary"></span></span><svg aria-hidden="true" class="settings-chevron" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button><button class="settings-row" id="settings-row-about" onclick="switchPage('about')"><svg aria-hidden="true" class="settings-row-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10v.1"/></svg><span class="settings-row-copy"><span id="settings-menu-about" class="settings-row-title"></span><span id="settings-summary-about" class="settings-row-summary"></span></span><svg aria-hidden="true" class="settings-chevron" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button></div>
-        <div class="theme-segments" role="group" id="settings-theme-shortcuts"><button id="settings-light-quick" onclick="setTheme('light')"><svg aria-hidden="true" class="" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></svg><span id="settings-light-quick-label"></span></button><button id="settings-dark-quick" onclick="setTheme('dark')"><svg aria-hidden="true" class="" viewBox="0 0 24 24"><path d="M20 14A9 9 0 0110 3a9 9 0 1010 11z"/></svg><span id="settings-dark-quick-label"></span></button></div>
+        <div class="settings-menu">
+            <button class="settings-row" id="settings-row-language" onclick="switchPage('settings-language')"><svg aria-hidden="true" class="settings-row-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a17 17 0 010 18 17 17 0 010-18z"/></svg><span class="settings-row-copy"><span id="settings-menu-language" class="settings-row-title"></span><span id="settings-summary-language" class="settings-row-summary"></span></span><svg aria-hidden="true" class="settings-chevron" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+            <button class="settings-row" id="settings-row-theme" onclick="switchPage('settings-theme')"><svg aria-hidden="true" class="settings-row-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></svg><span class="settings-row-copy"><span id="settings-menu-theme" class="settings-row-title"></span><span id="settings-summary-theme" class="settings-row-summary"></span></span><svg aria-hidden="true" class="settings-chevron" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+            <button type="button" class="settings-row" id="settings-row-classmates" onclick="switchPage('classmates')"><svg aria-hidden="true" class="settings-row-icon" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2m20 0v-2a4 4 0 0 0-4-4M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8m8-8a4 4 0 0 1 0 8"/></svg><span class="settings-row-copy"><span id="settings-menu-classmates" class="settings-row-title"></span><span id="settings-summary-classmates" class="settings-row-summary"></span></span><svg aria-hidden="true" class="settings-chevron" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+            <button class="settings-row" id="settings-row-security" onclick="switchPage('settings-security')"><svg aria-hidden="true" class="settings-row-icon" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-8 9-8 9s-8-4-8-9V6z"/><rect x="9" y="10" width="6" height="6" rx="1"/><path d="M10 10V8a2 2 0 014 0v2"/></svg><span class="settings-row-copy"><span id="settings-menu-security" class="settings-row-title"></span><span id="settings-summary-security" class="settings-row-summary"></span></span><svg aria-hidden="true" class="settings-chevron" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+            <button class="settings-row" id="settings-row-backup" onclick="switchPage('settings-backup')"><svg aria-hidden="true" class="settings-row-icon" viewBox="0 0 24 24"><path d="M4 16v4h16v-4M12 16V4m-4 4l4-4 4 4"/><path d="M5 12H3m18 0h-2"/></svg><span class="settings-row-copy"><span id="settings-menu-backup" class="settings-row-title"></span><span id="settings-summary-backup" class="settings-row-summary"></span></span><svg aria-hidden="true" class="settings-chevron" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+            <button class="settings-row" id="settings-row-privacy" onclick="switchPage('privacy')"><svg aria-hidden="true" class="settings-row-icon" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-8 9-8 9s-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg><span class="settings-row-copy"><span id="settings-menu-privacy" class="settings-row-title"></span><span id="settings-summary-privacy" class="settings-row-summary"></span></span><svg aria-hidden="true" class="settings-chevron" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+            <a class="settings-row" id="settings-row-update" href="https://play.google.com/store/apps/details?id=com.noori.universitynotes" target="_blank" rel="noopener noreferrer"><svg aria-hidden="true" class="settings-row-icon" viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M4 17v4h16v-4"/></svg><span class="settings-row-copy"><span id="settings-menu-update" class="settings-row-title"></span><span id="settings-summary-update" class="settings-row-summary"></span></span><svg aria-hidden="true" class="settings-chevron" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></a>
+            <button class="settings-row" id="settings-row-about" onclick="switchPage('about')"><svg aria-hidden="true" class="settings-row-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10v.1"/></svg><span class="settings-row-copy"><span id="settings-menu-about" class="settings-row-title"></span><span id="settings-summary-about" class="settings-row-summary"></span></span><svg aria-hidden="true" class="settings-chevron" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+        </div>
     </div>
+    <section id="page-shortcuts" class="page settings-page study-page">
+        <div class="settings-heading"><button type="button" class="btn-icon settings-back" onclick="handleAppBack()"><svg aria-hidden="true" class="" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button><h2 id="shortcuts-heading"></h2></div>
+        <p class="settings-hint" id="shortcuts-intro"></p><div id="shortcut-categories" class="study-stack"></div>
+    </section>
+    <section id="page-shortcut-detail" class="page settings-page study-page">
+        <div class="settings-heading"><button type="button" class="btn-icon settings-back" onclick="handleAppBack()"><svg aria-hidden="true" class="" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button><h2 id="shortcut-detail-heading"></h2></div>
+        <p class="settings-hint" id="shortcut-version"></p><label class="voice-label" for="shortcut-search" id="shortcut-search-label"></label><input type="search" id="shortcut-search" dir="auto" autocomplete="off" oninput="renderShortcutEntries()"><div id="shortcut-entries" class="study-stack" aria-live="polite"></div><a id="shortcut-source" class="settings-button secondary shortcut-source" target="_blank" rel="noopener noreferrer"></a>
+    </section>
+    <section id="page-calendar" class="page settings-page study-page">
+        <div class="settings-heading"><button type="button" class="btn-icon settings-back" onclick="handleAppBack()"><svg aria-hidden="true" class="" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button><h2 id="calendar-heading"></h2></div>
+        <section class="settings-card study-calendar" aria-labelledby="calendar-month">
+          <div class="calendar-modes" id="calendar-modes" role="group">
+            <button type="button" id="calendar-gregory" onclick="setCalendarMode('gregory')"></button>
+            <button type="button" id="calendar-persian" onclick="setCalendarMode('persian')"></button>
+          </div>
+          <div class="calendar-toolbar"><button type="button" class="btn-icon" id="calendar-prev" onclick="moveCalendar(-1)">‹</button><h3 id="calendar-month" aria-live="polite"></h3><button type="button" class="btn-icon" id="calendar-next" onclick="moveCalendar(1)">›</button></div>
+          <div id="calendar-grid" class="calendar-grid"></div>
+          <div class="calendar-footer"><time id="calendar-today-date"></time><button type="button" class="settings-button secondary" id="calendar-today" onclick="openCalendar()"></button></div>
+        </section>
+    </section>
+    <section id="page-classmates" class="page settings-page study-page">
+        <div class="settings-heading"><button type="button" class="btn-icon settings-back" onclick="handleAppBack()"><svg aria-hidden="true" class="" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button><h2 id="classmates-heading"></h2></div>
+        <p class="settings-hint" id="classmates-description"></p>
+        <form id="classmate-form" class="settings-card" autocomplete="off" onsubmit="saveClassmate(event)">
+          <div class="classmate-fields">
+            <label><span id="classmate-first-label"></span><input id="classmate-first" type="text" dir="auto" required maxlength="60"></label>
+            <label><span id="classmate-last-label"></span><input id="classmate-last" type="text" dir="auto" required maxlength="60"></label>
+            <label><span id="classmate-phone-label"></span><input id="classmate-phone" type="tel" dir="ltr" required maxlength="40"></label>
+          </div>
+          <p id="classmate-form-status" role="alert"></p>
+          <div class="settings-actions"><button type="submit" class="settings-button" id="classmate-save"></button><button type="button" class="settings-button secondary" id="classmate-cancel" onclick="resetClassmateForm()" hidden></button></div>
+        </form>
+        <label for="classmate-search" class="voice-label" id="classmate-search-label"></label><input id="classmate-search" type="search" dir="auto" autocomplete="off" oninput="renderClassmateList()">
+        <div id="classmate-list" class="study-stack"></div>
+    </section>
     <div id="page-settings-language" class="page settings-page settings-detail"><div class="settings-heading"><button class="btn-icon settings-back" onclick="handleAppBack()" id="settings-back-language"><svg aria-hidden="true" class="" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button><h2 id="settings-detail-title-language"></h2></div><section class="settings-card">
             <label for="settings-language" id="settings-language-label"></label>
-            <select id="settings-language" onchange="setLanguage(this.value)"><option value="ps">پښتو</option><option value="dr">دری</option><option value="en">English</option></select>
+            <button type="button" class="language-toggle" id="settings-language" aria-expanded="false" aria-controls="language-options" aria-labelledby="settings-language-label language-current" onclick="toggleSettingsChoices('language')"><b id="language-current" dir="auto"></b><span aria-hidden="true">⌄</span></button>
+            <div class="language-options" id="language-options" role="group" aria-labelledby="settings-language-label" hidden>
+              <button type="button" data-choice="ps" lang="ps" onclick="chooseLanguage(this)"><span>پښتو</span><span class="language-check" aria-hidden="true">✓</span></button>
+              <button type="button" data-choice="dr" lang="fa-AF" onclick="chooseLanguage(this)"><span>دری</span><span class="language-check" aria-hidden="true">✓</span></button>
+              <button type="button" data-choice="en" lang="en" onclick="chooseLanguage(this)"><span>English</span><span class="language-check" aria-hidden="true">✓</span></button>
+            </div>
             </section></div>
     <div id="page-settings-theme" class="page settings-page settings-detail"><div class="settings-heading"><button class="btn-icon settings-back" onclick="handleAppBack()" id="settings-back-theme"><svg aria-hidden="true" class="" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button><h2 id="settings-detail-title-theme"></h2></div><section class="settings-card"><label for="settings-theme" id="settings-theme-label"></label>
-            <select id="settings-theme" onchange="setTheme(this.value)"><option value="light" id="theme-light"></option><option value="dark" id="theme-dark"></option></select>
+            <button type="button" class="language-toggle" id="settings-theme" aria-expanded="false" aria-controls="theme-options" aria-labelledby="settings-theme-label theme-current" onclick="toggleSettingsChoices('theme')"><b id="theme-current"></b><span aria-hidden="true">⌄</span></button>
+            <div class="language-options" id="theme-options" role="group" aria-labelledby="settings-theme-label" hidden>
+                <button type="button" data-choice="light" onclick="chooseTheme(this)"><span id="theme-light"></span><span class="language-check" aria-hidden="true">✓</span></button>
+                <button type="button" data-choice="dark" onclick="chooseTheme(this)"><span id="theme-dark"></span><span class="language-check" aria-hidden="true">✓</span></button>
+            </div>
         </section></div>
     <div id="page-settings-security" class="page settings-page settings-detail"><div class="settings-heading"><button class="btn-icon settings-back" onclick="handleAppBack()" id="settings-back-security"><svg aria-hidden="true" class="" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button><h2 id="settings-detail-title-security"></h2></div><section class="settings-card">
             <h3 id="security-title"></h3><p id="security-desc" class="settings-hint"></p>
@@ -1175,8 +1325,9 @@
     <!-- ======================================================================
          MODAL: SCHEDULE
          ====================================================================== -->
-    <div class="modal" id="schedule-modal">
-        <div class="modal-content">
+    <div class="modal" id="schedule-modal" role="dialog" aria-modal="true" aria-labelledby="txt-sched-title">
+        <div class="modal-content schedule-week-view">
+            <div class="schedule-body">
             <h3 style="margin-bottom: 6px;" id="txt-sched-title">د پوهنتون تقسیم اوقات (مهالوېش)</h3>
             <p style="font-size: 0.78rem; color: var(--text-sub); margin-bottom: 10px;" id="txt-sched-desc">د پوهنځي او سمسټر په ټاکلو سره مهالوېش تنظیم کړئ:</p>
 
@@ -1194,7 +1345,11 @@
                 <input type="text" id="sched-semester" placeholder="سمسټر">
             </div>
 
+            <div class="schedule-reminders"><p id="schedule-reminder-hint" class="settings-hint"></p><button type="button" id="schedule-reminder-settings" class="settings-button secondary" onclick="configureLessonAlarms()"></button></div>
+            <p id="schedule-time-status" class="field-error" role="alert"></p>
+            <div class="schedule-day-picker"><label for="schedule-day-filter" id="schedule-day-label"></label><select id="schedule-day-filter" onchange="showScheduleDay(this.value)"></select></div>
             <p id="schedule-today-summary" role="status" aria-live="polite"></p>
+            <p id="schedule-overview-hint" class="settings-hint schedule-overview-hint"></p>
             <div class="schedule-table-wrapper">
                 <table class="schedule-table">
                     <thead>
@@ -1210,9 +1365,10 @@
                 </table>
             </div>
 
-            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 10px;">
-                <button onclick="closeModals()" style="background:transparent; border:none; color:var(--text-sub); cursor:pointer;" id="txt-cancel-3">بندول</button>
-                <button onclick="saveSchedule()" style="background:var(--primary); color:white; border:none; padding:8px 16px; border-radius:8px; cursor:pointer;" id="txt-save-3">ذخیره کول</button>
+            </div>
+            <div class="schedule-footer">
+                <button type="button" class="settings-button secondary" onclick="closeModals()" id="txt-cancel-3">بندول</button>
+                <button type="button" class="settings-button" onclick="saveSchedule()" id="txt-save-3">ذخیره کول</button>
             </div>
         </div>
     </div>
@@ -1708,6 +1864,13 @@ function sanitizeSchedule(raw) {
             'day_' + Math.floor(i / 4) + '_slot_' + (i % 4 + 1))).forEach(key => {
             if (typeof data[key] === 'string' || typeof data[key] === 'number') out[key] = String(data[key]);
         });
+        for (const key of Object.keys(out)) {
+            if (!/^day_[0-5]_slot_[1-4]$/.test(key) || !out[key].trim()) continue;
+            const start = data[key + '_start'], end = data[key + '_end'];
+            if (validLessonTime(start) && validLessonTime(end) && start < end) {
+                out[key + '_start'] = start; out[key + '_end'] = end;
+            }
+        }
         return out;
     }
     if (raw && raw.version === 2 && Array.isArray(raw.items)) {
@@ -1807,6 +1970,7 @@ function renderAll() {
     updateCalcPreview();
     renderVoice();
     renderPdf();
+    renderStudyPages();
     resizeCalcDisplay();
 }
 
@@ -2072,7 +2236,7 @@ let historyPending = false;
 let restoringHistory = false;
 let afterHistoryNavigation = null;
 let modalBaseline = '';
-const validPages = ['home','subjects','notes','attendance','calc','pdf','recordings','search','trash','about','privacy','settings','settings-language','settings-theme','settings-security','settings-backup'];
+const validPages = ['home','subjects','notes','attendance','calc','pdf','recordings','search','trash','about','privacy','settings','settings-language','settings-theme','settings-security','settings-backup','shortcuts','shortcut-detail','calendar','classmates'];
 function pageState(modalId) {
     return { universityNotes: true, page: currentPage, filter: selectedSubjectFilter,
         depth: navDepth, modal: modalId || null };
@@ -2099,6 +2263,8 @@ function switchPage(pageId, options) {
 function switchPageInternal(pageId) {
     if (voiceState.recording && pageId !== 'recordings' && !voiceBusy) void stopVoiceRecording();
     currentPage = validPages.includes(pageId) ? pageId : 'home';
+    toggleSettingsChoices('language',false);
+    toggleSettingsChoices('theme',false);
     if (currentPage === 'settings' || currentPage === 'settings-security') refreshSecurity();
     document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.id === 'page-' + currentPage));
     const navIndex = ['home','subjects','attendance','calc','pdf','recordings'].indexOf(currentPage);
@@ -2112,7 +2278,7 @@ function switchPageInternal(pageId) {
 }
 function editorSignature() {
     const modal = document.querySelector('.modal.active');
-    return modal ? Array.from(modal.querySelectorAll('input,select,textarea')).map(el => el.value).join('\u0000') : '';
+    return modal ? Array.from(modal.querySelectorAll('input,select:not(#schedule-day-filter),textarea')).map(el => el.value).join('\u0000') : '';
 }
 function mayDiscardEditor() {
     return editorSignature() === modalBaseline || confirm(uiText(
@@ -2503,7 +2669,7 @@ function readScheduleDraft() {
     };
     document.querySelectorAll('#schedule-modal .schedule-input').forEach(input => {
         const key = input.getAttribute('data-key');
-        if (/^day_[0-5]_slot_[1-4]$/.test(key)) data[key] = input.value.trim();
+        if (/^day_[0-5]_slot_[1-4](?:_start|_end)?$/.test(key) && input.value.trim()) data[key] = input.value.trim();
     });
     return data;
 }
@@ -2550,28 +2716,48 @@ function renderScheduleEditor(data) {
     (defaultDays[currentLang] || defaultDays.ps).forEach((day, dayIndex) => {
         const tr = document.createElement('tr');
         tr.dataset.dayIndex=String(dayIndex);
-        const dayCell = document.createElement('td');
-        dayCell.style.fontWeight = 'bold';
-        dayCell.style.background = 'rgba(0,0,0,0.02)';
-        const dayLabel=document.createElement('span');dayLabel.textContent=day;dayCell.appendChild(dayLabel);
-        const today=document.createElement('span');today.className='schedule-today-badge';today.hidden=true;dayCell.appendChild(today);
+        const dayCell = document.createElement('th');
+        dayCell.scope='row';
+        const weekButton = document.createElement('button');
+        weekButton.type='button'; weekButton.className='schedule-week-day';
+        weekButton.addEventListener('click',()=>{
+            showScheduleDay(String(dayIndex));
+            byId('schedule-day-filter').focus({preventScroll:true});
+            byId('schedule-day-filter').scrollIntoView({block:'nearest'});
+        });
+        const heading=document.createElement('div'); heading.className='schedule-day-heading';
+        for(const view of [weekButton,heading]) {
+            const label=document.createElement('span');label.textContent=day;
+            const today=document.createElement('span');today.className='schedule-today-badge';today.hidden=true;
+            view.append(label,today);
+        }
+        dayCell.append(weekButton,heading);
         tr.appendChild(dayCell);
         for (let slot = 1; slot <= 4; slot++) {
             const key = 'day_' + dayIndex + '_slot_' + slot;
             const td = document.createElement('td');
+            const slotLabel=document.createElement('span'); slotLabel.className='schedule-cell-label';
+            slotLabel.textContent=t()['thS'+slot]; slotLabel.setAttribute('aria-hidden','true');
+            td.append(slotLabel);
             const input = document.createElement('input');
-            input.className = 'schedule-input';
+            input.className = 'schedule-input schedule-subject';
+            input.dir = 'auto';
             input.type = 'text';
             input.setAttribute('data-key', key);
             input.setAttribute('aria-label', day + ' — ' + (t()['thS' + slot] || slot));
             input.value = data[key] || '';
-            input.placeholder = '-';
-            td.appendChild(input);
+            input.placeholder = '—';
+            td.append(input,makeLessonTimes(key,data,day,slot),makeLessonTimeRange());
+            updateLessonCell(td);
             tr.appendChild(td);
         }
         tbody.appendChild(tr);
     });
+    renderScheduleDayPicker();
     highlightScheduleToday();
+    document.getElementById('schedule-time-status').textContent = '';
+    document.getElementById('schedule-reminder-hint').textContent = uiText('د خوندي شوي فعال مهالوېش د هر درس په پای کې خبرتیا.', 'در پایان هر درسِ تقسیم اوقات فعال، اعلان دریافت کنید.', 'Get a reminder at the end of each class in the active timetable.');
+    document.getElementById('schedule-reminder-settings').textContent = uiText('د زنګ تنظیمات','تنظیم اعلان','Reminder settings');
     scheduleEditorBaseline = JSON.stringify(readScheduleDraft());
     modalBaseline = editorSignature();
 }
@@ -2583,11 +2769,14 @@ function highlightScheduleToday() {
     let row=null;
     for(const tr of body.querySelectorAll('tr[data-day-index]')){
         const today=Number(tr.dataset.dayIndex)===index;tr.classList.toggle('schedule-today',today);
-        const badge=tr.querySelector('.schedule-today-badge');if(badge){badge.hidden=!today;badge.textContent=uiText('نن','امروز','Today');}
+        for(const badge of tr.querySelectorAll('.schedule-today-badge')){
+            badge.hidden=!today;
+            badge.textContent=uiText('نن','امروز','Today');
+        }
         if(today){tr.setAttribute('aria-current','date');row=tr;}else tr.removeAttribute('aria-current');
     }
     const summary=document.getElementById('schedule-today-summary');if(!summary)return;
-    const slots=row?Array.from(row.querySelectorAll('input')).map((input,i)=>input.value.trim()?(t()['thS'+(i+1)]+': '+input.value.trim()):'').filter(Boolean):[];
+    const slots=row?Array.from(row.querySelectorAll('input:not([data-time])')).map((input,i)=>input.value.trim()?(t()['thS'+(i+1)]+': '+input.value.trim()):'').filter(Boolean):[];
     summary.textContent=uiText('نن: ','امروز: ','Today: ')+daysOfWeek[currentLang][now.getDay()]+' — '+(slots.length?slots.join(' · '):uiText('د دې ورځې لپاره ساعتونه نه دي ثبت شوي.','برای این روز ساعت ثبت نشده است.','No classes entered for this day.'));
 }
 
@@ -2595,8 +2784,11 @@ function openScheduleModal() {
     const active = scheduleData.items.find(item => item.id === scheduleData.activeId) || scheduleData.items[0];
     scheduleIsNew = !active;
     scheduleEditingId = active ? active.id : String(generateId());
+    const index = (new Date().getDay()+1)%7;
+    scheduleDayFilter = window.innerWidth <= 760 && index < 6 ? String(index) : 'all';
     renderScheduleEditor(active ? active.data : {});
     showModal('schedule-modal');
+    byId('schedule-modal').querySelector('.schedule-body').scrollTop=0;
 }
 
 function switchSchedule(id) {
@@ -2623,10 +2815,12 @@ function deleteSchedule() {
     const label = scheduleLabel(scheduleData.items[index], index);
     if (!confirm(uiText('دا مهالویش د تل لپاره ړنګ کړئ؟', 'این تقسیم اوقات برای همیشه حذف شود؟',
         'Permanently delete this timetable?') + '\n\n' + label)) return;
-    scheduleData.items.splice(index, 1);
-    scheduleData.activeId = scheduleData.items[0] ? scheduleData.items[0].id : null;
-    if (!saveData()) return;
-    const next = scheduleData.items[0];
+    const previous = scheduleData;
+    const remaining = previous.items.filter((_, i) => i !== index);
+    scheduleData = {...previous, items:remaining, activeId:previous.activeId === scheduleEditingId ? (remaining[0]?.id || null) : previous.activeId};
+    if (!saveData()) { scheduleData = previous; return; }
+    void syncLessonAlarms(false);
+    const next = remaining.find(item => item.id === scheduleData.activeId) || remaining[0];
     scheduleIsNew = !next;
     scheduleEditingId = next ? next.id : String(generateId());
     renderScheduleEditor(next ? next.data : {});
@@ -2635,11 +2829,26 @@ function deleteSchedule() {
 /** One atomic save retains all timetables and existing notes together. */
 function saveSchedule() {
     const data = readScheduleDraft();
+    const status = document.getElementById('schedule-time-status');
+    status.textContent = '';
+    for (const startInput of document.querySelectorAll('#schedule-tbody input[data-time="start"]')) {
+        const key = startInput.dataset.key.slice(0, -6);
+        const start = data[key + '_start'], end = data[key + '_end'];
+        if ((start || end) && (!data[key] || !validLessonTime(start) || !validLessonTime(end) || start >= end)) {
+            status.textContent = uiText('د درس نوم، د پیل وخت او تر هغه وروسته د پای وخت ولیکئ.', 'نام درس، زمان شروع و زمان پایان پس از شروع را وارد کنید.', 'Enter a class name and both times. End must be later than start.');
+            showScheduleDay(startInput.closest('tr').dataset.dayIndex);
+            startInput.focus();
+            return;
+        }
+    }
+    const previous = scheduleData;
+    scheduleData = {...previous, items: previous.items.slice()};
     const index = scheduleData.items.findIndex(item => item.id === scheduleEditingId);
     if (index < 0) scheduleData.items.push({ id: scheduleEditingId, data: data });
-    else scheduleData.items[index].data = data;
+    else scheduleData.items[index] = {id:scheduleEditingId, data};
     scheduleData.activeId = scheduleEditingId;
-    if (saveData()) closeModals(true);
+    if (saveData()) { closeModals(true); void syncLessonAlarms(true); }
+    else scheduleData = previous;
 }
 
 
@@ -2657,6 +2866,8 @@ function saveSchedule() {
    Recognised names: sin, cos, tan, log (base 10), ln, sqrt, abs,
    Math.PI, Math.E.
    ============================================================================ */
+
+function validLessonTime(value) { return typeof value === 'string' && /^(?:[01]\d|2[0-3]):[0-5]\d$/.test(value); }
 
 const CALC_FUNCTIONS = ['sin', 'cos', 'tan', 'log', 'ln', 'sqrt', 'abs'];
 
@@ -3133,7 +3344,10 @@ function renderPrivacy() {
         <h3>Voice recordings</h3><p>The microphone is used with your permission when you start recording. Audio is recorded, stored and played offline in private app storage; it is not sent to the developer or a server. You can rename, delete or export M4A files to a location you choose. Leaving the Record page or app, calls or screen-off stop and save recording. Voice recordings are excluded from JSON backups and are unchanged by JSON restore. Uninstalling or clearing app storage deletes local recordings; export separate copies first. You manage and delete exported copies separately. Files are not separately encrypted. Obtain permission before recording other people.</p>
         <h3>PDF library, scanning and sharing</h3><p>You choose PDFs or folders through Android's document picker; the app does not request all-files access. Imported PDFs and scans are kept in private app storage. Selected folder access persists until removed; removing access never deletes original files. PDF reading works offline on your device. Optional document scanning uses Google ML Kit and Google Play services for on-device processing; first use may require internet to download scanner components. The Google SDK may collect device and application information, identifiers, performance metrics and error events for diagnostics and usage analytics, transmitted to Google using HTTPS. Document images and PDFs are not sent to the app developer. Google Play services manages camera access in the scanner flow; the app requests no broad camera permission. Sharing sends only your selected file to the app you choose, under that service's own terms. PDFs and scans are excluded from JSON backups. Uninstalling or clearing app storage removes internal copies; original and separately exported files remain. Save important copies separately. PDF files are not separately encrypted.</p>
         <h3>Permissions and contact</h3><p>Microphone access is optional and requested to record voice notes. This version requests no camera, contacts, location or broad file access. If future versions add advertising or other services, this policy and the Play Store disclosures must be updated. Questions: ${contact}</p>`);
-    document.getElementById('privacy-policy-content').innerHTML = policy;
+    document.getElementById('privacy-policy-content').innerHTML = policy + uiText(
+        '<h3>همصنفان او د درس خبرتیاوې</h3><p>د همصنفانو نومونه او شمېرې په دې وسیله کې پاتې کېږي او د JSON بیک‌اپ برخه نه دي. اپ ستاسو د موبایل د اړیکو لېست ته لاسرسی نه غواړي. د درس د پای لپاره اختیاري Android خبرتیا کاروي.</p>',
+        '<h3>هم‌صنفی‌ها و اعلان‌های درس</h3><p>نام‌ها و شماره‌های هم‌صنفی‌ها در همین دستگاه می‌مانند و در پشتیبان JSON شامل نیستند. برنامه به مخاطبین دستگاه دسترسی نمی‌خواهد. اعلان ختم درس در Android اختیاری است.</p>',
+        '<h3>Classmates and class reminders</h3><p>Classmate names and phone numbers stay on this device and are excluded from JSON backups. The app does not access your device contacts. Android notifications for class endings are optional.</p>');
 }
 
 function paragraphIsRTL(text) {
@@ -3327,6 +3541,7 @@ function setLanguage(value) {
     try { localStorage.setItem('un_lang_v5', value); } catch (err) { /* session still usable */ }
     applyLanguage();
     refreshSecurity();
+    void syncLessonAlarms(false);
 }
 function setTheme(value) {
     if (!['light','dark'].includes(value)) return;
@@ -3357,8 +3572,7 @@ function renderSettings() {
         'backup-replace-warning': ['بېرته راوستل اوسني معلومات بدلوي. لومړی د اوسنیو معلوماتو بیک‌اپ وساتئ. د امنیت تنظیمات او غږیز ریکارډونه نه بدلېږي.','بازیابی جایگزین معلومات فعلی می‌شود. نخست از معلومات فعلی پشتیبان بگیرید. تنظیمات امنیت و ضبط‌های صوتی تغییر نمی‌کنند.','Restoring replaces your current data. Save a backup of your current data first. Security settings and local voice recordings are unchanged.'],
     };
     Object.entries(copy).forEach(([id, values]) => { document.getElementById(id).textContent = uiText(...values); });
-    document.getElementById('settings-language').value = currentLang;
-    document.getElementById('settings-theme').value = document.body.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+    renderSettingsChoices();
     const title = uiText('تنظیمات','تنظیمات','Settings');
     document.getElementById('settings-open').title = title;
     document.getElementById('settings-open').setAttribute('aria-label', title);
@@ -3387,6 +3601,7 @@ function renderSettingsMenu() {
     const labels = {
         language: uiText('ژبه','زبان','Language'), theme: uiText('ټیمونه / بڼه','تم‌ها / ظاهر','Themes'),
         security: uiText('امنیت','امنیت','Security'), backup: uiText('بیک‌اپ او بېرته راوستل','پشتیبان و بازیابی','Backup and restore'),
+        classmates: uiText('همصنفان','هم‌صنفی‌ها','Classmates'), update: uiText('اپ تازه کړئ','به‌روزرسانی برنامه','Update app'),
         privacy: uiText('د محرمیت تګلاره','حریم خصوصی','Privacy policy'), about: uiText('د اپ په اړه','دربارۀ برنامه','About the app')
     };
     const dark = document.body.getAttribute('data-theme') === 'dark';
@@ -3397,6 +3612,7 @@ function renderSettingsMenu() {
         theme: dark ? darkLabel : lightLabel,
         security: securityState.available ? (securityState.appLock ? uiText('د اپ قلف فعال دی','قفل برنامه فعال است','App lock is on') : uiText('د قلف او سکرین ساتنه','قفل و محافظت صفحه','App lock and screen protection')) : uiText('د Android اختیاري ساتنه','محافظت اختیاری Android','Optional Android protection'),
         backup: uiText('خپل معلومات خوندي وساتئ','معلومات خود را محفوظ نگه دارید','Keep a copy of your data'),
+        classmates: uiText('نومونه او شمېرې','نام‌ها و شماره‌ها','Names and phone numbers'), update: 'Google Play',
         privacy: uiText('معلومات او محرمیت','معلومات و حریم خصوصی','Your data and privacy'),
         about: uiText('د اپ معلومات او اړیکه','معلومات برنامه و تماس','App information and contact')
     };
@@ -3407,18 +3623,6 @@ function renderSettingsMenu() {
         if (title) title.textContent = labels[key];
     });
     document.getElementById('settings-subtitle').textContent = uiText('ژبه، بڼه او شخصي تنظیمات','زبان، ظاهر و تنظیمات شخصی','Language, appearance and preferences');
-    document.getElementById('settings-light-quick-label').textContent = lightLabel;
-    document.getElementById('settings-dark-quick-label').textContent = darkLabel;
-    document.getElementById('settings-theme-shortcuts').setAttribute('aria-label', labels.theme);
-    ['light','dark'].forEach(theme => {
-        const button = document.getElementById('settings-' + theme + '-quick');
-        const selected = (theme === 'dark') === dark;
-        button.setAttribute('aria-pressed', String(selected));
-    });
-    const themeButton = document.getElementById('theme-quick-button');
-    themeButton.title = labels.theme;
-    themeButton.setAttribute('aria-label', labels.theme);
-    themeButton.setAttribute('aria-pressed', String(dark));
     document.querySelectorAll('.settings-back').forEach(button => button.setAttribute('aria-label', uiText('بېرته','بازگشت','Back')));
 }
 
@@ -3471,9 +3675,15 @@ function validateBackup(text) {
     if (s.calc.length > 10 || !s.calc.every(string)) bad();
     const schedule = s.schedule;
     if (!object(schedule) || schedule.version !== 2 || !Array.isArray(schedule.items)) bad();
-    const keys = ['faculty','semester'].concat(Array.from({length:24},(_,i) => 'day_' + Math.floor(i/4) + '_slot_' + (i%4+1)));
+    const lessonKeys = Array.from({length:24},(_,i) => 'day_' + Math.floor(i/4) + '_slot_' + (i%4+1));
+    const keys = new Set(['faculty','semester', ...lessonKeys.flatMap(key => [key, key+'_start', key+'_end'])]);
     schedule.items.forEach(v => {
-        if (!object(v) || !string(v.id) || !v.id || scheduleIds.has(v.id) || !object(v.data) || !Object.keys(v.data).every(key => keys.includes(key) && string(v.data[key]))) bad();
+        if (!object(v) || !string(v.id) || !v.id || scheduleIds.has(v.id) || !object(v.data) || !Object.keys(v.data).every(key => keys.has(key) && string(v.data[key]))) bad();
+        for (const key of lessonKeys) {
+            const start = v.data[key+'_start'], end = v.data[key+'_end'];
+            if ((start !== undefined || end !== undefined) &&
+                (!v.data[key]?.trim() || !validLessonTime(start) || !validLessonTime(end) || start >= end)) bad();
+        }
         scheduleIds.add(v.id);
     });
     if (schedule.items.length ? !scheduleIds.has(schedule.activeId) : schedule.activeId !== null) bad();
@@ -3541,8 +3751,6 @@ function restoreBackup() {
     showStatus(uiText('معلومات په بریالیتوب بېرته راوستل شول.','معلومات با موفقیت بازیابی شد.','Data restored successfully.'));
 }
 
-function toggleTheme() { setTheme(document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'); }
-
 /* --- Live clock + current day -------------------------------------------- */
 
 let lastRenderedDayKey = '';
@@ -3582,6 +3790,7 @@ function updateClock() {
 }
 
 /* Documents stay native: bridge messages carry metadata and IDs, never whole PDF files. */
+let pdfNamedScans=false;
 let pdfNative=null,pdfAvailable=false,pdfLibraryBusy=false,pdfItems=[],pdfFolders=[],pdfMessage='',pdfRefreshGeneration=0;
 function pdfText(key){
     const copy={
@@ -3615,11 +3824,12 @@ function pdfText(key){
     };const item=copy[key];return item?item[currentLang==='en'?2:currentLang==='dr'?1:0]:key;
 }
 function renderPdf(){
-    const map={'pdf-title':'title','pdf-description':'description','pdf-pick':'pick','pdf-folder-label':'folderTitle','pdf-folder-hint':'folderHint','pdf-scan-label':'scan','pdf-scan-hint':'scanHint','pdf-refresh':'refresh','pdf-access-hint':'folderHelp','pdf-search-label':'search','pdf-list-title':'list','pdf-backup-hint':'backup'};
+    const map={'pdf-title':'title','pdf-description':'description','pdf-pick':'pick','pdf-folder-label':'folderTitle','pdf-folder-hint':'folderHint','pdf-scan-label':'scan','pdf-scan-hint':'scanHint','pdf-refresh':'refresh','pdf-search-label':'search','pdf-list-title':'list',};
     for(const [id,key] of Object.entries(map))document.getElementById(id).textContent=pdfText(key);
     document.getElementById('txt-nav-pdf').textContent='PDF';
     document.getElementById('pdf-search').placeholder=pdfText('search');
-    document.getElementById('pdf-availability').textContent=pdfText(pdfAvailable?'scannerInfo':'unavailable');
+    document.getElementById('pdf-availability').hidden=pdfAvailable;
+    document.getElementById('pdf-availability').textContent=pdfAvailable?'':pdfText('unavailable');
     document.getElementById('pdf-status').textContent=pdfLibraryBusy?pdfText('busy'):pdfMessage;
     document.getElementById('pdf-status').hidden=!pdfLibraryBusy&&!pdfMessage;
     for(const id of ['pdf-pick','pdf-scan','pdf-folder','pdf-refresh'])document.getElementById(id).disabled=!pdfAvailable||pdfLibraryBusy;
@@ -3652,6 +3862,10 @@ async function refreshPdfLibrary(){
 }
 async function pdfAction(action,id){
     if(!pdfAvailable||pdfLibraryBusy)return;
+    if(action==='scan'&&!pdfNamedScans){
+        pdfMessage=uiText('د سکن د نومولو لپاره اپ له پلې سټور څخه تازه کړئ.','برای نام‌گذاری اسکن، برنامه را در Google Play به‌روزرسانی کنید.','Update the Android app to name scanned PDFs.');
+        renderPdf();return;
+    }
     if(['remove','forget'].includes(action)&&!confirm(pdfText(action==='forget'?'forgetConfirm':'confirm')))return;
     pdfLibraryBusy=true;pdfMessage='';renderPdf();
     let scannedDocument=null,pickedDocument=null;
@@ -3680,7 +3894,7 @@ async function pdfAction(action,id){
 function setupPdfLibrary(){
     try{if(window.Capacitor&&window.Capacitor.isNativePlatform()){pdfNative=window.Capacitor.Plugins&&window.Capacitor.Plugins.PdfLibrary;if(!pdfNative&&window.Capacitor.registerPlugin)pdfNative=window.Capacitor.registerPlugin('PdfLibrary');}}catch(_){}
     document.getElementById('pdf-list').addEventListener('click',event=>{const b=event.target.closest('button[data-pdf-action]');if(b)void pdfAction(b.dataset.pdfAction,b.dataset.pdfId);});
-    if(pdfNative)pdfNative.getCapabilities().then(result=>{pdfAvailable=result.available===true;renderPdf();if(currentPage==='pdf')void refreshPdfLibrary();}).catch(()=>{pdfAvailable=false;renderPdf();});
+    if(pdfNative)pdfNative.getCapabilities().then(result=>{pdfAvailable=result.available===true;pdfNamedScans=result.namedScans===true;renderPdf();if(currentPage==='pdf')void refreshPdfLibrary();}).catch(()=>{pdfAvailable=false;renderPdf();});
     document.addEventListener('visibilitychange',()=>{if(!document.hidden&&currentPage==='pdf')void refreshPdfLibrary();});
     renderPdf();
 }
@@ -3716,11 +3930,12 @@ function voiceText(key){
 }
 function voiceTime(ms){const seconds=Math.max(0,Math.floor((Number(ms)||0)/1000));return Math.floor(seconds/60).toString().padStart(2,'0')+':'+(seconds%60).toString().padStart(2,'0');}
 function renderVoice(){
-    const map={'voice-page-title':'title','voice-description':'description','voice-title-label':'name','voice-start':'start','voice-save':'save','voice-lifecycle-hint':'lifecycle','voice-list-title':'list','voice-backup-hint':'backup','voice-player-stop':'stopPlay'};
+    const map={'voice-page-title':'title','voice-description':'description','voice-title-label':'name','voice-start':'start','voice-save':'save','voice-list-title':'list','voice-player-stop':'stopPlay'};
     Object.entries(map).forEach(([id,key])=>{document.getElementById(id).textContent=voiceText(key)});
     document.getElementById('txt-nav-record').textContent=uiText('ریکارډ','ضبط','Record');
     document.getElementById('voice-title-input').placeholder=voiceText('placeholder');
-    document.getElementById('voice-availability').textContent=voiceText(voiceAvailable?'available':'unavailable');
+    document.getElementById('voice-availability').hidden=voiceAvailable;
+    document.getElementById('voice-availability').textContent=voiceAvailable?'':voiceText('unavailable');
     document.getElementById('voice-seek').setAttribute('aria-label',voiceText('seek'));
     renderVoiceState();renderVoiceList();
 }
@@ -3853,17 +4068,686 @@ document.addEventListener('click', function (event) {
 document.querySelectorAll('button[title]').forEach(button => button.setAttribute('aria-label', button.title));
 document.querySelectorAll('input[placeholder],textarea[placeholder]').forEach(input => input.setAttribute('aria-label', input.placeholder));
 
+/* Language chooser, offline study references, calendar and private class directory. */
+const byId = id => document.getElementById(id);
+const languageNames = {ps:'پښتو', dr:'دری', en:'English'};
+const localDateLocale = () => uiText('ps-AF','fa-AF','en-GB');
+const setCopy = (id,...copy) => { byId(id).textContent = uiText(...copy); };
+function labelButton(id, label) {
+    byId(id).setAttribute('aria-label', label);
+    byId(id).title = label;
+}
+function renderSettingsChoices() {
+    const theme = document.body.dataset.theme === 'dark' ? 'dark' : 'light';
+    byId('language-current').textContent = languageNames[currentLang];
+    byId('theme-current').textContent = byId('theme-'+theme).textContent;
+    for (const [kind,selected] of [['language',currentLang],['theme',theme]]) {
+        byId(kind+'-options').querySelectorAll('button').forEach(button =>
+            button.setAttribute('aria-pressed', String(button.dataset.choice === selected)));
+    }
+}
+function toggleSettingsChoices(kind, open = byId(kind+'-options').hidden) {
+    byId(kind+'-options').hidden = !open;
+    byId('settings-'+kind).setAttribute('aria-expanded', String(open));
+}
+function chooseLanguage(button) {
+    toggleSettingsChoices('language',false);
+    setLanguage(button.dataset.choice);
+    byId('settings-language').focus();
+}
+function chooseTheme(button) {
+    toggleSettingsChoices('theme',false);
+    setTheme(button.dataset.choice);
+    byId('settings-theme').focus();
+}
+for (const kind of ['language','theme']) {
+    byId('page-settings-'+kind).addEventListener('keydown', event => {
+        if (event.key === 'Escape' && !byId(kind+'-options').hidden) {
+            event.preventDefault(); event.stopPropagation();
+            toggleSettingsChoices(kind,false); byId('settings-'+kind).focus();
+        }
+    });
+}
+
+const SHORTCUTS = [{"badge":"Ctrl","title":["عمومي","عمومی","General"],"source":"https://support.microsoft.com/en-us/accessibility/windows/keyboard-shortcuts-in-windows","rows":[["Ctrl+C","کاپي","کاپی","Copy"],
+    ["Ctrl+X","پرې کول","برش","Cut"],
+    ["Ctrl+V","نښلول","چسپاندن","Paste"],
+    ["Ctrl+Z","وروستی کار بېرته اخیستل","واگردانی","Undo"],
+    ["Ctrl+Y","بېرته اخیستل شوی کار بیا کول","انجام دوباره","Redo"],
+    ["Ctrl+A","ټول ټاکل","انتخاب همه","Select all"],
+    ["Ctrl+S","فایل خوندي کول","ذخیرۀ فایل","Save file"],
+    ["Ctrl+Shift+S","په بل نوم خوندي کول، که ملاتړ لري","ذخیره با نام دیگر در برنامه‌های سازگار","Save as where supported"],
+    ["Ctrl+O","فایل پرانیستل","بازکردن فایل","Open file"],
+    ["Ctrl+N","نوی فایل یا کړکۍ","فایل یا پنجرۀ جدید","New file or window"],
+    ["Ctrl+P","چاپ","چاپ","Print"],
+    ["Ctrl+F","لټون","جستجو","Find"],
+    ["Ctrl+H","متن بدلول، که ملاتړ لري","جایگزینی متن در برنامه‌های سازگار","Replace text where supported"],
+    ["Ctrl+W","اوسنی سند یا ټب بندول","بستن سند یا زبانۀ فعلی","Close the current document or tab"],
+    ["Ctrl+Home","پیل ته تلل","رفتن به آغاز","Go to the start"],
+    ["Ctrl+End","پای ته تلل","رفتن به پایان","Go to the end"],
+    ["Ctrl+← / Ctrl+→","د کلمو ترمنځ تګ","حرکت میان واژه‌ها","Move by one word"],
+    ["Ctrl+Shift+← / Ctrl+Shift+→","کلمه کلمه ټاکل","انتخاب واژه به واژه","Select by word"],
+    ["Shift+← / Shift+→","توری توری ټاکل","انتخاب حرف به حرف","Select by character"],
+    ["Ctrl+Backspace","مخکینۍ کلمه پاکول","پاک‌کردن واژۀ قبلی","Delete the previous word"],
+    ["Ctrl+Delete","راتلونکې کلمه پاکول","پاک‌کردن واژۀ بعدی","Delete the next word"],
+    ["Esc","روان کار لغوه کول","لغو کار جاری","Cancel the current action"]]},{"badge":"PC","title":["وینډوز","ویندوز","Windows"],"source":"https://support.microsoft.com/en-us/accessibility/windows/keyboard-shortcuts-in-windows","rows":[["Alt+Tab","بل پرانیستي اپ ته تلل","رفتن به برنامۀ باز بعدی","Switch to another open app"],
+    ["Alt+Shift+Tab","مخکیني پرانیستي اپ ته تلل","رفتن به برنامۀ باز قبلی","Switch to the previous open app"],
+    ["Alt+F4","فعاله کړکۍ بندول","بستن پنجرۀ فعال","Close the active window"],
+    ["Alt+Space","د کړکۍ مېنو پرانیستل","بازکردن منوی پنجره","Open the window menu"],
+    ["Alt+Print Screen","د فعالې کړکۍ عکس کاپي کول","کاپی تصویر پنجرۀ فعال","Copy a screenshot of the active window"],
+    ["Print Screen","د سکرین عکس؛ چلند په تنظیم پورې تړلی","گرفتن تصویر صفحه؛ وابسته به تنظیمات","Capture the screen; behavior depends on settings"],
+    ["Ctrl+Alt+Delete","د امنیت پرده پرانیستل","بازکردن صفحۀ امنیت","Open the Windows security screen"],
+    ["Ctrl+Shift+Esc","د دندو مدیر پرانیستل","بازکردن مدیر وظایف","Open Task Manager"],
+    ["Ctrl+Esc","د Start مېنو پرانیستل","بازکردن منوی Start","Open Start"],
+    ["Alt+Esc","د پرانیستو کړکیو ترمنځ تګ","حرکت میان پنجره‌های باز","Cycle through open windows"],
+    ["F2","د ټاکل شوي توکي نوم بدلول","تغییر نام مورد انتخاب‌شده","Rename the selected item"],
+    ["F3","په فایل اکسپلورر کې لټون","جستجو در File Explorer","Search in File Explorer"],
+    ["F4","په فایل اکسپلورر کې د پتو لېست","فهرست نشانی‌ها در File Explorer","Show the address list in File Explorer"],
+    ["F5","اوسنۍ پرده تازه کول","تازه‌سازی نمای فعلی","Refresh the current view"],
+    ["F6","د پردې د برخو ترمنځ تګ","حرکت میان بخش‌های صفحه","Cycle through interface elements"],
+    ["F10","مېنو فعالول","فعال‌کردن منو","Activate the menu bar"],
+    ["Shift+F10","د ټاکلي توکي مېنو","منوی مورد انتخاب‌شده","Open the selected item's context menu"],
+    ["Ctrl+Shift+N","په اکسپلورر کې نوی فولډر","پوشۀ جدید در File Explorer","Create a folder in File Explorer"],
+    ["Alt+← / Alt+→","په اکسپلورر کې شا یا مخ ته","عقب یا جلو در File Explorer","Go back or forward in File Explorer"],
+    ["Alt+↑","اصلي فولډر ته پورته کېدل","رفتن به پوشۀ بالاتر","Go to the parent folder"],
+    ["Alt+Enter","د ټاکلي توکي ځانګړنې","ویژگی‌های مورد انتخاب‌شده","Show selected item properties"],
+    ["Shift+Delete","له ترش پرته پاکول","حذف بدون انتقال به زباله‌دان","Delete without sending to Recycle Bin"],
+    ["Ctrl+Mouse wheel","په اکسپلورر کې د نښو اندازه بدلول","تغییر اندازۀ آیکون‌ها در File Explorer","Resize File Explorer icons"]]},{"badge":"Win","title":["د وینډوز تڼۍ","کلید ویندوز","Windows key"],"source":"https://support.microsoft.com/en-us/accessibility/windows/keyboard-shortcuts-in-windows","rows":[["Win","Start پرانیستل","بازکردن Start","Open Start"],
+    ["Win+A","چټک تنظیمات","تنظیمات سریع","Open Quick Settings"],
+    ["Win+B","د خبرتیاوو ساحه ټاکل","تمرکز روی ناحیۀ اعلان‌ها","Focus the notification area"],
+    ["Win+D","ډېسکټاپ ښودل یا پټول","نمایش یا پنهان‌کردن دسکتاپ","Show or hide the desktop"],
+    ["Win+E","فایل اکسپلورر","بازکردن File Explorer","Open File Explorer"],
+    ["Win+G","د لوبو پټه","بازکردن نوار بازی","Open Game Bar"],
+    ["Win+H","په غږ لیکل","تایپ صوتی","Start voice typing"],
+    ["Win+I","تنظیمات","تنظیمات","Open Settings"],
+    ["Win+K","بل سکرین ته نښلېدل","اتصال به نمایشگر بی‌سیم","Open Cast"],
+    ["Win+L","کمپیوټر قلف کول","قفل‌کردن کمپیوتر","Lock your PC"],
+    ["Win+M","ټولې کړکۍ وړې کول","کوچک‌کردن همۀ پنجره‌ها","Minimize all windows"],
+    ["Win+Shift+M","وړې کړکۍ بېرته ښودل","بازگرداندن پنجره‌های کوچک‌شده","Restore minimized windows"],
+    ["Win+N","خبرتیاوې او جنتري؛ Windows 11","اعلان‌ها و تقویم؛ Windows 11","Open notifications and calendar in Windows 11"],
+    ["Win+P","د پردو د ښودلو حالت","حالت نمایش روی چند صفحه","Choose a projection mode"],
+    ["Win+R","Run پرانیستل","بازکردن Run","Open Run"],
+    ["Win+S","د وینډوز لټون","جستجوی ویندوز","Open Windows search"],
+    ["Win+T","د دندو په پټه کې تګ","حرکت میان برنامه‌های نوار وظیفه","Cycle through taskbar apps"],
+    ["Win+U","د لاسرسي تنظیمات","تنظیمات دسترس‌پذیری","Open accessibility settings"],
+    ["Win+V","د کاپي شویو توکو تاریخچه، که فعاله وي","تاریخچۀ کلیپ‌بورد در صورت فعال‌بودن","Open clipboard history if enabled"],
+    ["Win+X","چټکه اداري مېنو","منوی دسترسی سریع","Open the Quick Link menu"],
+    ["Win+Z","د کړکیو د ترتیب بڼې؛ Windows 11","طرح‌بندی پنجره‌ها؛ Windows 11","Open Snap Layouts in Windows 11"],
+    ["Win+. / Win+;","ایموجي او نښې","ایموجی و نمادها","Open the emoji panel"],
+    ["Win+Space","د کیبورډ ژبه بدلول","تغییر زبان صفحه‌کلید","Switch the input language"],
+    ["Win+Tab","کړکۍ او مجازي ډېسکټاپونه","پنجره‌ها و دسکتاپ‌های مجازی","Open Task View"],
+    ["Win+Ctrl+D","نوی مجازي ډېسکټاپ","دسکتاپ مجازی جدید","Create a virtual desktop"],
+    ["Win+Ctrl+← / Win+Ctrl+→","مجازي ډېسکټاپ بدلول","تغییر دسکتاپ مجازی","Switch virtual desktops"],
+    ["Win+Ctrl+F4","اوسنی مجازي ډېسکټاپ بندول","بستن دسکتاپ مجازی فعلی","Close the current virtual desktop"],
+    ["Win+← / Win+→","کړکۍ چپ یا ښي اړخ ته نښلول","چسباندن پنجره به چپ یا راست","Snap the window left or right"],
+    ["Win+↑","کړکۍ غټول","بزرگ‌کردن پنجره","Maximize the window"],
+    ["Win+↓","کړکۍ عادي اندازې ته یا لاندې وړل","بازگرداندن یا کوچک‌کردن پنجره","Restore or minimize the window"],
+    ["Win+Shift+S","د پردې یوه برخه نیول","گرفتن تصویر بخشی از صفحه","Capture part of the screen"],
+    ["Win+Print Screen","د پردې عکس د فایل په بڼه ساتل","ذخیرۀ تصویر صفحه به شکل فایل","Save a screenshot to a file"],
+    ["Win++ / Win+-","ذره‌بین غټول یا کوچنی کول","بزرگ یا کوچک‌کردن ذره‌بین","Zoom with Magnifier"],
+    ["Win+Esc","ذره‌بین بندول","بستن ذره‌بین","Exit Magnifier"],
+    ["Win+1–9","له دندو پټې څخه اپ پرانیستل","بازکردن برنامه از نوار وظیفه","Open the taskbar app in that position"]]},{"badge":"W","title":["مایکروسافټ ورډ","مایکروسافت ورد","Microsoft Word"],"source":"https://support.microsoft.com/en-us/accessibility/word/keyboard-shortcuts-in-word","rows":[["Ctrl+C","کاپي","کاپی","Copy"],
+    ["Ctrl+X","پرې کول","برش","Cut"],
+    ["Ctrl+V","نښلول","چسپاندن","Paste"],
+    ["Ctrl+Z","وروستی کار بېرته اخیستل","واگردانی","Undo"],
+    ["Ctrl+Y","بېرته اخیستل شوی کار بیا کول","انجام دوباره","Redo"],
+    ["Ctrl+A","ټول ټاکل","انتخاب همه","Select all"],
+    ["Ctrl+S","فایل خوندي کول","ذخیرۀ فایل","Save file"],
+    ["Ctrl+O","فایل پرانیستل","بازکردن فایل","Open file"],
+    ["Ctrl+N","نوی فایل یا کړکۍ","فایل یا پنجرۀ جدید","New file or window"],
+    ["Ctrl+P","چاپ","چاپ","Print"],
+    ["Ctrl+F","لټون","جستجو","Find"],
+    ["Ctrl+H","متن بدلول، که ملاتړ لري","جایگزینی متن در برنامه‌های سازگار","Replace text where supported"],
+    ["Ctrl+W","اوسنی سند یا ټب بندول","بستن سند یا زبانۀ فعلی","Close the current document or tab"],
+    ["Ctrl+Home","پیل ته تلل","رفتن به آغاز","Go to the start"],
+    ["Ctrl+End","پای ته تلل","رفتن به پایان","Go to the end"],
+    ["Ctrl+B","پنډ متن","متن ضخیم","Bold"],
+    ["Ctrl+I","مایل متن","متن مورب","Italic"],
+    ["Ctrl+U","تر متن لاندې کرښه","زیرخط","Underline"],
+    ["Ctrl+D","د فونټ امستنې","تنظیمات قلم","Open Font settings"],
+    ["Ctrl+E","پاراګراف منځ ته","وسط‌چین بند","Center paragraph"],
+    ["Ctrl+L","پاراګراف چپ ته","چپ‌چین بند","Align paragraph left"],
+    ["Ctrl+R","پاراګراف ښي ته","راست‌چین بند","Align paragraph right"],
+    ["Ctrl+J","پاراګراف دواړو خواوو ته برابرول","هم‌ترازکردن دو طرف بند","Justify paragraph"],
+    ["Ctrl+1","د کرښو یوه فاصله","فاصلۀ یک‌خطی","Single line spacing"],
+    ["Ctrl+2","د کرښو دوه فاصلې","فاصلۀ دوخطی","Double line spacing"],
+    ["Ctrl+5","د کرښو یوه نیمه فاصله","فاصلۀ یک‌ونیم خط","Set 1.5 line spacing"],
+    ["Ctrl+K","لینک زیاتول","افزودن پیوند","Insert a link"],
+    ["Ctrl+Enter","نوی مخ پیلول","شروع صفحۀ تازه","Insert a page break"],
+    ["Ctrl+Shift+Enter","نوی ستون پیلول","شروع ستون تازه","Insert a column break"],
+    ["Ctrl+Shift+L","د ټکو لېست جوړول","ساخت فهرست گلوله‌ای","Apply bullets"],
+    ["Ctrl+Alt+1 / 2 / 3","د سرلیک کچه ټاکل","تعیین سطح عنوان","Apply Heading 1, 2 or 3"],
+    ["Ctrl+Space","د تورو لاسي بڼه پاکول","پاک‌کردن قالب دستی حروف","Clear manual character formatting"],
+    ["Ctrl+Q","د پاراګراف لاسي بڼه پاکول","پاک‌کردن قالب دستی بند","Clear manual paragraph formatting"],
+    ["Ctrl+M","پاراګراف دننه وړل","افزایش تورفتگی بند","Indent paragraph"],
+    ["Ctrl+Shift+M","د پاراګراف دننوالی کمول","کاهش تورفتگی بند","Reduce paragraph indent"],
+    ["Ctrl+Shift+>","د فونټ اندازه لویول","بزرگ‌کردن اندازۀ قلم","Increase font size"],
+    ["Ctrl+Shift+<","د فونټ اندازه کوچنۍ کول","کوچک‌کردن اندازۀ قلم","Decrease font size"],
+    ["Shift+F3","لوی او واړه توري بدلول","تغییر حروف بزرگ و کوچک","Change letter case"],
+    ["Ctrl+Shift+8","د بڼې پټې نښې ښودل","نمایش نشانه‌های قالب‌بندی","Toggle formatting marks"],
+    ["F7","املا او ګرامر کتل","بررسی املا و دستور","Check spelling and grammar"],
+    ["Ctrl+Shift+E","د بدلونونو ثبت","ردگیری تغییرات","Toggle Track Changes"],
+    ["Ctrl+Alt+M","نوې تبصره","دیدگاه جدید","Add a comment"],
+    ["Ctrl+Shift+G","کلمې شمېرل","شمارش واژه‌ها","Open Word Count"],
+    ["Ctrl+Alt+F","لمنلیک زیاتول","افزودن پاورقی","Insert a footnote"],
+    ["Ctrl+Alt+D","پایلیک زیاتول","افزودن یادداشت پایانی","Insert an endnote"]]},{"badge":"X","title":["مایکروسافټ ایکسل","مایکروسافت اکسل","Microsoft Excel"],"source":"https://support.microsoft.com/en-us/accessibility/excel/keyboard-shortcuts-in-excel","rows":[["Ctrl+C","کاپي","کاپی","Copy"],
+    ["Ctrl+X","پرې کول","برش","Cut"],
+    ["Ctrl+V","نښلول","چسپاندن","Paste"],
+    ["Ctrl+Z","وروستی کار بېرته اخیستل","واگردانی","Undo"],
+    ["Ctrl+Y","بېرته اخیستل شوی کار بیا کول","انجام دوباره","Redo"],
+    ["Ctrl+A","ټول ټاکل","انتخاب همه","Select all"],
+    ["Ctrl+S","فایل خوندي کول","ذخیرۀ فایل","Save file"],
+    ["Ctrl+O","فایل پرانیستل","بازکردن فایل","Open file"],
+    ["Ctrl+N","نوی فایل یا کړکۍ","فایل یا پنجرۀ جدید","New file or window"],
+    ["Ctrl+P","چاپ","چاپ","Print"],
+    ["Ctrl+F","لټون","جستجو","Find"],
+    ["Ctrl+H","متن بدلول، که ملاتړ لري","جایگزینی متن در برنامه‌های سازگار","Replace text where supported"],
+    ["Ctrl+W","اوسنی سند یا ټب بندول","بستن سند یا زبانۀ فعلی","Close the current document or tab"],
+    ["Ctrl+Home","پیل ته تلل","رفتن به آغاز","Go to the start"],
+    ["Ctrl+End","وروستۍ کارول شوې حجرې ته تلل","رفتن به آخرین خانۀ استفاده‌شده","Go to the last used cell"],
+    ["Ctrl+Arrow","د معلوماتو څنډې ته تلل","رفتن به لبۀ محدوده","Jump to the edge of a data region"],
+    ["Ctrl+Shift+Arrow","د معلوماتو تر څنډې ټاکل","انتخاب تا لبۀ محدوده","Extend selection to the data edge"],
+    ["Ctrl+Page Up / Ctrl+Page Down","مخکینۍ یا راتلونکې پاڼه","صفحۀ قبلی یا بعدی کاربرگ","Switch worksheets"],
+    ["Shift+F11","نوې پاڼه زیاتول","افزودن کاربرگ","Insert a worksheet"],
+    ["F2","فعاله حجره سمول","ویرایش خانۀ فعال","Edit the active cell"],
+    ["F4","په فورمول کې د پتې ډول بدلول","تغییر نوع مرجع در فرمول","Cycle reference types in a formula"],
+    ["Ctrl+1","د حجرې د بڼې کړکۍ","پنجرۀ قالب‌بندی خانه","Open Format Cells"],
+    ["Ctrl+Space","ټول ستون ټاکل","انتخاب ستون کامل","Select the entire column"],
+    ["Shift+Space","ټول قطار ټاکل","انتخاب سطر کامل","Select the entire row"],
+    ["Ctrl++","حجرې یا قطارونه ورزیاتول","درج خانه‌ها یا سطرها","Insert cells, rows or columns"],
+    ["Ctrl+-","حجرې یا قطارونه لرې کول","حذف خانه‌ها یا سطرها","Delete cells, rows or columns"],
+    ["Alt+=","اتومات جمع","جمع خودکار","Insert AutoSum"],
+    ["Ctrl+;","نننۍ نېټه لیکل","درج تاریخ امروز","Insert today's date"],
+    ["Ctrl+Shift+;","اوسنی وخت لیکل","درج زمان فعلی","Insert the current time"],
+    ["Ctrl+D","له پاسنۍ حجرې ښکته ډکول","پرکردن به پایین","Fill down"],
+    ["Ctrl+R","له چپې حجرې ښي ته ډکول","پرکردن به راست","Fill right"],
+    ["Ctrl+E","د بېلګې له مخې ډکول","پرکردن بر اساس الگو","Flash Fill"],
+    ["Ctrl+T","جدول جوړول","ساخت جدول","Create a table"],
+    ["Ctrl+Shift+L","فلټر فعالول یا بندول","فعال یا غیرفعال‌کردن فیلتر","Toggle filters"],
+    ["Ctrl+`","فورمولونه ښودل یا پټول","نمایش یا پنهان‌کردن فرمول‌ها","Toggle formula display"],
+    ["Ctrl+Alt+V","ځانګړې نښلونه","چسپاندن ویژه","Open Paste Special"],
+    ["Alt+Enter","په حجره کې نوې کرښه","خط جدید در خانه","Insert a line break in a cell"],
+    ["Ctrl+Enter","ټاکلې حجرې په یوه ارزښت ډکول","پرکردن خانه‌های انتخابی با یک مقدار","Fill selected cells with the current entry"],
+    ["F9","کتابونه بیا حسابول","محاسبۀ دوبارۀ کتاب‌های باز","Recalculate open workbooks"],
+    ["Ctrl+K","لینک زیاتول","افزودن پیوند","Insert a link"],
+    ["Ctrl+Shift+%","د سلنې بڼه","قالب درصد","Apply percentage format"]]},{"badge":"P","title":["مایکروسافټ پاورپواینټ","مایکروسافت پاورپوینت","Microsoft PowerPoint"],"source":"https://support.microsoft.com/en-us/accessibility/powerpoint/use-keyboard-shortcuts-to-create-powerpoint-presentations","rows":[["Ctrl+C","کاپي","کاپی","Copy"],
+    ["Ctrl+X","پرې کول","برش","Cut"],
+    ["Ctrl+V","نښلول","چسپاندن","Paste"],
+    ["Ctrl+Z","وروستی کار بېرته اخیستل","واگردانی","Undo"],
+    ["Ctrl+Y","بېرته اخیستل شوی کار بیا کول","انجام دوباره","Redo"],
+    ["Ctrl+A","ټول ټاکل","انتخاب همه","Select all"],
+    ["Ctrl+S","فایل خوندي کول","ذخیرۀ فایل","Save file"],
+    ["Ctrl+O","فایل پرانیستل","بازکردن فایل","Open file"],
+    ["Ctrl+N","نوی فایل یا کړکۍ","فایل یا پنجرۀ جدید","New file or window"],
+    ["Ctrl+P","چاپ","چاپ","Print"],
+    ["Ctrl+F","لټون","جستجو","Find"],
+    ["Ctrl+H","متن بدلول، که ملاتړ لري","جایگزینی متن در برنامه‌های سازگار","Replace text where supported"],
+    ["Ctrl+W","اوسنی سند یا ټب بندول","بستن سند یا زبانۀ فعلی","Close the current document or tab"],
+    ["Ctrl+M","نوی سلایډ","اسلاید جدید","Insert a slide"],
+    ["Ctrl+D","ټاکل شوی سلایډ یا توکی دوه کول","تکثیر اسلاید یا شی انتخاب‌شده","Duplicate the selection"],
+    ["Ctrl+G","ټاکلي توکي سره یوځای کول","گروه‌بندی اشیای انتخاب‌شده","Group selected objects"],
+    ["Ctrl+Shift+G","ډله جلا کول","جداکردن گروه","Ungroup objects"],
+    ["Ctrl+K","لینک زیاتول","افزودن پیوند","Insert a link"],
+    ["Ctrl+B / Ctrl+I / Ctrl+U","پنډ، مایل یا لاندې کرښه","ضخیم، مورب یا زیرخط","Toggle bold, italic or underline"],
+    ["Ctrl+E / Ctrl+L / Ctrl+R","متن منځ، چپ یا ښي ته","وسط‌چین، چپ‌چین یا راست‌چین","Center, left-align or right-align text"],
+    ["F5","له لومړي سلایډه ښودنه","نمایش از اسلاید نخست","Start slide show from the beginning"],
+    ["Shift+F5","له اوسني سلایډه ښودنه","نمایش از اسلاید فعلی","Start slide show from the current slide"],
+    ["Alt+F5","د وړاندې کوونکي لید پیلول","آغاز نمای ارائه‌کننده","Start Presenter View"],
+    ["Esc","ښودنه ختمول","پایان نمایش","End the slide show"],
+    ["→ / Space","په ښودنه کې بل سلایډ","اسلاید بعدی در نمایش","Advance the slide show"],
+    ["← / Backspace","په ښودنه کې تېر سلایډ","اسلاید قبلی در نمایش","Go back in the slide show"],
+    ["Number+Enter","د شمېرې سلایډ ته تلل","رفتن به اسلاید با شماره","Jump to a numbered slide during the show"],
+    ["B","د ښودنې پر مهال توره پرده","صفحۀ سیاه در نمایش","Toggle a black screen during the show"],
+    ["W","د ښودنې پر مهال سپینه پرده","صفحۀ سفید در نمایش","Toggle a white screen during the show"],
+    ["Ctrl+P","په ښودنه کې قلم فعالول","فعال‌کردن قلم هنگام نمایش","Use the pen during the show"],
+    ["Ctrl+L","په ښودنه کې لیزري نښه","اشارۀ لیزری هنگام نمایش","Use the laser pointer during the show"],
+    ["Ctrl+A","په ښودنه کې عادي غشی","نشانگر عادی هنگام نمایش","Restore the arrow pointer during the show"],
+    ["E","د ښودنې لیکل شوې نښې پاکول","پاک‌کردن نوشته‌های نمایش","Erase slide show ink"]]},{"badge":"O","title":["اوټ‌لوک","اوت‌لوک","Outlook"],"source":"https://support.microsoft.com/en-us/accessibility/outlook/keyboard-shortcuts-for-outlook","rows":[["Ctrl+Shift+M","نوی برېښنالیک","ایمیل جدید","Compose a message"],
+    ["Ctrl+R","ځواب","پاسخ","Reply"],
+    ["Ctrl+Shift+R","ټولو ته ځواب","پاسخ به همه","Reply all"],
+    ["Ctrl+F","برېښنالیک بل چاته لېږل","ارسال مجدد پیام","Forward the message"],
+    ["Alt+S","برېښنالیک لېږل","فرستادن پیام","Send the message"],
+    ["Ctrl+S","مسوده خوندي کول","ذخیرۀ پیش‌نویس","Save a draft"],
+    ["Ctrl+Enter","پیغام لېږل، که فعال وي","فرستادن پیام در صورت فعال‌بودن","Send if this shortcut is enabled"],
+    ["Ctrl+E","د لټون خانه","خانۀ جستجو","Focus search"],
+    ["Ctrl+Q","لوستل شوی نښه کول","علامت‌گذاری به‌عنوان خوانده‌شده","Mark as read"],
+    ["Ctrl+U","نالوستل شوی نښه کول","علامت‌گذاری به‌عنوان خوانده‌نشده","Mark as unread"],
+    ["Ctrl+1","برېښنالیک","ایمیل","Switch to Mail"],
+    ["Ctrl+2","جنتري","تقویم","Switch to Calendar"],
+    ["Ctrl+3","اړیکې","مخاطبین","Switch to People"],
+    ["Ctrl+4","دندې","وظایف","Switch to Tasks"],
+    ["Ctrl+Shift+A","نوې لیدنه ثبتول","ثبت قرار جدید","Create an appointment"],
+    ["Ctrl+Shift+Q","د غونډې بلنه","دعوت جلسه","Create a meeting request"],
+    ["Ctrl+Shift+C","نوې اړیکه","مخاطب جدید","Create a contact"],
+    ["Ctrl+Shift+K","نوې دنده","وظیفۀ جدید","Create a task"],
+    ["Ctrl+Shift+V","توکی فولډر ته وړل","انتقال مورد به پوشه","Move an item to a folder"],
+    ["F9","برېښنالیک لېږل او ترلاسه کول","ارسال و دریافت ایمیل","Send and receive messages"],
+    ["Delete","ټاکلی پیغام پاکول","حذف پیام انتخاب‌شده","Delete the selected message"]],"note":["د Windows کلاسیک Outlook؛ په نوې نسخه کې ځینې تڼۍ بدلې دي.","Outlook کلاسیک ویندوز؛ برخی میانبرها در نسخۀ جدید متفاوت‌اند.","Classic Outlook for Windows; the new Outlook differs."]},{"badge":"TXT","title":["نوټ‌پېډ","نوت‌پد","Notepad"],"source":"https://support.microsoft.com/en-us/windows/keyboard-shortcuts-in-apps-139014e7-177b-d1f3-eb2e-7298b2599a34","rows":[["Ctrl+C","کاپي","کاپی","Copy"],
+    ["Ctrl+X","پرې کول","برش","Cut"],
+    ["Ctrl+V","نښلول","چسپاندن","Paste"],
+    ["Ctrl+Z","وروستی کار بېرته اخیستل","واگردانی","Undo"],
+    ["Ctrl+A","ټول ټاکل","انتخاب همه","Select all"],
+    ["Ctrl+S","فایل خوندي کول","ذخیرۀ فایل","Save file"],
+    ["Ctrl+O","فایل پرانیستل","بازکردن فایل","Open file"],
+    ["Ctrl+N","نوی فایل یا کړکۍ","فایل یا پنجرۀ جدید","New file or window"],
+    ["Ctrl+P","چاپ","چاپ","Print"],
+    ["Ctrl+F","لټون","جستجو","Find"],
+    ["Ctrl+H","متن بدلول، که ملاتړ لري","جایگزینی متن در برنامه‌های سازگار","Replace text where supported"],
+    ["Ctrl+Home","پیل ته تلل","رفتن به آغاز","Go to the start"],
+    ["Ctrl+End","پای ته تلل","رفتن به پایان","Go to the end"],
+    ["Ctrl+Backspace","مخکینۍ کلمه پاکول","پاک‌کردن واژۀ قبلی","Delete the previous word"],
+    ["Ctrl+Delete","راتلونکې کلمه پاکول","پاک‌کردن واژۀ بعدی","Delete the next word"],
+    ["Ctrl+Shift+S","په بل نوم خوندي کول","ذخیره با نام دیگر","Save as"],
+    ["Ctrl+Shift+N","نوې کړکۍ؛ نسخه پورې تړلې","پنجرۀ تازه؛ وابسته به نسخه","Open a new window in supported versions"],
+    ["Ctrl+W","اوسنی ټب بندول؛ نوې نسخه","بستن زبانۀ فعلی؛ نسخۀ جدید","Close the current tab in modern Notepad"],
+    ["Ctrl+Tab / Ctrl+Shift+Tab","بل یا تېر ټب؛ نوې نسخه","زبانۀ بعدی یا قبلی؛ نسخۀ جدید","Switch tabs in modern Notepad"],
+    ["Ctrl+G","ټاکلې کرښې ته تلل","رفتن به خط مشخص","Go to a line"],
+    ["F3 / Shift+F3","بله یا تېره د لټون پایله","نتیجۀ بعدی یا قبلی جستجو","Find next or previous"],
+    ["F5","وخت او نېټه ورزیاتول","درج زمان و تاریخ","Insert time and date"],
+    ["Ctrl++ / Ctrl+-","متن غټول یا کوچنی کول","بزرگ یا کوچک‌کردن متن","Zoom in or out"],
+    ["Ctrl+0","عادي اندازه","اندازۀ عادی","Reset zoom"]]},{"badge":"🎨","title":["پینټ","پینت","Paint"],"source":"https://support.microsoft.com/en-us/windows/keyboard-shortcuts-in-apps-139014e7-177b-d1f3-eb2e-7298b2599a34","rows":[["Ctrl+C","کاپي","کاپی","Copy"],
+    ["Ctrl+X","پرې کول","برش","Cut"],
+    ["Ctrl+V","نښلول","چسپاندن","Paste"],
+    ["Ctrl+Z","وروستی کار بېرته اخیستل","واگردانی","Undo"],
+    ["Ctrl+Y","بېرته اخیستل شوی کار بیا کول","انجام دوباره","Redo"],
+    ["Ctrl+A","ټول ټاکل","انتخاب همه","Select all"],
+    ["Ctrl+S","فایل خوندي کول","ذخیرۀ فایل","Save file"],
+    ["Ctrl+O","فایل پرانیستل","بازکردن فایل","Open file"],
+    ["Ctrl+N","نوی فایل یا کړکۍ","فایل یا پنجرۀ جدید","New file or window"],
+    ["Ctrl+P","چاپ","چاپ","Print"],
+    ["F12","په بل نوم خوندي کول","ذخیره با نام دیگر","Save as"],
+    ["Ctrl+W","اندازه او کږوالی بدلول","تغییر اندازه و شیب","Resize or skew"],
+    ["Ctrl+E","د انځور ځانګړنې","ویژگی‌های تصویر","Open image properties"],
+    ["Ctrl+R","خط‌کش ښودل یا پټول","نمایش یا پنهان‌کردن خط‌کش","Toggle rulers"],
+    ["Ctrl+G","شبکه ښودل یا پټول","نمایش یا پنهان‌کردن شبکه","Toggle gridlines"],
+    ["Ctrl+I","د ټاکلې برخې رنګونه معکوسول","معکوس‌کردن رنگ‌های انتخاب","Invert colors in the selection"],
+    ["Ctrl+Page Up / Ctrl+Page Down","لید غټول یا کوچنی کول","بزرگ یا کوچک‌کردن نما","Zoom in or out"],
+    ["F11","په بشپړه پرده کې لیدل","نمای تمام‌صفحه","View in full screen"],
+    ["Delete","ټاکلې برخه پاکول","حذف بخش انتخاب‌شده","Delete the selection"],
+    ["Esc","ټاکنه لغوه کول","لغو انتخاب","Cancel the selection"],
+    ["Arrow keys","ټاکلې برخه خوځول","حرکت‌دادن بخش انتخاب‌شده","Move the selection"]]},{"badge":"WP","title":["ورډ‌پېډ","وردپد","WordPad"],"source":"https://support.microsoft.com/en-us/windows/keyboard-shortcuts-in-apps-139014e7-177b-d1f3-eb2e-7298b2599a34","rows":[["Ctrl+C","کاپي","کاپی","Copy"],
+    ["Ctrl+X","پرې کول","برش","Cut"],
+    ["Ctrl+V","نښلول","چسپاندن","Paste"],
+    ["Ctrl+Z","وروستی کار بېرته اخیستل","واگردانی","Undo"],
+    ["Ctrl+Y","بېرته اخیستل شوی کار بیا کول","انجام دوباره","Redo"],
+    ["Ctrl+A","ټول ټاکل","انتخاب همه","Select all"],
+    ["Ctrl+S","فایل خوندي کول","ذخیرۀ فایل","Save file"],
+    ["Ctrl+O","فایل پرانیستل","بازکردن فایل","Open file"],
+    ["Ctrl+N","نوی فایل یا کړکۍ","فایل یا پنجرۀ جدید","New file or window"],
+    ["Ctrl+P","چاپ","چاپ","Print"],
+    ["Ctrl+F","لټون","جستجو","Find"],
+    ["Ctrl+H","متن بدلول، که ملاتړ لري","جایگزینی متن در برنامه‌های سازگار","Replace text where supported"],
+    ["Ctrl+Home","پیل ته تلل","رفتن به آغاز","Go to the start"],
+    ["Ctrl+End","پای ته تلل","رفتن به پایان","Go to the end"],
+    ["F12","په بل نوم خوندي کول","ذخیره با نام دیگر","Save as"],
+    ["Ctrl+B / Ctrl+I / Ctrl+U","پنډ، مایل یا لاندې کرښه","ضخیم، مورب یا زیرخط","Toggle bold, italic or underline"],
+    ["Ctrl+E / Ctrl+L / Ctrl+R / Ctrl+J","پاراګراف منځ، چپ، ښي یا دواړو خواوو ته","هم‌ترازکردن بند در وسط، چپ، راست یا دو طرف","Align or justify a paragraph"],
+    ["Ctrl+1 / Ctrl+2 / Ctrl+5","د کرښو فاصله بدلول","تغییر فاصلۀ خطوط","Change line spacing"],
+    ["Ctrl+Shift+>","د فونټ اندازه لویول","بزرگ‌کردن اندازۀ قلم","Increase font size"],
+    ["Ctrl+Shift+<","د فونټ اندازه کوچنۍ کول","کوچک‌کردن اندازۀ قلم","Decrease font size"],
+    ["Ctrl+=","متن تر کرښې لاندې لیکل","نوشتن زیرنویس","Apply subscript"],
+    ["Ctrl+Shift+=","متن تر کرښې پورته لیکل","نوشتن بالانویس","Apply superscript"],
+    ["F3","بله د لټون پایله","نتیجۀ بعدی جستجو","Find next"]],"note":["یوازې زړې Windows نسخې؛ له Windows 11 24H2 څخه لرې شوی.","فقط نسخه‌های قدیمی ویندوز؛ از Windows 11 24H2 حذف شده است.","Legacy Windows only; removed starting with Windows 11 24H2."]},{"badge":"Ps","title":["اډوب فوټوشاپ","ادوبی فتوشاپ","Adobe Photoshop"],"source":"https://helpx.adobe.com/photoshop/desktop/get-started/settings-and-preferences/view-keyboard-shortcuts.html","rows":[["Ctrl+C","کاپي","کاپی","Copy"],
+    ["Ctrl+X","پرې کول","برش","Cut"],
+    ["Ctrl+V","نښلول","چسپاندن","Paste"],
+    ["Ctrl+Z","وروستی کار بېرته اخیستل","واگردانی","Undo"],
+    ["Ctrl+A","ټول ټاکل","انتخاب همه","Select all"],
+    ["Ctrl+S","فایل خوندي کول","ذخیرۀ فایل","Save file"],
+    ["Ctrl+O","فایل پرانیستل","بازکردن فایل","Open file"],
+    ["Ctrl+N","نوی فایل یا کړکۍ","فایل یا پنجرۀ جدید","New file or window"],
+    ["Ctrl+P","چاپ","چاپ","Print"],
+    ["Ctrl+W","اوسنی سند یا ټب بندول","بستن سند یا زبانۀ فعلی","Close the current document or tab"],
+    ["Ctrl+Shift+Z","وروستی بېرته اخیستل شوی کار بیا کول","انجام دوبارۀ کار واگردانی‌شده","Redo"],
+    ["Ctrl+Shift+S","په بل نوم خوندي کول","ذخیره با نام دیگر","Save as"],
+    ["Ctrl+Alt+Shift+S","د وېب لپاره خوندي کول","ذخیره برای وب","Save for Web (Legacy)"],
+    ["Ctrl+D","ټاکنه لرې کول","لغو انتخاب","Deselect"],
+    ["Ctrl+Shift+D","پخوانۍ ټاکنه راوستل","بازگرداندن انتخاب قبلی","Reselect"],
+    ["Ctrl+Shift+I","ټاکنه معکوسول","معکوس‌کردن انتخاب","Invert the selection"],
+    ["Ctrl+T","د ټاکلي شي ازاد بدلون","تغییر شکل آزاد","Free Transform"],
+    ["Ctrl+J","طبقه په کاپي جوړول","ساخت لایه از طریق کاپی","Layer via Copy"],
+    ["Ctrl+Shift+J","طبقه په پرېکولو جوړول","ساخت لایه از طریق برش","Layer via Cut"],
+    ["Ctrl+Shift+N","نوې طبقه","لایۀ جدید","Create a new layer"],
+    ["Ctrl+G","طبقې په ډله کې اچول","گروه‌بندی لایه‌ها","Group layers"],
+    ["Ctrl+E","ټاکلې طبقې یوځای کول","ادغام لایه‌های انتخاب‌شده","Merge selected layers"],
+    ["Ctrl+Shift+E","ښکاره طبقې یوځای کول","ادغام لایه‌های قابل مشاهده","Merge visible layers"],
+    ["Ctrl+L","د روښانتیا کچې","سطوح روشنایی","Open Levels"],
+    ["Ctrl+M","د رنګ او روښانتیا منحني","منحنی روشنایی و رنگ","Open Curves"],
+    ["Ctrl+U","رنګ او اشباع","رنگ و اشباع","Open Hue/Saturation"],
+    ["Ctrl+I","رنګونه معکوسول","معکوس‌کردن رنگ‌ها","Invert colors"],
+    ["Ctrl+0","انځور له پردې سره برابرول","جا دادن تصویر در صفحه","Fit image to screen"],
+    ["Ctrl+1","اصلي اندازه ښودل","نمایش اندازۀ واقعی","View at 100 percent"],
+    ["Ctrl++ / Ctrl+-","لید غټول یا کوچنی کول","بزرگ یا کوچک‌کردن نما","Zoom in or out"],
+    ["V / M / L","خوځول، څلورګوټیزه ټاکنه یا ازاده ټاکنه","حرکت، انتخاب چهارگوش یا کمند","Move, Marquee or Lasso tool"],
+    ["W / C / I","چټکه ټاکنه، پرېکول یا د رنګ نمونه","انتخاب سریع، برش یا نمونه‌برداری رنگ","Selection, Crop or Eyedropper tool"],
+    ["B / E / S","برس، پاکوونکی یا د نقل ټاپه","قلم‌مو، پاک‌کن یا مهر کپی","Brush, Eraser or Clone Stamp"],
+    ["J / G / R","ترمیم، رنګ لېږد یا لید څرخول","ترمیم، گرادیان یا چرخش نما","Healing, Gradient or Rotate View tool"],
+    ["P / T / A","قلم، متن یا مسیر ټاکل","قلم، متن یا انتخاب مسیر","Pen, Type or Path Selection"],
+    ["H / Z","لاسی خوځښت یا ذره‌بین","دست یا بزرگ‌نمایی","Hand or Zoom tool"],
+    ["Space (hold)","لنډمهاله د لاس وسیله","ابزار دست به‌طور موقت","Temporarily use Hand tool"],
+    ["[ / ]","برس کوچنی یا غټول","کوچک یا بزرگ‌کردن قلم‌مو","Decrease or increase brush size"],
+    ["D","اصلي مخکینی او شالید رنګونه","رنگ‌های پیش‌فرض پیش‌زمینه و پس‌زمینه","Reset foreground and background colors"],
+    ["X","مخکینی او شالید رنګ بدلول","جابه‌جایی رنگ پیش‌زمینه و پس‌زمینه","Swap foreground and background colors"],
+    ["Tab","د وسایلو تختې پټول یا ښودل","پنهان یا نمایان‌کردن پنل‌ها","Toggle interface panels"],
+    ["Ctrl+Alt+Shift+K","د شارټ‌کټ امستنې","تنظیمات میانبرها","Open Keyboard Shortcuts settings"]]}];
+let shortcutCategory = SHORTCUTS[0];
+const searchFold = text => String(text).normalize('NFKC').toLowerCase()
+    .replace(/[۰-۹٠-٩]/g, c => String(c.charCodeAt(0) & 15))
+    .replace(/[يى]/g,'ی').replace(/ك/g,'ک').trim();
+function openShortcuts() { switchPage('shortcuts'); }
+function openShortcutCategory(category) {
+    shortcutCategory = category;
+    byId('shortcut-search').value = '';
+    switchPage('shortcut-detail');
+}
+function renderShortcutEntries() {
+    const query = searchFold(byId('shortcut-search').value);
+    const rows = shortcutCategory.rows.filter(row => searchFold(row.join(' ')).includes(query));
+    byId('shortcut-entries').innerHTML = rows.map(([keys,ps,dr,en]) =>
+        '<article class="shortcut-entry"><kbd>' + escapeHtml(keys) + '</kbd><span>' +
+        escapeHtml(uiText(ps,dr,en)) + '</span></article>').join('') ||
+        '<p class="settings-hint">' + uiText('پایله نشته.','نتیجه‌ای یافت نشد.','No matching shortcuts.') + '</p>';
+}
+function renderShortcuts() {
+    if (currentPage === 'shortcuts') {
+        setCopy('shortcuts-heading','د کمپیوټر شارټ‌کټونه','میانبرهای کمپیوتر','Computer shortcuts');
+        setCopy('shortcuts-intro','یوه برخه وټاکئ. شارټ‌کټونه د Windows لپاره دي.','یک بخش را انتخاب کنید. میانبرها برای Windows هستند.','Choose a category. These shortcuts are for Windows.');
+        const list = byId('shortcut-categories');
+        list.replaceChildren(...SHORTCUTS.map(category => {
+            const button = document.createElement('button');
+            button.type='button'; button.className='study-category';
+            const badge = document.createElement('span'); badge.className='study-badge'; badge.dir='ltr'; badge.textContent=category.badge;
+            const title = document.createElement('strong'); title.textContent=uiText(...category.title);
+            const arrow = document.createElement('span'); arrow.className='study-chevron'; arrow.setAttribute('aria-hidden','true'); arrow.textContent='›';
+            button.append(badge,title,arrow); button.addEventListener('click', () => openShortcutCategory(category));
+            return button;
+        }));
+    } else {
+        setCopy('shortcut-detail-heading',...shortcutCategory.title);
+        setCopy('shortcut-version',...(shortcutCategory.note || ['Windows · د نسخې او کیبورډ له مخې ځینې تڼۍ بدلېږي.','Windows · بعضی کلیدها با نسخه و صفحه‌کلید فرق دارند.','Windows · Some shortcuts vary by version and keyboard.']));
+        setCopy('shortcut-search-label','د تڼۍ یا کار لټون','جستجوی کلید یا عملکرد','Find a key or action');
+        byId('shortcut-source').href=shortcutCategory.source;
+        setCopy('shortcut-source','بشپړ رسمي لارښود','راهنمای رسمی کامل','Full official reference');
+        renderShortcutEntries();
+    }
+}
+
+let calendarMode = null;
+let calendarFocus = new Date();
+const localNoon = date => new Date(date.getFullYear(),date.getMonth(),date.getDate(),12);
+const calendarShift = (date, delta) => new Date(date.getFullYear(),date.getMonth(),date.getDate()+delta,12);
+function activeCalendarMode() {
+    const requested = calendarMode || (currentLang === 'en' ? 'gregory' : 'persian');
+    return new Intl.DateTimeFormat('en',{calendar:requested}).resolvedOptions().calendar;
+}
+function calendarMonthStart(date, mode) {
+    const format = new Intl.DateTimeFormat('en',{calendar:mode,numberingSystem:'latn',day:'numeric'});
+    return calendarShift(date, 1 - Number(format.format(date)));
+}
+function openCalendar() {
+    calendarFocus = localNoon(new Date());
+    switchPage('calendar');
+}
+function setCalendarMode(mode) { calendarMode = mode; renderCalendar(); }
+function moveCalendar(direction) {
+    const mode = activeCalendarMode();
+    const start = calendarMonthStart(calendarFocus,mode);
+    if (direction < 0) calendarFocus = calendarShift(start,-1);
+    else {
+        const probe = calendarMonthStart(calendarShift(start,32),mode);
+        calendarFocus = probe;
+    }
+    renderCalendar();
+}
+function renderCalendar() {
+    const locale = localDateLocale(), mode = activeCalendarMode(), today = localNoon(new Date());
+    const start = calendarMonthStart(calendarFocus,mode);
+    const next = calendarMonthStart(calendarShift(start,32),mode);
+    const weekStart = currentLang === 'en' ? 1 : 6;
+    const first = calendarShift(start,-((start.getDay()-weekStart+7)%7));
+    const format = options => new Intl.DateTimeFormat(locale,{...options,calendar:mode});
+    const day = format({day:'numeric'}), full = format({dateStyle:'full'});
+    setCopy('calendar-heading','جنتري','تقویم','Calendar');
+    setCopy('calendar-gregory','میلادي','میلادی','Gregorian');
+    setCopy('calendar-persian','لمریز هجري','هجری خورشیدی','Solar Hijri');
+    setCopy('calendar-today','نن','امروز','Today');
+    byId('calendar-persian').disabled = new Intl.DateTimeFormat('en',{calendar:'persian'}).resolvedOptions().calendar !== 'persian';
+    for (const value of ['gregory','persian']) byId('calendar-'+value).setAttribute('aria-pressed',String(mode===value));
+    byId('calendar-modes').setAttribute('aria-label',uiText('د جنتري ډول','نوع تقویم','Calendar system'));
+    labelButton('calendar-prev',uiText('تېره میاشت','ماه گذشته','Previous month'));
+    labelButton('calendar-next',uiText('بله میاشت','ماه بعد','Next month'));
+    byId('calendar-month').textContent=format({month:'long',year:'numeric'}).format(start);
+    byId('calendar-today-date').textContent=full.format(today);
+    const cells=[];
+    const weekdays = currentLang === 'en' ? ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'] : daysOfWeek[currentLang].map(d => d.slice(0,2));
+    for(let i=0;i<7;i++){
+        const cell=document.createElement('span'); cell.className='calendar-weekday';
+        cell.textContent=weekdays[(weekStart+i)%7]; cells.push(cell);
+    }
+    for(let i=0;i<42;i++){
+        const date=calendarShift(first,i), cell=document.createElement('span');
+        cell.textContent=day.format(date); cell.setAttribute('aria-label',full.format(date));
+        if(date<start||date>=next) cell.classList.add('calendar-outside');
+        if(+date===+today){cell.classList.add('calendar-today');cell.setAttribute('aria-current','date');}
+        cells.push(cell);
+    }
+    byId('calendar-grid').replaceChildren(...cells);
+}
+
+const CLASSMATE_KEY='un_classmates_v1';
+const contactText = (value,limit) => typeof value === 'string' ? value.trim().slice(0,limit) : '';
+function validClassmatePhone(value) {
+    const phone = searchFold(value);
+    return /^\+?[0-9().\s-]+$/.test(phone) && (phone.match(/\d/g)||[]).length >= 3 && (phone.match(/\d/g)||[]).length <= 20;
+}
+let classmates = (data => Array.isArray(data) ? data.filter(person => person && typeof person.id === 'string' &&
+    contactText(person.first,60) && contactText(person.last,60) && validClassmatePhone(contactText(person.phone,40))).slice(0,1000) : [])(loadJSON(CLASSMATE_KEY,[]));
+let editingClassmate = null;
+function resetClassmateForm() {
+    editingClassmate = null;
+    byId('classmate-form').reset();
+    byId('classmate-form-status').textContent='';
+    renderClassmates();
+}
+function persistClassmates(next) {
+    if(!saveJSON(CLASSMATE_KEY,next)){
+        setCopy('classmate-form-status','شمېرې خوندي نه شوې. د وسیلې زېرمه وګورئ.','شماره‌ها ذخیره نشدند. حافظۀ دستگاه را بررسی کنید.','Could not save. Check device storage.');
+        return false;
+    }
+    classmates=next;
+    return true;
+}
+function saveClassmate(event) {
+    event.preventDefault();
+    const first=contactText(byId('classmate-first').value,60), last=contactText(byId('classmate-last').value,60), phone=contactText(byId('classmate-phone').value,40);
+    if(!first||!last||!validClassmatePhone(phone)){
+        setCopy('classmate-form-status','نوم، تخلص او سمه د ټیلیفون شمېره ولیکئ.','نام، تخلص و شمارۀ تلفن معتبر را وارد کنید.','Enter a first name, surname and valid phone number.');
+        return;
+    }
+    if(!editingClassmate&&classmates.length>=1000){setCopy('classmate-form-status','لېست ډک دی.','فهرست پر است.','The directory is full.');return;}
+    const person={id:editingClassmate || String(generateId()),first,last,phone};
+    const next=editingClassmate ? classmates.map(item=>item.id===editingClassmate?person:item) : [...classmates,person];
+    if(persistClassmates(next)){resetClassmateForm();showStatus(uiText('شمېره خوندي شوه.','شماره ذخیره شد.','Classmate saved.'));}
+}
+function editClassmate(person) {
+    editingClassmate=person.id;
+    byId('classmate-first').value=person.first;
+    byId('classmate-last').value=person.last;
+    byId('classmate-phone').value=person.phone;
+    byId('classmate-form-status').textContent='';
+    renderClassmates();
+    byId('classmate-first').focus();
+}
+function deleteClassmate(person) {
+    if(!confirm(uiText('د دې همصنف شمېره ړنګه کړئ؟','شمارۀ این هم‌صنفی حذف شود؟','Delete this classmate?')))return;
+    if(persistClassmates(classmates.filter(item=>item.id!==person.id))) {
+        if(editingClassmate===person.id)resetClassmateForm(); else renderClassmateList();
+    }
+}
+function renderClassmateList() {
+    const list=byId('classmate-list'), query=searchFold(byId('classmate-search').value);
+    const rows=classmates.filter(person => searchFold(person.first+' '+person.last+' '+person.phone).includes(query))
+        .sort((a,b)=>(a.first+' '+a.last).localeCompare(b.first+' '+b.last,localDateLocale()));
+    list.replaceChildren(...rows.map(person=>{
+        const card=document.createElement('article'); card.className='classmate-card';
+        const name=document.createElement('strong'); name.dir='auto'; name.textContent=person.first+' '+person.last;
+        const phone=document.createElement('p'), number=document.createElement('bdi'); number.dir='ltr'; number.textContent=person.phone; phone.append(number);
+        const actions=document.createElement('div'); actions.className='settings-actions';
+        for(const [copy,action] of [
+            [['سمول','ویرایش','Edit'],()=>editClassmate(person)],
+            [['ړنګول','حذف','Delete'],()=>deleteClassmate(person)]
+        ]) {
+            const button=document.createElement('button'); button.className='settings-button secondary'; button.type='button'; button.textContent=uiText(...copy);
+            button.addEventListener('click',action); actions.append(button);
+        }
+        card.append(name,phone,actions); return card;
+    }));
+    if(!rows.length){
+        const empty=document.createElement('p'); empty.className='settings-hint';
+        empty.textContent=query?uiText('پایله نشته.','نتیجه‌ای یافت نشد.','No matching classmates.') : uiText('تر اوسه کوم همصنف نه دی ثبت شوی.','هنوز هم‌صنفی ثبت نشده است.','No classmates saved yet.');
+        list.append(empty);
+    }
+}
+function renderClassmates() {
+    setCopy('classmates-heading','همصنفان','هم‌صنفی‌ها','Classmates');
+    setCopy('classmates-description','نومونه او شمېرې یوازې په دې وسیله ساتل کېږي.','نام‌ها و شماره‌ها فقط در همین دستگاه نگهداری می‌شوند.','Names and phone numbers are stored on this device.');
+    setCopy('classmate-first-label','نوم','نام','First name');
+    setCopy('classmate-last-label','تخلص','تخلص','Surname');
+    setCopy('classmate-phone-label','د ټیلیفون شمېره','شمارۀ تلفن','Phone number');
+    setCopy('classmate-search-label','همصنف ولټوئ','جستجوی هم‌صنفی','Find a classmate');
+    setCopy('classmate-save',...(editingClassmate ? ['بدلون خوندي کړئ','ذخیرۀ تغییرات','Save changes'] : ['همصنف ثبت کړئ','ثبت هم‌صنفی','Add classmate']));
+    setCopy('classmate-cancel','لغوه','لغو','Cancel');
+    byId('classmate-cancel').hidden=!editingClassmate;
+    renderClassmateList();
+}
+function renderStudyPages() {
+    labelButton('search-open',uiText('لټون','جستجو','Search'));
+    labelButton('schedule-open',uiText('مهالوېش','تقسیم اوقات','Timetable'));
+    labelButton('calendar-open',uiText('جنتري','تقویم','Calendar'));
+    labelButton('shortcuts-open',uiText('د کمپیوټر شارټ‌کټونه','میانبرهای کمپیوتر','Computer shortcuts'));
+    if(currentPage==='classmates')renderClassmates();
+    if(currentPage==='calendar')renderCalendar();
+    if(currentPage==='shortcuts'||currentPage==='shortcut-detail')renderShortcuts();
+}
+
+let scheduleDayFilter = 'all';
+function showScheduleDay(value) {
+    const isWeek = value === 'all';
+    scheduleDayFilter = value;
+    byId('schedule-day-filter').value=value;
+    const frame=byId('schedule-modal').querySelector('.modal-content');
+    frame.classList.toggle('schedule-week-view',isWeek);
+    frame.classList.toggle('schedule-day-view',!isWeek);
+    byId('schedule-today-summary').hidden=!isWeek;
+    byId('schedule-overview-hint').hidden=!isWeek;
+    for(const row of byId('schedule-tbody').rows)
+        row.hidden=!isWeek&&row.dataset.dayIndex!==value;
+}
+function renderScheduleDayPicker() {
+    setCopy('schedule-day-label','ورځ','روز','Day');
+    setCopy('schedule-overview-hint','د پیل او پای وخت سمولو لپاره د ورځې نوم ووهئ.','برای تنظیم زمان شروع و پایان، نام روز را بزنید.','Tap a day name to edit start and end times.');
+    const select=byId('schedule-day-filter');
+    select.replaceChildren();
+    const all=document.createElement('option');
+    all.value='all';all.textContent=uiText('ټولې ورځې','همۀ روزها','All days');select.add(all);
+    defaultDays[currentLang].forEach((day,index)=>{
+        const option=document.createElement('option');
+        option.value=String(index);option.textContent=day;select.add(option);
+    });
+    showScheduleDay(scheduleDayFilter);
+}
+function makeLessonTimes(key,data,day,slot) {
+    const group=document.createElement('div'); group.className='schedule-time-fields';
+    for(const [part,copy] of [['start',['پیل','شروع','Start']],['end',['پای','پایان','End']]]){
+        const label=document.createElement('label'); label.textContent=uiText(...copy);
+        const control=document.createElement('span'); control.className='schedule-time-control';
+        const input=document.createElement('input'); input.type='time'; input.dir='ltr';
+        input.className='schedule-input'; input.dataset.key=key+'_'+part; input.dataset.time=part;
+        input.value=data[input.dataset.key]||'';
+        input.setAttribute('aria-label',day+' — '+t()['thS'+slot]+' — '+uiText(...copy));
+        const empty=document.createElement('span');empty.className='schedule-time-placeholder';
+        empty.textContent='--:--';empty.setAttribute('aria-hidden','true');
+        control.append(input,empty);label.append(control);group.append(label);
+    }
+    return group;
+}
+function makeLessonTimeRange() {
+    const range=document.createElement('div');range.className='schedule-time-range';range.hidden=true;
+    range.append(document.createElement('span'),document.createElement('span'));
+    return range;
+}
+function updateLessonCell(cell) {
+    const start=cell.querySelector('[data-time="start"]'),end=cell.querySelector('[data-time="end"]');
+    for(const time of [start,end]) time.parentElement.dataset.empty=String(!time.value);
+    const range=cell.querySelector('.schedule-time-range');
+    range.hidden=!(validLessonTime(start.value)&&validLessonTime(end.value)&&start.value<end.value);
+    range.children[0].textContent=start.value;
+    range.children[1].textContent=end.value;
+}
+let lessonAlarms = null;
+let alarmQueue = Promise.resolve();
+function lessonReminderPlan() {
+    const active=scheduleData.items.find(item=>item.id===scheduleData.activeId);
+    const events=[];
+    if(!active)return events;
+    for(let day=0;day<6;day++)for(let slot=1;slot<=4;slot++){
+        const key='day_'+day+'_slot_'+slot;
+        const {data}=active, label=data[key], start=data[key+'_start'], end=data[key+'_end'];
+        if(label&&validLessonTime(start)&&validLessonTime(end)&&start<end)events.push({day:(day+6)%7,end,label:String(label).slice(0,120)});
+    }
+    return events;
+}
+function syncLessonAlarms(interactive) {
+    const events=lessonReminderPlan();
+    const title=uiText('درس پای ته ورسېد','درس به پایان رسید','Class ended');
+    alarmQueue=alarmQueue.catch(()=>{}).then(async()=>{
+        if(!lessonAlarms){
+            if(interactive&&events.length)showStatus(uiText('مهالوېش خوندي شو؛ زنګ د Android نوې نسخه غواړي.','تقسیم اوقات ذخیره شد؛ اعلان به نسخۀ جدید Android نیاز دارد.','Timetable saved. Reminders require the updated Android app.'));
+            return;
+        }
+        try{
+            const result=await lessonAlarms.sync({events,title,language:currentLang,request:interactive&&events.length>0});
+            if(interactive&&events.length&&!result.enabled)showStatus(uiText('مهالوېش خوندي شو؛ د زنګ لپاره خبرتیاوې فعالې کړئ.','تقسیم اوقات ذخیره شد؛ برای اعلان، اطلاع‌رسانی را فعال کنید.','Timetable saved. Allow notifications for reminders.'));
+            else if(interactive&&events.length&&!result.exact)showStatus(uiText('مهالوېش خوندي شو. د پر وخت زنګ لپاره د زنګ تنظیمات وګورئ.','تقسیم اوقات ذخیره شد. برای اعلان دقیق، تنظیم اعلان را ببینید.','Timetable saved. For precise timing, check Reminder settings.'));
+        }catch(error){
+            if(interactive&&events.length)showStatus(uiText('مهالوېش خوندي شو، خو زنګ فعال نه شو.','تقسیم اوقات ذخیره شد، اما اعلان فعال نشد.','Timetable saved, but reminders could not be scheduled.'));
+        }
+    });
+    return alarmQueue;
+}
+async function configureLessonAlarms() {
+    if(!lessonAlarms){showStatus(uiText('زنګ د Android نوې نسخه غواړي.','اعلان به نسخۀ جدید Android نیاز دارد.','Reminders require the updated Android app.'));return;}
+    try {
+        const result=await lessonAlarms.openSettings();
+        if(result.enabled&&result.exact)showStatus(uiText('پر وخت زنګ فعال دی.','اعلان دقیق فعال است.','Precise class reminders are enabled.'));
+    }
+    catch(error){showStatus(uiText('تنظیمات خلاص نه شول.','تنظیمات باز نشد.','Could not open reminder settings.'));}
+}
+function setupLessonAlarms() {
+    try {
+        const bridge=window.Capacitor;
+        if(bridge?.isNativePlatform()&&bridge.isPluginAvailable?.('LessonAlarms'))
+            lessonAlarms=bridge.Plugins?.LessonAlarms || bridge.registerPlugin('LessonAlarms');
+    } catch(error){ /* browser and older releases have no Android reminder service */ }
+    void syncLessonAlarms(false);
+    document.addEventListener('visibilitychange',()=>{if(!document.hidden)void syncLessonAlarms(false);});
+}
+
+
 setupCalculator();
 setupVoice();
 setupPdfLibrary();
 window.addEventListener('resize',resizeCalcDisplay);
-document.getElementById('schedule-tbody').addEventListener('input',highlightScheduleToday);
+byId('schedule-tbody').addEventListener('input',event=>{
+    if(event.target.matches('[data-time]')) updateLessonCell(event.target.closest('td'));
+    else highlightScheduleToday();
+});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){lastRenderedDayKey='';updateCurrentDay();resizeCalcDisplay();}});
 
 /* Initial paint + start the clock. */
 applyLanguage();
 refreshSecurity();
 updateClock();
+setupLessonAlarms();
 setInterval(updateClock, 1000);
 
 /* Make the current page reflect the initial history entry. */
