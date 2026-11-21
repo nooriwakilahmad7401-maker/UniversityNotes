@@ -867,6 +867,36 @@
     .calendar-weekday,.calendar-outside,.calendar-footer time { color:var(--text-sub);font-size:.76rem; }
     .calendar-grid .calendar-today { background:var(--primary);color:white;font-weight:800; }
     .calendar-footer { border-top:1px solid var(--border-color);padding-top:12px; }
+    .exam-home { display:flex;align-items:center;gap:12px;width:100%;margin:0 0 16px;padding:12px 14px;border:1px solid var(--border-color);border-radius:16px;background:var(--card-bg);color:var(--text-main);text-align:start;font:inherit;cursor:pointer; }
+    .exam-home-icon { display:grid;place-items:center;flex:none;width:42px;height:42px;border-radius:12px;background:var(--bg-color);color:var(--primary); }
+    .exam-home-icon svg { width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round; }
+    .exam-home strong,.exam-home small { display:block; }
+    .exam-home small { color:var(--text-sub);margin-top:3px; }
+    .exam-home > :last-child { margin-inline-start:auto;font-size:1.25rem; }
+    [dir="rtl"] .exam-home > :last-child { transform:scaleX(-1); }
+    .exam-bar,.exam-overview { display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px; }
+    .exam-bar { align-items:end; }
+    .exam-bar label { flex:1 1 160px;min-width:0; }
+    .exam-bar select,.exam-form :is(input,select,textarea) { width:100%;margin:5px 0 0; }
+    .exam-form label { display:block;min-width:0; }
+    .exam-fields { display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:10px; }
+    .exam-form .settings-actions { margin-top:12px; }
+    #exam-detail-title { margin:0;overflow-wrap:anywhere; }
+    .exam-countdown { padding:4px 10px;border:1px solid var(--border-color);border-radius:99px;font-size:.8rem; }
+    #exam-date-display { margin-top:0; }
+    #exam-progress { width:100%;height:12px;accent-color:var(--primary); }
+    .exam-plan { list-style:none;margin:0;padding:0; }
+    .exam-plan li { border-inline-start:3px solid var(--primary);padding:6px 10px;margin:8px 0;background:var(--bg-color);border-radius:8px;overflow-wrap:anywhere; }
+    .exam-plan li strong { display:block;font-size:.83rem; }
+    .exam-chapter { padding:10px 12px;border:1px solid var(--border-color);border-radius:11px;background:var(--bg-color); }
+    .exam-chapter summary { cursor:pointer;min-height:36px;align-content:center;overflow-wrap:anywhere; }
+    .exam-chapter summary small { color:var(--text-sub);margin-inline-start:8px; }
+    .exam-chapter .exam-form { display:grid;gap:9px;margin-top:8px; }
+    .exam-chapter .settings-actions { margin-top:2px; }
+    #exam-chapters-form { margin-top:14px; }
+    #exam-status:empty,#exam-plan-message:empty { display:none; }
+    #page-exams .exam-danger { color:var(--danger); }
+
     .classmate-fields { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px; }
     .classmate-fields label:last-child { grid-column:1/-1; }
     .classmate-fields input { margin-top:5px; }
@@ -955,7 +985,6 @@
         </div>
 
         <div class="header-right">
-            <button type="button" class="btn-icon" id="calendar-open" onclick="openCalendar()"><svg aria-hidden="true" class="" viewBox="0 0 24 24"><path d="M4 5h16v16H4zM8 3v4m8-4v4M4 9h16m-11 5h.01m3 0h.01m3 0h.01m-6 3h.01m3 0h.01"/></svg></button><button type="button" class="btn-icon" id="shortcuts-open" onclick="openShortcuts()"><svg aria-hidden="true" class="" viewBox="0 0 24 24"><path d="M3 6h18v12H3zM7 10h.01m3 0h.01m4 0h.01m3 0h.01M7 14h.01m3 0h4m3 0h.01"/></svg></button>
             <div class="header-time"><div class="live-clock" id="clock">00:00:00 AM</div><time id="current-date-display" class="header-date"></time></div>
             <div class="user-brand" id="current-day-display">ورځ</div>
         </div>
@@ -970,6 +999,11 @@
             <p id="txt-welcome-desc">خپل د پوهنتون درسونه، خلاصې او مهم معلومات په منظم ډول ولیکئ، وساتئ او هر وخت یې پیدا کړئ.</p>
         </div>
 
+        <button type="button" class="exam-home" onclick="switchPage('exams')">
+            <span class="exam-home-icon"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M9 10l1 1 2-2m-3 6 1 1 2-2m2-3h2m-2 5h2"/></svg></span>
+            <span><strong id="exam-home-title"></strong><small id="exam-home-desc"></small></span>
+            <span aria-hidden="true">›</span>
+        </button>
         <div class="stats-grid">
             <div class="stat-card" onclick="switchPage('notes')">
                 <div class="stat-icon">
@@ -1206,6 +1240,8 @@
         <div class="settings-menu">
             <button class="settings-row" id="settings-row-language" onclick="switchPage('settings-language')"><svg aria-hidden="true" class="settings-row-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a17 17 0 010 18 17 17 0 010-18z"/></svg><span class="settings-row-copy"><span id="settings-menu-language" class="settings-row-title"></span><span id="settings-summary-language" class="settings-row-summary"></span></span><svg aria-hidden="true" class="settings-chevron" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
             <button class="settings-row" id="settings-row-theme" onclick="switchPage('settings-theme')"><svg aria-hidden="true" class="settings-row-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></svg><span class="settings-row-copy"><span id="settings-menu-theme" class="settings-row-title"></span><span id="settings-summary-theme" class="settings-row-summary"></span></span><svg aria-hidden="true" class="settings-chevron" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+            <button type="button" class="settings-row" id="settings-row-shortcuts" onclick="openShortcuts()"><svg aria-hidden="true" class="settings-row-icon" viewBox="0 0 24 24"><path d="M3 6h18v12H3zM7 10h.01m3 0h.01m4 0h.01m3 0h.01M7 14h.01m3 0h4m3 0h.01"/></svg><span class="settings-row-copy"><span class="settings-row-title" id="settings-menu-shortcuts"></span><span class="settings-row-summary" id="settings-summary-shortcuts"></span></span><svg aria-hidden="true" class="settings-chevron" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+            <button type="button" class="settings-row" id="settings-row-calendar" onclick="openCalendar()"><svg aria-hidden="true" class="settings-row-icon" viewBox="0 0 24 24"><path d="M4 5h16v16H4zM8 3v4m8-4v4M4 9h16m-11 5h.01m3 0h.01m3 0h.01m-6 3h.01m3 0h.01"/></svg><span class="settings-row-copy"><span class="settings-row-title" id="settings-menu-calendar"></span><span class="settings-row-summary" id="settings-summary-calendar"></span></span><svg aria-hidden="true" class="settings-chevron" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
             <button type="button" class="settings-row" id="settings-row-classmates" onclick="switchPage('classmates')"><svg aria-hidden="true" class="settings-row-icon" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2m20 0v-2a4 4 0 0 0-4-4M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8m8-8a4 4 0 0 1 0 8"/></svg><span class="settings-row-copy"><span id="settings-menu-classmates" class="settings-row-title"></span><span id="settings-summary-classmates" class="settings-row-summary"></span></span><svg aria-hidden="true" class="settings-chevron" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
             <button class="settings-row" id="settings-row-security" onclick="switchPage('settings-security')"><svg aria-hidden="true" class="settings-row-icon" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-8 9-8 9s-8-4-8-9V6z"/><rect x="9" y="10" width="6" height="6" rx="1"/><path d="M10 10V8a2 2 0 014 0v2"/></svg><span class="settings-row-copy"><span id="settings-menu-security" class="settings-row-title"></span><span id="settings-summary-security" class="settings-row-summary"></span></span><svg aria-hidden="true" class="settings-chevron" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
             <button class="settings-row" id="settings-row-backup" onclick="switchPage('settings-backup')"><svg aria-hidden="true" class="settings-row-icon" viewBox="0 0 24 24"><path d="M4 16v4h16v-4M12 16V4m-4 4l4-4 4 4"/><path d="M5 12H3m18 0h-2"/></svg><span class="settings-row-copy"><span id="settings-menu-backup" class="settings-row-title"></span><span id="settings-summary-backup" class="settings-row-summary"></span></span><svg aria-hidden="true" class="settings-chevron" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
@@ -1214,6 +1250,44 @@
             <button class="settings-row" id="settings-row-about" onclick="switchPage('about')"><svg aria-hidden="true" class="settings-row-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10v.1"/></svg><span class="settings-row-copy"><span id="settings-menu-about" class="settings-row-title"></span><span id="settings-summary-about" class="settings-row-summary"></span></span><svg aria-hidden="true" class="settings-chevron" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
         </div>
     </div>
+    <section id="page-exams" class="page settings-page study-page">
+        <div class="settings-heading"><button type="button" class="btn-icon settings-back" onclick="handleAppBack()"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button><h2 id="exam-title"></h2></div>
+        <div class="exam-bar">
+            <label id="exam-picker-wrap"><span id="exam-picker-label"></span><select id="exam-picker"></select></label>
+            <button type="button" id="exam-new" class="settings-button"></button>
+        </div>
+        <form id="exam-form" class="settings-card exam-form" hidden>
+            <div class="exam-fields">
+                <label><span id="exam-name-label"></span><input id="exam-name" dir="auto" maxlength="120" required></label>
+                <label><span id="exam-date-label"></span><input id="exam-date" type="date" required min="1900-01-01" max="9999-12-31"></label>
+            </div>
+            <div class="settings-actions"><button type="submit" id="exam-save" class="settings-button"></button><button type="button" id="exam-cancel" class="settings-button secondary"></button></div>
+        </form>
+        <p id="exam-status" class="settings-hint" role="status"></p>
+        <p id="exam-empty" class="settings-hint"></p>
+        <div id="exam-detail" hidden>
+            <section class="settings-card">
+                <div class="exam-overview"><h3 id="exam-detail-title" dir="auto"></h3><span id="exam-countdown" class="exam-countdown"></span></div>
+                <p id="exam-date-display" class="settings-hint"></p>
+                <progress id="exam-progress" max="100" value="0" aria-labelledby="exam-progress-label"></progress>
+                <p id="exam-progress-label" class="settings-hint"></p>
+                <div class="settings-actions"><button type="button" id="exam-edit" class="settings-button secondary"></button><button type="button" id="exam-delete" class="settings-button secondary exam-danger"></button></div>
+            </section>
+            <section class="settings-card">
+                <h3 id="exam-plan-title"></h3>
+                <p id="exam-plan-message" class="settings-hint"></p>
+                <ul id="exam-plan" class="exam-plan"></ul>
+            </section>
+            <section class="settings-card">
+                <h3 id="exam-chapters-title"></h3>
+                <div id="exam-chapter-list" class="study-stack"></div>
+                <form id="exam-chapters-form" class="exam-form">
+                    <label><span id="exam-chapter-add-label"></span><textarea id="exam-chapter-add" rows="2" dir="auto" maxlength="6000" required></textarea></label>
+                    <div class="settings-actions"><button type="submit" id="exam-chapters-add" class="settings-button"></button></div>
+                </form>
+            </section>
+        </div>
+    </section>
     <section id="page-shortcuts" class="page settings-page study-page">
         <div class="settings-heading"><button type="button" class="btn-icon settings-back" onclick="handleAppBack()"><svg aria-hidden="true" class="" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button><h2 id="shortcuts-heading"></h2></div>
         <p class="settings-hint" id="shortcuts-intro"></p><div id="shortcut-categories" class="study-stack"></div>
@@ -1919,6 +1993,7 @@ function sanitizeCalcHistory(raw) {
     return raw.filter(function (h) { return typeof h === 'string'; }).slice(-10);
 }
 
+let exams = [];
 let subjects = sanitizeSubjects(loadJSON(STORAGE_KEYS.subjects, []));
 let notes = sanitizeNotes(loadJSON(STORAGE_KEYS.notes, []));
 let calcHistory = sanitizeCalcHistory(loadJSON(STORAGE_KEYS.calc, []));
@@ -1933,9 +2008,10 @@ if (recoveredState && recoveredState.version === 6 && Array.isArray(recoveredSta
     notes = sanitizeNotes(recoveredState.notes);
     calcHistory = sanitizeCalcHistory(recoveredState.calc);
     scheduleData = sanitizeSchedule(recoveredState.schedule);
+    exams = sanitizeExams(recoveredState.exams);
 }
 function stateSnapshot() {
-    return JSON.stringify({ version: 6, subjects: subjects, notes: notes, calc: calcHistory, schedule: scheduleData });
+    return JSON.stringify({ version: 6, subjects: subjects, notes: notes, calc: calcHistory, schedule: scheduleData, exams: exams });
 }
 let lastSavedSnapshot = stateSnapshot();
 function saveData(failureMessage) {
@@ -1950,7 +2026,7 @@ function saveData(failureMessage) {
     } catch (error) {
         const restored = JSON.parse(lastSavedSnapshot);
         subjects = restored.subjects; notes = restored.notes;
-        calcHistory = restored.calc; scheduleData = restored.schedule;
+        calcHistory = restored.calc; scheduleData = restored.schedule; exams = restored.exams;
         renderAll();
         alert(failureMessage || uiText('خوندي نه شول. د وسیلې ځای وګورئ؛ لیکل شوی متن لا په فورمه کې شته.',
             'ذخیره نشد. فضای دستگاه را بررسی کنید؛ متن در فورم باقی است.',
@@ -1994,6 +2070,7 @@ function renderAll() {
     renderVoice();
     renderPdf();
     renderStudyPages();
+    renderExamPrep();
     resizeCalcDisplay();
 }
 
@@ -2259,7 +2336,7 @@ let historyPending = false;
 let restoringHistory = false;
 let afterHistoryNavigation = null;
 let modalBaseline = '';
-const validPages = ['home','subjects','notes','attendance','calc','pdf','recordings','search','trash','about','privacy','settings','settings-language','settings-theme','settings-security','settings-backup','shortcuts','shortcut-detail','calendar','classmates'];
+const validPages = ['home','subjects','notes','attendance','calc','pdf','recordings','search','trash','about','privacy','settings','settings-language','settings-theme','settings-security','settings-backup','exams','shortcuts','shortcut-detail','calendar','classmates'];
 function pageState(modalId) {
     return { universityNotes: true, page: currentPage, filter: selectedSubjectFilter,
         depth: navDepth, modal: modalId || null };
@@ -2297,7 +2374,7 @@ function switchPageInternal(pageId) {
     document.getElementById('pdf-export-btn').style.display = sub ? 'inline-flex' : 'none';
     renderAll();
     if (currentPage === 'recordings') void refreshVoice();
-    if (currentPage === 'pdf') void refreshPdfLibrary();
+    if (currentPage === 'pdf' || currentPage === 'exams') void refreshPdfLibrary();
 }
 function editorSignature() {
     const modal = document.querySelector('.modal.active');
@@ -3369,7 +3446,10 @@ function renderPrivacy() {
     document.getElementById('privacy-policy-content').innerHTML = policy + uiText(
         '<h3>همصنفان او د درس خبرتیاوې</h3><p>د همصنفانو نومونه او شمېرې په دې وسیله کې پاتې کېږي او د JSON بیک‌اپ برخه نه دي. اپ ستاسو د موبایل د اړیکو لېست ته لاسرسی نه غواړي. د درس د پای لپاره اختیاري Android خبرتیا کاروي.</p>',
         '<h3>هم‌صنفی‌ها و اعلان‌های درس</h3><p>نام‌ها و شماره‌های هم‌صنفی‌ها در همین دستگاه می‌مانند و در پشتیبان JSON شامل نیستند. برنامه به مخاطبین دستگاه دسترسی نمی‌خواهد. اعلان ختم درس در Android اختیاری است.</p>',
-        '<h3>Classmates and class reminders</h3><p>Classmate names and phone numbers stay on this device and are excluded from JSON backups. The app does not access your device contacts. Android notifications for class endings are optional.</p>');
+        '<h3>Classmates and class reminders</h3><p>Classmate names and phone numbers stay on this device and are excluded from JSON backups. The app does not access your device contacts. Android notifications for class endings are optional.</p>') + uiText(
+        '<h3>د امتحان تیاری</h3><p>د امتحانونو پلانونه په همدې وسیله ساتل کېږي. د پلان معلومات او د تړلو فایلونو نښې په JSON بیک‌اپ کې شاملېږي؛ PDF فایلونه جلا خوندي کړئ.</p>',
+        '<h3>آمادگی امتحان</h3><p>برنامه‌های امتحان در همین دستگاه نگهداری می‌شوند. معلومات برنامه و شناسه‌های فایل‌های مرتبط در پشتیبان JSON شامل‌اند؛ فایل‌های PDF را جداگانه ذخیره کنید.</p>',
+        '<h3>Exam preparation</h3><p>Exam plans are stored on this device. JSON backups include plans and linked file references; save PDFs separately.</p>');
 }
 
 function paragraphIsRTL(text) {
@@ -3622,6 +3702,7 @@ function renderSettings() {
 function renderSettingsMenu() {
     const labels = {
         language: uiText('ژبه','زبان','Language'), theme: uiText('ټیمونه / بڼه','تم‌ها / ظاهر','Themes'),
+        shortcuts: uiText('د کمپیوټر شارټ‌کټونه','میانبرهای کمپیوتر','Computer shortcuts'), calendar: uiText('جنتري','تقویم','Calendar'),
         security: uiText('امنیت','امنیت','Security'), backup: uiText('بیک‌اپ او بېرته راوستل','پشتیبان و بازیابی','Backup and restore'),
         classmates: uiText('همصنفان','هم‌صنفی‌ها','Classmates'), update: uiText('اپ تازه کړئ','به‌روزرسانی برنامه','Update app'),
         privacy: uiText('د محرمیت تګلاره','حریم خصوصی','Privacy policy'), about: uiText('د اپ په اړه','دربارۀ برنامه','About the app')
@@ -3632,6 +3713,8 @@ function renderSettingsMenu() {
     const summaries = {
         language: currentLang === 'en' ? 'English' : currentLang === 'dr' ? 'دری' : 'پښتو',
         theme: dark ? darkLabel : lightLabel,
+        shortcuts: uiText('د کیبورډ لنډې لارې','میانبرهای صفحه‌کلید','Keyboard shortcuts'),
+        calendar: uiText('لمریزه او میلادي نېټې','تاریخ هجری خورشیدی و میلادی','Solar Hijri and Gregorian dates'),
         security: securityState.available ? (securityState.appLock ? uiText('د اپ قلف فعال دی','قفل برنامه فعال است','App lock is on') : uiText('د قلف او سکرین ساتنه','قفل و محافظت صفحه','App lock and screen protection')) : uiText('د Android اختیاري ساتنه','محافظت اختیاری Android','Optional Android protection'),
         backup: uiText('خپل معلومات خوندي وساتئ','معلومات خود را محفوظ نگه دارید','Keep a copy of your data'),
         classmates: uiText('نومونه او شمېرې','نام‌ها و شماره‌ها','Names and phone numbers'), update: 'Google Play',
@@ -3715,7 +3798,7 @@ function validateBackup(text) {
     });
     if (schedule.items.length ? !scheduleIds.has(schedule.activeId) : schedule.activeId !== null) bad();
     // Copy only known fields: imported text is rendered as text, never executable markup.
-    return {state:{version:6,subjects:sanitizeSubjects(s.subjects),notes:sanitizeNotes(s.notes),calc:sanitizeCalcHistory(s.calc),schedule:sanitizeSchedule(schedule)},preferences:{language:p.language,theme:p.theme}};
+    return {state:{version:6,subjects:sanitizeSubjects(s.subjects),notes:sanitizeNotes(s.notes),calc:sanitizeCalcHistory(s.calc),schedule:sanitizeSchedule(schedule),exams:s.exams === undefined ? undefined : sanitizeExams(s.exams)},preferences:{language:p.language,theme:p.theme}};
 }
 async function exportBackup() {
     if (backupBusy) return;
@@ -3770,6 +3853,7 @@ function restoreBackup() {
     const next = pendingBackup;
     // saveData commits one record, or restores lastSavedSnapshot on quota failure.
     subjects=next.state.subjects;notes=next.state.notes;calcHistory=next.state.calc;scheduleData=next.state.schedule;
+    if (next.state.exams !== undefined) exams=next.state.exams;
     if (!saveData(uiText('بیک‌اپ راونه ګرځېد؛ تش ځای وګورئ. اوسني معلومات خوندي پاتې دي.','بازیابی نشد؛ فضای خالی را بررسی کنید. معلومات فعلی محفوظ است.','Restore failed; check available storage. Your current data is safe.'))) return;
     selectedSubjectFilter=null;
     pendingBackup=null;
@@ -3798,6 +3882,7 @@ function updateCurrentDay() {
         date.textContent = new Intl.DateTimeFormat(currentLang === 'en' ? 'en-GB' : 'fa-AF-u-ca-persian', {year:'numeric',month:'2-digit',day:'2-digit'}).format(now);
     } catch(err) { date.textContent = localISO; }
     date.title = uiText('هجري لمریزه نېټه','تاریخ هجری خورشیدی','Date');
+    if (currentPage==='exams') renderExamPlan(activeExam());
 }
 
 /** Ticks the clock every second. */
@@ -3885,7 +3970,7 @@ async function refreshPdfLibrary(){
     const generation=++pdfRefreshGeneration;pdfLibraryBusy=true;renderPdf();
     try{const result=await pdfNative.list();if(generation===pdfRefreshGeneration){pdfItems=Array.isArray(result.items)?result.items:[];pdfFolders=Array.isArray(result.folders)?result.folders:[];pdfMessage=result.limited?pdfText('limited'):'';}}
     catch(error){pdfMessage=pdfText(error.code==='LOCKED'?'locked':'error');}
-    finally{pdfLibraryBusy=false;renderPdf();}
+    finally{pdfLibraryBusy=false;renderPdf();if(currentPage==='exams') renderExamPdfChoices();}
 }
 async function pdfAction(action,id){
     if(!pdfAvailable||pdfLibraryBusy)return;
@@ -3921,8 +4006,8 @@ async function pdfAction(action,id){
 function setupPdfLibrary(){
     try{if(window.Capacitor&&window.Capacitor.isNativePlatform()){pdfNative=window.Capacitor.Plugins&&window.Capacitor.Plugins.PdfLibrary;if(!pdfNative&&window.Capacitor.registerPlugin)pdfNative=window.Capacitor.registerPlugin('PdfLibrary');}}catch(_){}
     document.getElementById('pdf-list').addEventListener('click',event=>{const b=event.target.closest('button[data-pdf-action]');if(b)void pdfAction(b.dataset.pdfAction,b.dataset.pdfId);});
-    if(pdfNative)pdfNative.getCapabilities().then(result=>{pdfAvailable=result.available===true;pdfNamedScans=result.namedScans===true;renderPdf();if(currentPage==='pdf')void refreshPdfLibrary();}).catch(()=>{pdfAvailable=false;renderPdf();});
-    document.addEventListener('visibilitychange',()=>{if(!document.hidden&&currentPage==='pdf')void refreshPdfLibrary();});
+    if(pdfNative)pdfNative.getCapabilities().then(result=>{pdfAvailable=result.available===true;pdfNamedScans=result.namedScans===true;renderPdf();if(currentPage==='pdf'||currentPage==='exams')void refreshPdfLibrary();}).catch(()=>{pdfAvailable=false;renderPdf();});
+    document.addEventListener('visibilitychange',()=>{if(!document.hidden&&(currentPage==='pdf'||currentPage==='exams'))void refreshPdfLibrary();});
     renderPdf();
 }
 
@@ -4649,8 +4734,6 @@ function renderClassmates() {
 function renderStudyPages() {
     labelButton('search-open',uiText('لټون','جستجو','Search'));
     labelButton('schedule-open',uiText('مهالوېش','تقسیم اوقات','Timetable'));
-    labelButton('calendar-open',uiText('جنتري','تقویم','Calendar'));
-    labelButton('shortcuts-open',uiText('د کمپیوټر شارټ‌کټونه','میانبرهای کمپیوتر','Computer shortcuts'));
     if(currentPage==='classmates')renderClassmates();
     if(currentPage==='calendar')renderCalendar();
     if(currentPage==='shortcuts'||currentPage==='shortcut-detail')renderShortcuts();
@@ -4802,6 +4885,282 @@ function setupLessonAlarms() {
 }
 
 
+/* Exam preparation is stored with the other local study data. */
+function examDateDay(value) {
+    if (typeof value!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(value)||value<'1900-01-01') return NaN;
+    const instant=Date.parse(value+'T00:00:00Z');
+    return Number.isFinite(instant)&&new Date(instant).toISOString().slice(0,10)===value ? instant/86400000 : NaN;
+}
+function examToday() {
+    const today=new Date();
+    return Date.UTC(today.getFullYear(),today.getMonth(),today.getDate())/86400000;
+}
+function sanitizeExams(raw) {
+    const id=value=>Number.isSafeInteger(value)&&value>0;
+    const name=value=>typeof value==='string'?value.trim().slice(0,120):'';
+    const seen=new Set();
+    if(!Array.isArray(raw))return [];
+    return raw.slice(0,80).flatMap(exam=>{
+        if(!exam||!id(exam.id)||seen.has(exam.id)||!name(exam.title)||!Number.isFinite(examDateDay(exam.date)))return [];
+        seen.add(exam.id);
+        const chapterIds=new Set();
+        const chapters=(Array.isArray(exam.chapters)?exam.chapters.slice(0,100):[]).flatMap(chapter=>{
+            if(!chapter||!id(chapter.id)||chapterIds.has(chapter.id)||!name(chapter.title))return [];
+            chapterIds.add(chapter.id);
+            return [{id:chapter.id,title:name(chapter.title),
+                status:['pending','studying','done'].includes(chapter.status)?chapter.status:'pending',
+                noteId:id(chapter.noteId)?chapter.noteId:null,
+                pdfId:typeof chapter.pdfId==='string'&&chapter.pdfId.length<=160?chapter.pdfId:''}];
+        });
+        return [{id:exam.id,title:name(exam.title),date:exam.date,chapters}];
+    });
+}
+const examCopy={
+    title:['د امتحان تیاری','آمادگی امتحان','Exam preparation'],
+    intro:['خپل فصلونه، د مطالعې پلان او پرمختګ وګورئ.','فصل‌ها، برنامۀ مطالعه و پیشرفت خود را ببینید.','Plan your chapters and track your progress.'],
+    picker:['امتحان','امتحان','Exam'], new:['نوی امتحان','امتحان جدید','New exam'],
+    name:['د امتحان نوم','نام امتحان','Exam name'],
+    date:['د امتحان نېټه','تاریخ امتحان','Exam date'],
+    save:['خوندي کول','ذخیره','Save'], cancel:['لغوه','لغو','Cancel'],
+    empty:['د پیل لپاره خپل لومړی امتحان ثبت کړئ.','برای شروع، اولین امتحان را ثبت کنید.','Add your first exam to get started.'],
+    edit:['سمول','ویرایش','Edit'], remove:['ړنګول','حذف','Delete'],
+    planTitle:['د مطالعې ورځنی پلان','برنامۀ روزانۀ مطالعه','Daily study plan'],
+    chapterTitle:['فصلونه','فصل‌ها','Chapters'],
+    chapterAddLabel:['د هر فصل نوم په جلا کرښه ولیکئ','نام هر فصل را در یک سطر جدا بنویسید','Enter one chapter name per line'],
+    chapterAdd:['فصلونه اضافه کړئ','افزودن فصل‌ها','Add chapters'],
+    chapterName:['د فصل نوم','نام فصل','Chapter name'],
+    today:['امتحان نن دی','امتحان امروز است','Exam today'],
+    past:['امتحان تېر شوی','تاریخ امتحان گذشته است','Exam date passed'],
+    pending:['نه دی پیل شوی','شروع نشده','Not started'],
+    studying:['تر مطالعې لاندې','در حال مطالعه','In progress'],
+    done:['بشپړ شوی','تکمیل شده','Completed'],
+    status:['د مطالعې حالت','وضعیت مطالعه','Study status'],
+    noChapters:['فصلونه اضافه کړئ چې پلان جوړ شي.','برای ساخت برنامه فصل‌ها را اضافه کنید.','Add chapters to build a plan.'],
+    allDone:['ټول فصلونه بشپړ شوي.','همۀ فصل‌ها تکمیل شده‌اند.','All chapters completed.'],
+    review:['د لوستل شویو فصلونو تکرار','مرور فصل‌های مطالعه‌شده','Review the chapters'],
+    note:['اړوند نوټ','یادداشت مرتبط','Linked note'], pdf:['اړوند PDF','PDF مرتبط','Linked PDF'],
+    none:['هېڅ یو','هیچ‌کدام','None'],
+    missingNote:['نوټ اوس نشته','یادداشت در دسترس نیست','Note unavailable'],
+    missingPdf:['دا PDF اوس نشته','این PDF در دسترس نیست','PDF unavailable'],
+    openNote:['نوټ پرانیستل','باز کردن یادداشت','Open note'],
+    openPdf:['PDF پرانیستل','باز کردن PDF','Open PDF'],
+    pdfHelp:['PDF لومړی د اپ د PDF برخې ته اضافه کړئ.','ابتدا فایل را به بخش PDF برنامه اضافه کنید.','Add a file in the app’s PDF section first.'],
+    deleteExam:['دا امتحان او فصلونه یې ړنګ کړئ؟ نوټونه او PDF فایلونه خوندي پاتې کېږي.','این امتحان و فصل‌هایش حذف شوند؟ یادداشت‌ها و فایل‌های PDF باقی می‌مانند.','Delete this exam and its chapters? Notes and PDFs will be kept.'],
+    deleteChapter:['دا فصل له پلان څخه لرې کړئ؟','این فصل از برنامه حذف شود؟','Remove this chapter from the plan?'],
+    badName:['مهرباني وکړئ نوم ولیکئ.','لطفاً نام را وارد کنید.','Enter a name.'],
+    badDate:['مهرباني وکړئ سمه نېټه وټاکئ.','لطفاً تاریخ درست را انتخاب کنید.','Choose a valid date.'],
+    limit:['د دې لېست حد پوره شوی.','ظرفیت این فهرست تکمیل است.','This list is full.'],
+    badChapters:['د هر فصل نوم باید له ۱ تر ۱۲۰ تورو وي.','نام هر فصل باید ۱ تا ۱۲۰ نویسه باشد.','Each chapter name must have 1–120 characters.'],
+    saved:['خوندي شول.','ذخیره شد.','Saved.']
+};
+const examText=key=>uiText(...examCopy[key]);
+let activeExamId=null, editingExamId=null;
+const expandedExamChapters=new Set();
+const activeExam=()=>exams.find(exam=>exam.id===activeExamId);
+function examElement(tag,content,classes) {
+    const element=document.createElement(tag);
+    if(content!==undefined)element.textContent=content;
+    if(classes)element.className=classes;
+    return element;
+}
+function examAction(label,run,classes='settings-button secondary') {
+    const button=examElement('button',examText(label),classes);
+    button.type='button';
+    button.addEventListener('click',run);
+    return button;
+}
+function examOptions(select,items,value) {
+    select.replaceChildren(...items.map(([id,label])=>new Option(label,String(id))));
+    select.value=String(value);
+}
+function examFormatDay(day) {
+    return new Intl.DateTimeFormat(localDateLocale(),{calendar:'gregory',timeZone:'UTC',weekday:'short',month:'short',day:'numeric',year:'numeric'})
+        .format(new Date(day*86400000));
+}
+function renderExamPlan(exam) {
+    if(!exam)return;
+    const today=examToday(), day=examDateDay(exam.date), remainingDays=day-today;
+    const number=value=>new Intl.NumberFormat(localDateLocale()).format(value);
+    byId('exam-countdown').textContent=remainingDays<0?examText('past'):remainingDays===0?examText('today'):
+        uiText(number(remainingDays)+' ورځې پاتې دي',number(remainingDays)+' روز باقی مانده',number(remainingDays)+(remainingDays===1?' day left':' days left'));
+    byId('exam-date-display').textContent=examFormatDay(day);
+    const remaining=exam.chapters.filter(chapter=>chapter.status!=='done');
+    const done=exam.chapters.length-remaining.length;
+    const percent=exam.chapters.length?Math.round(100*done/exam.chapters.length):0;
+    byId('exam-progress').value=percent;
+    const count=number(done)+' / '+number(exam.chapters.length)+' · '+new Intl.NumberFormat(localDateLocale(),{style:'percent'}).format(percent/100);
+    byId('exam-progress-label').textContent=uiText('بشپړ فصلونه: '+count,'فصل‌های تکمیل‌شده: '+count,'Chapters completed: '+count);
+    const list=byId('exam-plan'), message=byId('exam-plan-message');
+    list.replaceChildren();
+    message.textContent='';
+    if(remainingDays<0||!exam.chapters.length){message.textContent=examText(remainingDays<0?'past':'noChapters');return;}
+    function addPlanRow(date,titles) {
+        const item=examElement('li');
+        item.append(examElement('strong',examFormatDay(date)));
+        titles.forEach(title=>{ const name=examElement('div',title);name.dir='auto';item.append(name); });
+        list.append(item);
+    }
+    if(!remaining.length)message.textContent=examText('allDone');
+    // Leave the previous day for review when there are at least two days left.
+    const reserveReview=remainingDays>=2||(!remaining.length&&remainingDays===1);
+    const studyDays=Math.min(remaining.length,Math.max(1,remainingDays-Number(reserveReview)));
+    for(let offset=0;offset<studyDays;offset++) {
+        const first=Math.ceil(offset*remaining.length/studyDays);
+        const end=Math.ceil((offset+1)*remaining.length/studyDays);
+        addPlanRow(today+offset,remaining.slice(first,end).map(chapter=>chapter.title));
+    }
+    if(reserveReview)addPlanRow(day-1,[examText('review')]);
+}
+function examField(key,input) {
+    const label=examElement('label');
+    label.append(examElement('span',examText(key)),input);
+    return label;
+}
+function renderExamPdfChoices() {
+    const items=pdfAvailable?pdfItems.filter(item=>typeof item?.id==='string'&&item.id&&item.id.length<=160):[];
+    byId('exam-chapter-list').querySelectorAll('select[data-exam-pdf]').forEach(select=>{
+        select.disabled=!pdfAvailable;
+        const id=select.value||select.dataset.selected||'';
+        const options=[['',examText('none')],...items.map(item=>[item.id,item.name||'PDF'])];
+        if(id&&!items.some(item=>item.id===id))options.push([id,examText('missingPdf')]);
+        examOptions(select,options,id);
+        select.dataset.selected='';
+    });
+    byId('exam-chapter-list').querySelectorAll('[data-exam-pdf-hint]').forEach(hint=>{hint.hidden=items.length>0;});
+}
+function makeExamChapter(exam,chapter) {
+    const detail=examElement('details',undefined,'exam-chapter');
+    detail.dataset.chapterId=chapter.id;
+    detail.open=expandedExamChapters.has(chapter.id);
+    detail.addEventListener('toggle',()=>{if(!detail.isConnected)return;if(detail.open)expandedExamChapters.add(chapter.id);else expandedExamChapters.delete(chapter.id);});
+    const summary=examElement('summary'), heading=examElement('bdi',chapter.title);
+    summary.append(heading,examElement('small',examText(chapter.status)));
+    const form=examElement('form',undefined,'exam-form');
+    const fields=examElement('div',undefined,'exam-fields');
+    const title=examElement('input');
+    title.required=true;title.maxLength=120;title.dir='auto';title.value=chapter.title;
+    const status=examElement('select');
+    examOptions(status,['pending','studying','done'].map(key=>[key,examText(key)]),chapter.status);
+    const noteSelect=examElement('select'), note=notes.find(n=>n.id===chapter.noteId&&!n.isTrash);
+    const noteOptions=notes.filter(n=>!n.isTrash).map(n=>[n.id,displayNoteTitle(n)]);
+    if(chapter.noteId&&!note)noteOptions.push([chapter.noteId,examText('missingNote')]);
+    examOptions(noteSelect,[['',examText('none')],...noteOptions],chapter.noteId||'');
+    const pdfSelect=examElement('select');
+    pdfSelect.disabled=!pdfAvailable;
+    pdfSelect.dataset.examPdf='1';pdfSelect.dataset.selected=chapter.pdfId;
+    fields.append(examField('chapterName',title),examField('status',status),
+        examField('note',noteSelect),examField('pdf',pdfSelect));
+    const actions=examElement('div',undefined,'settings-actions');
+    const save=examElement('button',examText('save'),'settings-button');save.type='submit';
+    actions.append(save);
+    if(note)actions.append(examAction('openNote',()=>openNoteModal(note.id)));
+    if(chapter.pdfId&&pdfAvailable)actions.append(examAction('openPdf',async()=>{
+        const message=byId('exam-status');
+        if(pdfLibraryBusy){message.textContent=pdfText('busy');return;}
+        await pdfAction('open',chapter.pdfId);
+        if(currentPage==='exams')message.textContent=pdfMessage;
+    }));
+    actions.append(examAction('remove',()=>{
+        if(!confirm(examText('deleteChapter')))return;
+        expandedExamChapters.delete(chapter.id);
+        updateExam(exam.id,{chapters:exam.chapters.filter(c=>c.id!==chapter.id)});
+    },'settings-button secondary exam-danger'));
+    form.append(fields,actions);
+    const pdfHint=examElement('p',examText('pdfHelp'),'settings-hint');
+    pdfHint.dataset.examPdfHint='1';form.append(pdfHint);
+    form.addEventListener('submit',event=>{
+        event.preventDefault();
+        const name=title.value.trim();
+        if(!name){byId('exam-status').textContent=examText('badName');title.focus();return;}
+        expandedExamChapters.add(chapter.id);
+        if(updateExam(exam.id,{chapters:exam.chapters.map(c=>c.id===chapter.id?{...c,title:name,status:status.value,noteId:Number(noteSelect.value)||null,pdfId:pdfSelect.value}:c)}))
+            byId('exam-chapter-list').querySelector('[data-chapter-id="'+chapter.id+'"] summary')?.focus({preventScroll:true});
+    });
+    detail.append(summary,form);
+    return detail;
+}
+function renderExamPrep() {
+    byId('exam-home-title').textContent=examText('title');
+    byId('exam-home-desc').textContent=examText('intro');
+    if(currentPage!=='exams')return;
+    const copy={title:'title',new:'new','picker-label':'picker','name-label':'name','date-label':'date',
+        save:'save',cancel:'cancel',empty:'empty',edit:'edit',delete:'remove','plan-title':'planTitle',
+        'chapters-title':'chapterTitle','chapter-add-label':'chapterAddLabel','chapters-add':'chapterAdd'};
+    for(const [id,key] of Object.entries(copy))byId('exam-'+id).textContent=examText(key);
+    if(!activeExam())activeExamId=[...exams].sort((a,b)=>a.date.localeCompare(b.date)).find(e=>examDateDay(e.date)>=examToday())?.id??exams.at(-1)?.id??null;
+    const exam=activeExam();
+    const picker=byId('exam-picker');
+    examOptions(picker,[...exams].sort((a,b)=>a.date.localeCompare(b.date)).map(e=>[e.id,e.title]),activeExamId);
+    byId('exam-picker-wrap').hidden=!exam;byId('exam-detail').hidden=!exam;
+    byId('exam-empty').hidden=!!exam||!byId('exam-form').hidden;
+    byId('exam-new').disabled=exams.length>=80;
+    if(!exam){byId('exam-chapter-list').replaceChildren();return;}
+    byId('exam-detail-title').textContent=exam.title;
+    renderExamPlan(exam);
+    byId('exam-chapter-list').replaceChildren(...exam.chapters.map(c=>makeExamChapter(exam,c)));
+    renderExamPdfChoices();
+}
+function examForm(exam) {
+    editingExamId=exam?.id??null;
+    byId('exam-name').value=exam?.title??'';
+    byId('exam-date').value=exam?.date??new Date(examToday()*86400000).toISOString().slice(0,10);
+    byId('exam-form').hidden=false;byId('exam-empty').hidden=true;
+    byId('exam-status').textContent='';
+    byId('exam-name').focus();
+}
+function closeExamForm() {
+    editingExamId=null;byId('exam-form').hidden=true;byId('exam-empty').hidden=!!activeExam();
+}
+function updateExam(id,patch) {
+    exams=exams.map(exam=>exam.id===id?{...exam,...patch}:exam);
+    if(!saveData())return false;
+    byId('exam-status').textContent=examText('saved');
+    return true;
+}
+function setupExamPrep() {
+    const status=byId('exam-status');
+    byId('exam-new').addEventListener('click',()=>examForm(null));
+    byId('exam-edit').addEventListener('click',()=>examForm(activeExam()));
+    byId('exam-cancel').addEventListener('click',()=>{closeExamForm();status.textContent='';});
+    byId('exam-picker').addEventListener('change',event=>{
+        activeExamId=Number(event.target.value);closeExamForm();expandedExamChapters.clear();
+        byId('exam-chapter-add').value='';status.textContent='';renderExamPrep();
+    });
+    byId('exam-form').addEventListener('submit',event=>{
+        event.preventDefault();
+        const title=byId('exam-name').value.trim(), date=byId('exam-date').value;
+        if(!title){status.textContent=examText('badName');return;}
+        if(!Number.isFinite(examDateDay(date))){status.textContent=examText('badDate');return;}
+        if(editingExamId!==null){if(!updateExam(editingExamId,{title,date}))return;}
+        else {
+            if(exams.length>=80){status.textContent=examText('limit');return;}
+            const id=generateId();
+            exams=[...exams,{id,title,date,chapters:[]}];activeExamId=id;
+            if(!saveData())return;
+            expandedExamChapters.clear();byId('exam-chapter-add').value='';
+        }
+        closeExamForm();status.textContent=examText('saved');
+    });
+    byId('exam-delete').addEventListener('click',()=>{
+        if(!activeExam()||!confirm(examText('deleteExam')))return;
+        exams=exams.filter(exam=>exam.id!==activeExamId);
+        if(!saveData())return;
+        closeExamForm();expandedExamChapters.clear();
+        byId('exam-chapter-add').value='';status.textContent='';
+    });
+    byId('exam-chapters-form').addEventListener('submit',event=>{
+        event.preventDefault();
+        const exam=activeExam(), input=byId('exam-chapter-add');
+        if(!exam)return;
+        const titles=input.value.split(/\r?\n/).map(line=>line.trim()).filter(Boolean);
+        if(!titles.length||titles.some(title=>title.length>120)){status.textContent=examText('badChapters');return;}
+        if(exam.chapters.length+titles.length>100){status.textContent=examText('limit');return;}
+        const added=titles.map(title=>({id:generateId(),title,status:'pending',noteId:null,pdfId:''}));
+        if(updateExam(exam.id,{chapters:[...exam.chapters,...added]}))input.value='';
+    });
+}
+
+setupExamPrep();
 setupCalculator();
 setupVoice();
 setupPdfLibrary();
